@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Penjelas Gambar</title>
+    <style>
+        :root {
+            --primary: #2563eb;
+            --primary-hover: #1d4ed8;
+            --bg-color: #f1f5f9;
+            --card-bg: #ffffff;
+            --text-main: #1e293b;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            min-height: 100vh;
+        }
+
+        .container {
+            background-color: var(--card-bg);
+            width: 100%;
+            max-width: 480px;
+            padding: 24px;
+            border-radius: 16px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        h2 {
+            margin: 0;
+            font-size: 1.5rem;
+            text-align: center;
+        }
+
+        p.desc {
+            margin: 0;
+            font-size: 0.95rem;
+            color: #64748b;
+            text-align: center;
+            line-height: 1.5;
+        }
+
+        .btn {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 14px 20px;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+            transition: background-color 0.2s;
+            touch-action: manipulation;
+        }
+
+        .btn:active {
+            background-color: var(--primary-hover);
+        }
+
+        .btn-outline {
+            background-color: transparent;
+            color: var(--primary);
+            border: 2px solid var(--primary);
+            margin-top: 10px;
+        }
+
+        .btn-outline:active {
+            background-color: #eff6ff;
+        }
+
+        input[type="file"] {
+            display: none;
+        }
+
+        canvas {
+            max-width: 100%;
+            height: auto;
+            border: 1px dashed #cbd5e1;
+            border-radius: 8px;
+            display: none;
+            margin: 0 auto;
+            background-image: linear-gradient(45deg, #f1f5f9 25%, transparent 25%), 
+                              linear-gradient(-45deg, #f1f5f9 25%, transparent 25%), 
+                              linear-gradient(45deg, transparent 75%, #f1f5f9 75%), 
+                              linear-gradient(-45deg, transparent 75%, #f1f5f9 75%);
+            background-size: 20px 20px;
+            background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
+        }
+
+        .controls {
+            display: none;
+            flex-direction: column;
+            gap: 10px;
+            background: #f8fafc;
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .controls label {
+            font-size: 0.9rem;
+            font-weight: 600;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        input[type="range"] {
+            width: 100%;
+            margin: 10px 0 0 0;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h2>Penjelas Gambar</h2>
+        <p class="desc">Ubah gambar buram atau abu-abu menjadi hitam-putih solid. Transparansi akan tetap dipertahankan.</p>
+
+        <button class="btn" onclick="document.getElementById('fileInput').click()">Pilih Gambar</button>
+        <input type="file" id="fileInput" accept="image/*">
+
+        <div class="controls" id="controls">
+            <label for="threshold">
+                Toleransi Hitam
+                <span id="threshVal">200</span>
+            </label>
+            <!-- Default diset tinggi (200) agar abu-abu langsung menjadi hitam -->
+            <input type="range" id="threshold" min="0" max="255" value="200">
+            <small style="color: #64748b; font-size: 0.75rem; margin-top: -5px;">Geser ke kanan untuk membuat lebih banyak area abu-abu menjadi hitam.</small>
+        </div>
+
+        <canvas id="canvas"></canvas>
+
+        <button class="btn btn-outline" id="downloadBtn" style="display: none;">Unduh Hasil</button>
+    </div>
+
+    <script>
+        const fileInput = document.getElementById('fileInput');
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        const thresholdSlider = document.getElementById('threshold');
+        const threshVal = document.getElementById('threshVal');
+        const downloadBtn = document.getElementById('downloadBtn');
+        const controls = document.getElementById('controls');
+
+        let originalImage = new Image();
+
+        // Ketika file dipilih
+        fileInput.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                originalImage.onload = function() {
+                    // Sesuaikan ukuran kanvas dengan gambar asli
+                    canvas.width = originalImage.width;
+                    canvas.height = originalImage.height;
+                    
+                    // Tampilkan elemen UI
+                    canvas.style.display = 'block';
+                    controls.style.display = 'flex';
+                    downloadBtn.style.display = 'block';
+
+                    processImage();
+                }
+                originalImage.src = event.target.result;
+            }
+            reader.readAsDataURL(file);
+        });
+
+        // Ketika slider digeser
+        thresholdSlider.addEventListener('input', function() {
+            threshVal.textContent = this.value;
+            processImage();
+        });
+
+        // Fungsi utama memproses pixel gambar
+        function processImage() {
+            if (!originalImage.src) return;
+
+            // Gambar ulang image asli ke kanvas
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.drawImage(originalImage, 0, 0);
+
+            // Ambil data piksel
+            const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+            const data = imageData.data;
+            const threshold = parseInt(thresholdSlider.value);
+
+            for (let i = 0; i < data.length; i += 4) {
+                const r = data[i];
+                const g = data[i + 1];
+                const b = data[i + 2];
+                const a = data[i + 3];
+
+                // Jika pixel sepenuhnya transparan atau hampir transparan, abaikan (tetap transparan)
+                if (a < 10) continue; 
+
+                // Hitung tingkat kecerahan (luminance)
+                const brightness = (r * 0.299) + (g * 0.587) + (b * 0.114);
+
+                // Logika Binarization:
+                // Jika kecerahan melebihi threshold, jadikan putih solid
+                // Jika di bawah threshold (abu-abu/hitam/buram), jadikan hitam solid
+                if (brightness >= threshold) {
+                    data[i]     = 255; // Red
+                    data[i + 1] = 255; // Green
+                    data[i + 2] = 255; // Blue
+                } else {
+                    data[i]     = 0;
+                    data[i + 1] = 0;
+                    data[i + 2] = 0;
+                }
+                
+                // Pastikan pixel tidak tersembunyi jika sebelumnya semi-transparan,
+                // tapi biarkan alpha asli jika ingin menjaga transisi halus pada tepian.
+                // Disini kita set ke 255 agar solid.
+                data[i + 3] = 255; 
+            }
+
+            // Kembalikan data piksel yang sudah diproses ke kanvas
+            ctx.putImageData(imageData, 0, 0);
+        }
+
+        // Fungsi untuk mengunduh gambar PNG (mendukung transparansi)
+        downloadBtn.addEventListener('click', function() {
+            const link = document.createElement('a');
+            link.download = 'gambar-jelas.png';
+            link.href = canvas.toDataURL('image/png'); // Format PNG wajib agar transparan tidak menjadi hitam
+            link.click();
+        });
+    </script>
+</body>
+</html>
