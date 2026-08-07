@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Avatar Engine - External Assets</title>
+
+<style>
+  :root {
+    --win-bg: #008080;
+    --win-panel: #c0c0c0;
+    --win-border-light: #ffffff;
+    --win-border-dark: #808080;
+    --win-border-darker: #000000;
+    --win-title: #000080;
+    --win-title-text: #ffffff;
+  }
+
+  * { box-sizing: border-box; font-family: 'MS Sans Serif', Tahoma, sans-serif; margin: 0; padding: 0; }
+
+  body {
+    background-color: var(--win-bg);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    padding: 20px;
+  }
+
+  .window {
+    background: var(--win-panel);
+    width: 100%;
+    max-width: 450px;
+    border-top: 2px solid var(--win-border-light);
+    border-left: 2px solid var(--win-border-light);
+    border-right: 2px solid var(--win-border-darker);
+    border-bottom: 2px solid var(--win-border-darker);
+    padding: 2px;
+    box-shadow: 2px 2px 0 rgba(0,0,0,0.5);
+    display: flex;
+    flex-direction: column;
+  }
+
+  .title-bar {
+    background: var(--win-title);
+    color: var(--win-title-text);
+    padding: 4px 6px;
+    font-weight: bold;
+    font-size: 14px;
+    margin-bottom: 10px;
+  }
+
+  .content {
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .canvas-container {
+    border-top: 2px solid var(--win-border-dark);
+    border-left: 2px solid var(--win-border-dark);
+    border-right: 2px solid var(--win-border-light);
+    border-bottom: 2px solid var(--win-border-light);
+    background: #fff;
+    padding: 2px;
+    margin-bottom: 15px;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+  }
+
+  canvas {
+    width: 100%;
+    max-width: 256px;
+    height: auto;
+    display: block;
+    image-rendering: pixelated;
+  }
+
+  .status-bar {
+    margin-top: 10px;
+    padding: 4px;
+    border-top: 2px solid var(--win-border-dark);
+    border-left: 2px solid var(--win-border-dark);
+    border-right: 2px solid var(--win-border-light);
+    border-bottom: 2px solid var(--win-border-light);
+    font-size: 12px;
+    width: 100%;
+    background: var(--win-panel);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .controls-section {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+  }
+
+  .input-group {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+  }
+
+  .input-group label {
+    font-size: 13px;
+    white-space: nowrap;
+  }
+
+  .seed-input {
+    flex-grow: 1;
+    min-width: 0;
+    width: 100%;
+    border-top: 2px solid var(--win-border-dark);
+    border-left: 2px solid var(--win-border-dark);
+    border-right: 2px solid var(--win-border-light);
+    border-bottom: 2px solid var(--win-border-light);
+    padding: 4px;
+    font-size: 14px;
+    outline: none;
+  }
+
+  .actions {
+    display: flex;
+    gap: 10px;
+    width: 100%;
+  }
+  
+  button {
+    flex: 1;
+    padding: 6px;
+    font-size: 13px;
+    background: var(--win-panel);
+    border-top: 2px solid var(--win-border-light);
+    border-left: 2px solid var(--win-border-light);
+    border-right: 2px solid var(--win-border-darker);
+    border-bottom: 2px solid var(--win-border-darker);
+    cursor: pointer;
+  }
+  
+  button:active {
+    border-top: 2px solid var(--win-border-darker);
+    border-left: 2px solid var(--win-border-darker);
+    border-right: 2px solid var(--win-border-light);
+    border-bottom: 2px solid var(--win-border-light);
+    padding-top: 7px;
+    padding-left: 7px;
+    padding-bottom: 5px;
+    padding-right: 5px;
+  }
+</style>
+</head>
+<body>
+
+<div class="window">
+  <div class="title-bar">
+    <span>Avatar Engine - Image Mode</span>
+  </div>
+
+  <div class="content">
+    <div class="canvas-container">
+      <canvas id="canvas" width="256" height="256"></canvas>
+    </div>
+
+    <div class="controls-section">
+      <div class="input-group">
+        <label for="seedInput">Identifier:</label>
+        <input type="text" id="seedInput" class="seed-input" placeholder="Ketik nama..." autocomplete="off">
+      </div>
+      <div class="actions">
+        <button onclick="generateRandom()">Acak Baru</button>
+        <button onclick="downloadImage()">Simpan (HD)</button>
+      </div>
+    </div>
+    
+    <div id="statusInfo" class="status-bar">Memuat aset eksternal...</div>
+  </div>
+</div>
+
+<script>
+const canvas = document.getElementById("canvas");
+const ctx = canvas.getContext("2d");
+const seedInput = document.getElementById("seedInput");
+
+// Kanvas rahasia untuk memproses warna & bentuk
+const offCanvas = document.createElement("canvas");
+offCanvas.width = 256;
+offCanvas.height = 256;
+const offCtx = offCanvas.getContext("2d");
+
+const TOTAL_TEXTURES = 29;
+let loadedTextures = [];
+let loadedParts = {
+  body: [],
+  eyes: [],
+  hair_b: [],
+  hair_f_female: [],
+  hair_f_male: [],
+  head: [],
+  mouth: []
+};
+
+// Daftar file berdasarkan struktur folder yang disediakan dengan update terbaru
+const assetList = {
+  body: ['body/body_01.png', 'body/body_02.png', 'body/body_03.png', 'body/body_04.png', 'body/body_05.png', 'body/body_06.png'],
+  eyes: ['eyes/eyes_01.png', 'eyes/eyes_02.png', 'eyes/eyes_03.png', 'eyes/eyes_04.png', 'eyes/eyes_05.png', 'eyes/eyes_06.png', 'eyes/eyes_07.png', 'eyes/eyes_08.png'],
+  hair_b: [
+    'hair_b/hrb_01.png', 'hair_b/hrb_02.png', 'hair_b/hrb_03.png', 'hair_b/hrb_04.png',
+    'hair_b/hrb_05.png', 'hair_b/hrb_06.png', 'hair_b/hrb_07.png'
+  ],
+  hair_f_female: [
+    'hair_f/female/hrf_01.png', 'hair_f/female/hrf_02.png', 'hair_f/female/hrf_03.png', 'hair_f/female/hrf_04.png',
+    'hair_f/female/hrf_05.png', 'hair_f/female/hrf_06.png', 'hair_f/female/hrf_07.png', 'hair_f/female/hrf_08.png',
+    'hair_f/female/hrf_09.png', 'hair_f/female/hrf_10.png', 'hair_f/female/hrf_11.png', 'hair_f/female/hrf_12.png',
+    'hair_f/female/hrf_13.png', 'hair_f/female/hrf_14.png', 'hair_f/female/hrf_15.png', 'hair_f/female/hrf_16.png',
+    'hair_f/female/hrf_17.png'
+  ],
+  hair_f_male: [
+    'hair_f/male/hrf_01.png', 'hair_f/male/hrf_02.png', 'hair_f/male/hrf_03.png', 'hair_f/male/hrf_04.png',
+    'hair_f/male/hrf_05.png', 'hair_f/male/hrf_06.png', 'hair_f/male/hrf_07.png', 'hair_f/male/hrf_08.png',
+    'hair_f/male/hrf_09.png', 'hair_f/male/hrf_10.png', 'hair_f/male/hrf_11.png', 'hair_f/male/hrf_12.png',
+    'hair_f/male/hrf_13.png'
+  ],
+  head: ['head/head.png'],
+  // Update: 31 Model Mulut
+  mouth: [
+    'mouth/mouth_01.png', 'mouth/mouth_02.png', 'mouth/mouth_03.png', 'mouth/mouth_04.png', 'mouth/mouth_05.png', 
+    'mouth/mouth_06.png', 'mouth/mouth_07.png', 'mouth/mouth_08.png', 'mouth/mouth_09.png', 'mouth/mouth_10.png',
+    'mouth/mouth_11.png', 'mouth/mouth_12.png', 'mouth/mouth_13.png', 'mouth/mouth_14.png', 'mouth/mouth_15.png',
+    'mouth/mouth_16.png', 'mouth/mouth_17.png', 'mouth/mouth_18.png', 'mouth/mouth_19.png', 'mouth/mouth_20.png',
+    'mouth/mouth_21.png', 'mouth/mouth_22.png', 'mouth/mouth_23.png', 'mouth/mouth_24.png', 'mouth/mouth_25.png',
+    'mouth/mouth_26.png', 'mouth/mouth_27.png', 'mouth/mouth_28.png', 'mouth/mouth_29.png', 'mouth/mouth_30.png',
+    'mouth/mouth_31.png'
+  ]
+};
+
+const loadImg = (url) => new Promise((resolve) => { 
+  const img = new Image(); 
+  img.onload = () => resolve(img); 
+  img.onerror = () => {
+    // Fallback jika file tidak ditemukan, buat canvas transparan kosong
+    const canvasFallback = document.createElement("canvas");
+    canvasFallback.width = 256; canvasFallback.height = 256;
+    resolve(canvasFallback);
+  };
+  img.src = url; 
+});
+
+async function loadAssets() {
+  document.getElementById("statusInfo").textContent = "Memuat tekstur (img_01 - img_29)...";
+  for (let i = 1; i <= TOTAL_TEXTURES; i++) {
+    let num = i.toString().padStart(2, '0');
+    let imgElement = await loadImg(`img_${num}.png`); 
+    loadedTextures.push(ctx.createPattern(imgElement, "repeat"));
+  }
+
+  document.getElementById("statusInfo").textContent = "Memuat parts eksternal...";
+  for (const category in assetList) {
+    for (const url of assetList[category]) {
+      const img = await loadImg(url);
+      loadedParts[category].push(img);
+    }
+  }
+}
+
+// --- KONFIGURASI CORE & PALET ---
+const palettes = {
+  skin: [
+    { base: "#ffead1", dark: "#eac09d", blush: "#ffc4b8" },
+    { base: "#fde2cd", dark: "#d9ae87", blush: "#fba9a1" },
+    { base: "#e2b896", dark: "#bf8e6a", blush: "#d28174" },
+    { base: "#c8946e", dark: "#a36c4b", blush: "#a66155" },
+    { base: "#a8e6cf", dark: "#74c69d", blush: "#dcedc1" }, 
+    { base: "#cad2c5", dark: "#84a98c", blush: "#a3b18a" }, 
+    { base: "#9bf6ff", dark: "#48cae4", blush: "#caf0f8" }, 
+    { base: "#e0b1cb", dark: "#9f86c0", blush: "#f3d2c1" }  
+  ],
+  themes: [
+    { main: "#1e293b", sec: "#0f172a", hair: "#111827", hDark: "#030712" }, 
+    { main: "#3b82f6", sec: "#1d4ed8", hair: "#3f2814", hDark: "#241408" }, 
+    { main: "#10b981", sec: "#047857", hair: "#d97706", hDark: "#b45309" }, 
+    { main: "#f43f5e", sec: "#be123c", hair: "#7e22ce", hDark: "#581c87" }, 
+    { main: "#f472b6", sec: "#db2777", hair: "#f59e0b", hDark: "#d97706" }, 
+    { main: "#fb923c", sec: "#c2410c", hair: "#475569", hDark: "#334155" }, 
+    { main: "#2dd4bf", sec: "#0f766e", hair: "#be185d", hDark: "#831843" }, 
+    { main: "#818cf8", sec: "#4f46e5", hair: "#e11d48", hDark: "#9f1239" }  
+  ]
+};
+
+function invertHexColor(hex) {
+  hex = hex.replace('#', '');
+  let r = (255 - parseInt(hex.substring(0, 2), 16)).toString(16).padStart(2, '0');
+  let g = (255 - parseInt(hex.substring(2, 4), 16)).toString(16).padStart(2, '0');
+  let b = (255 - parseInt(hex.substring(4, 6), 16)).toString(16).padStart(2, '0');
+  return '#' + r + g + b;
+}
+
+class PRNG {
+  constructor(seedStr) { this.seed = this.hashString(seedStr); }
+  hashString(str) {
+    let h = 2166136261;
+    for(let i = 0; i < str.length; i++) {
+      h ^= str.charCodeAt(i);
+      h += (h << 1) + (h << 4) + (h << 7) + (h << 8) + (h << 24);
+    }
+    return h >>> 0;
+  }
+  next() {
+    this.seed = (this.seed * 1664525 + 1013904223) >>> 0;
+    return this.seed / 4294967296;
+  }
+}
+
+let currentConfig = {};
+let currentSeedName = "";
+
+function drawPart(imgElement, color, texture = null) {
+  if (!imgElement) return;
+
+  offCtx.clearRect(0, 0, 256, 256);
+
+  offCtx.globalCompositeOperation = 'source-over';
+  offCtx.fillStyle = color || "#ffffff";
+  offCtx.fillRect(0, 0, 256, 256);
+
+  if (texture) {
+    offCtx.fillStyle = texture;
+    offCtx.globalAlpha = 0.55;
+    offCtx.fillRect(0, 0, 256, 256);
+    offCtx.globalAlpha = 1.0;
+  }
+
+  offCtx.globalCompositeOperation = 'destination-in';
+  offCtx.drawImage(imgElement, 0, 0, 256, 256);
+
+  offCtx.globalCompositeOperation = 'multiply';
+  offCtx.drawImage(imgElement, 0, 0, 256, 256);
+
+  ctx.drawImage(offCanvas, 0, 0, canvas.width, canvas.height);
+}
+
+function drawAvatar() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  const skin = palettes.skin[currentConfig.skinIdx];
+  const theme = palettes.themes[currentConfig.themeIdx];
+  const fabricTex = loadedTextures.length ? loadedTextures[currentConfig.texFabricIdx] : null;
+  const hairTex = loadedTextures.length ? loadedTextures[currentConfig.texHairIdx] : null;
+  const paperTex = loadedTextures.length ? loadedTextures[currentConfig.texPaperIdx] : null;
+
+  // Latar Belakang
+  const bgInvMain = invertHexColor(theme.main);
+  const bgInvSec = invertHexColor(theme.sec);
+  const bgGrd = ctx.createRadialGradient(128, 128, 0, 128, 128, 200);
+  bgGrd.addColorStop(0, bgInvMain); bgGrd.addColorStop(1, bgInvSec);
+  ctx.fillStyle = bgGrd; 
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  
+  if (paperTex) {
+    ctx.globalAlpha = 0.35; 
+    ctx.fillStyle = paperTex; 
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.globalAlpha = 1.0;
+  }
+
+  // --- URUTAN RENDERING ---
+  
+  // 1. Rambut Belakang (Hanya digambar jika gender female dan menggunakan warna hDark agar lebih gelap)
+  if(currentConfig.hairBIdx !== -1 && loadedParts.hair_b[currentConfig.hairBIdx]) {
+    drawPart(loadedParts.hair_b[currentConfig.hairBIdx], theme.hDark, hairTex);
+  }
+
+  // 2. Kepala
+  if(loadedParts.head[0]) {
+    drawPart(loadedParts.head[0], skin.base);
+  }
+
+  // 3. Badan/Baju
+  if(loadedParts.body[currentConfig.bodyIdx]) {
+    drawPart(loadedParts.body[currentConfig.bodyIdx], theme.main, fabricTex);
+  }
+
+  // 4. Mata
+  if(loadedParts.eyes[currentConfig.eyeIdx]) {
+    drawPart(loadedParts.eyes[currentConfig.eyeIdx], "#ffffff");
+  }
+
+  // 5. Mulut
+  if(loadedParts.mouth[currentConfig.mouthIdx]) {
+    drawPart(loadedParts.mouth[currentConfig.mouthIdx], "#ffffff");
+  }
+
+  // 6. Rambut Depan (Sesuai gender yang didapatkan di seed)
+  if (currentConfig.isFemale) {
+    if(loadedParts.hair_f_female[currentConfig.hairFIdx]) {
+      drawPart(loadedParts.hair_f_female[currentConfig.hairFIdx], theme.hair, hairTex);
+    }
+  } else {
+    if(loadedParts.hair_f_male[currentConfig.hairFIdx]) {
+      drawPart(loadedParts.hair_f_male[currentConfig.hairFIdx], theme.hair, hairTex);
+    }
+  }
+
+  document.getElementById("statusInfo").textContent = `ID: ${currentSeedName}`;
+}
+
+function applySeed(seedStr) {
+  if (!seedStr) seedStr = "Anonim"; 
+  currentSeedName = seedStr;
+  
+  if (document.activeElement !== seedInput) { seedInput.value = seedStr; }
+  
+  const rng = new PRNG(seedStr);
+  
+  // Penentuan Gender (Peluang 50%)
+  const isFemale = rng.next() > 0.5;
+  
+  let hairBIndex = -1;
+  let hairFIndex = 0;
+
+  if (isFemale) {
+    // Jika Female, gunakan rambut belakang dan rambut depan female
+    hairBIndex = Math.floor(rng.next() * Math.max(1, loadedParts.hair_b.length));
+    hairFIndex = Math.floor(rng.next() * Math.max(1, loadedParts.hair_f_female.length));
+  } else {
+    // Jika Male, rambut belakang ditiadakan (-1) dan gunakan rambut depan male
+    hairBIndex = -1;
+    hairFIndex = Math.floor(rng.next() * Math.max(1, loadedParts.hair_f_male.length));
+  }
+
+  currentConfig = {
+    isFemale: isFemale,
+    skinIdx: Math.floor(rng.next() * palettes.skin.length),
+    themeIdx: Math.floor(rng.next() * palettes.themes.length),
+    bodyIdx: Math.floor(rng.next() * Math.max(1, loadedParts.body.length)),
+    eyeIdx: Math.floor(rng.next() * Math.max(1, loadedParts.eyes.length)),
+    mouthIdx: Math.floor(rng.next() * Math.max(1, loadedParts.mouth.length)),
+    hairBIdx: hairBIndex,
+    hairFIdx: hairFIndex,
+    texFabricIdx: Math.floor(rng.next() * Math.max(1, TOTAL_TEXTURES)),
+    texHairIdx: Math.floor(rng.next() * Math.max(1, TOTAL_TEXTURES)),
+    texPaperIdx: Math.floor(rng.next() * Math.max(1, TOTAL_TEXTURES))
+  };
+
+  drawAvatar();
+}
+
+seedInput.addEventListener("input", (e) => { applySeed(e.target.value); });
+
+function generateRandom() {
+  const kons = "bcdfghjklmnprstvwxyz", voks = "aeiou";
+  let name = "";
+  for(let i=0; i<6; i++) name += i%2===0 ? kons[Math.floor(Math.random()*kons.length)] : voks[Math.floor(Math.random()*voks.length)];
+  name = name.charAt(0).toUpperCase() + name.slice(1) + Math.floor(10+Math.random()*89);
+  applySeed(name);
+}
+
+function downloadImage() {
+  const name = currentSeedName || 'Avatar_Engine';
+  const link = document.createElement("a");
+  link.download = `${name}_HD.png`;
+  
+  const hdCanvas = document.createElement("canvas");
+  hdCanvas.width = 1024;
+  hdCanvas.height = 1024;
+  const hdCtx = hdCanvas.getContext("2d");
+  hdCtx.imageSmoothingEnabled = false; 
+  hdCtx.drawImage(canvas, 0, 0, 1024, 1024);
+  
+  link.href = hdCanvas.toDataURL("image/png", 1.0);
+  link.click();
+}
+
+window.onload = async () => {
+  await loadAssets(); 
+  generateRandom();
+};
+</script>
+</body>
+</html>
