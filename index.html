@@ -3,273 +3,364 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Avatar Engine - External Assets & Batch</title>
-<!-- Menambahkan library JSZip untuk kompresi file batch -->
+<title>Avatar Studio</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 
 <style>
   :root {
-    --win-bg: #008080;
-    --win-panel: #c0c0c0;
-    --win-border-light: #ffffff;
-    --win-border-dark: #808080;
-    --win-border-darker: #000000;
-    --win-title: #000080;
-    --win-title-text: #ffffff;
+    --bg-main: #f0f2f5;
+    --surface: #ffffff;
+    --text-dark: #1c1e21;
+    --text-muted: #65676b;
+    --border: #e4e6eb;
+    --primary: #1877f2;
+    --primary-hover: #166fe5;
+    --secondary: #e4e6eb;
+    --secondary-hover: #d8dadf;
+    --radius-lg: 24px;
+    --radius-md: 12px;
+    --radius-sm: 8px;
   }
 
   * { 
     box-sizing: border-box; 
-    font-family: 'MS Sans Serif', Tahoma, sans-serif; 
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
     margin: 0; 
     padding: 0; 
+    /* Mencegah seleksi teks dan pop-up tekan lama */
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    -webkit-touch-callout: none; 
+  }
+
+  /* Mengizinkan seleksi teks hanya pada input agar bisa diketik */
+  input[type="text"], input[type="number"] {
+    -webkit-user-select: text;
+    -moz-user-select: text;
+    -ms-user-select: text;
+    user-select: text;
   }
 
   body {
-    background-color: var(--win-bg);
+    background-color: var(--bg-main);
     display: flex;
     justify-content: center;
     align-items: center;
     min-height: 100vh;
-    padding: 15px; /* Padding ditingkatkan untuk mobile */
+    padding: 20px;
   }
 
-  .window {
-    background: var(--win-panel);
+  .app-card {
+    background: var(--surface);
     width: 100%;
-    max-width: 450px;
-    border-top: 2px solid var(--win-border-light);
-    border-left: 2px solid var(--win-border-light);
-    border-right: 2px solid var(--win-border-darker);
-    border-bottom: 2px solid var(--win-border-darker);
-    padding: 3px;
-    box-shadow: 3px 3px 0 rgba(0,0,0,0.5);
+    max-width: 420px;
+    border-radius: var(--radius-lg);
+    box-shadow: 0 8px 30px rgba(0,0,0,0.06);
+    overflow: hidden;
     display: flex;
     flex-direction: column;
   }
 
-  .title-bar {
-    background: var(--win-title);
-    color: var(--win-title-text);
-    padding: 6px 8px; /* Disesuaikan agar lebih mudah disentuh */
-    font-weight: bold;
-    font-size: 14px;
-    margin-bottom: 12px;
-    display: flex;
-    align-items: center;
-    user-select: none;
+  .app-header {
+    text-align: center;
+    padding: 24px 20px 10px;
   }
 
-  .content {
-    padding: 10px;
+  .app-title {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--text-dark);
+    letter-spacing: -0.5px;
+  }
+
+  .canvas-section {
     display: flex;
     flex-direction: column;
     align-items: center;
-    width: 100%;
+    padding: 20px;
   }
 
-  .canvas-container {
-    border-top: 2px solid var(--win-border-dark);
-    border-left: 2px solid var(--win-border-dark);
-    border-right: 2px solid var(--win-border-light);
-    border-bottom: 2px solid var(--win-border-light);
-    background: #fff;
-    padding: 2px;
-    margin-bottom: 20px;
-    width: 100%;
-    max-width: 256px;
+  .canvas-wrapper {
+    width: 180px;
+    height: 180px;
+    border-radius: 50%;
+    background: var(--bg-main);
     display: flex;
     justify-content: center;
+    align-items: center;
+    overflow: hidden;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1) inset, 0 0 0 4px var(--surface), 0 0 0 6px var(--border);
+    margin-bottom: 16px;
   }
-
+  
   canvas {
-    width: 100%;
+    width: 115%; /* Sedikit di-zoom agar pas di lingkaran */
     height: auto;
     display: block;
     image-rendering: pixelated;
+    pointer-events: none; /* Mencegah interaksi langsung pada gambar */
+  }
+
+  .username-display {
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--text-dark);
+    margin-bottom: 4px;
+  }
+
+  .status-badge {
+    font-size: 12px;
+    color: var(--text-muted);
+    background: var(--bg-main);
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-weight: 500;
   }
 
   .controls-section {
-    width: 100%;
+    padding: 0 24px 24px;
     display: flex;
     flex-direction: column;
-    gap: 15px;
+    gap: 20px;
   }
 
   .input-group {
     display: flex;
-    align-items: center;
-    gap: 10px;
-    width: 100%;
+    flex-direction: column;
+    gap: 8px;
   }
 
-  .input-group label {
+  .input-label {
     font-size: 13px;
-    white-space: nowrap;
-    min-width: 70px;
-    font-weight: bold;
+    font-weight: 600;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
   }
 
-  /* Elemen Input */
-  .seed-input {
-    flex-grow: 1;
+  .input-field {
     width: 100%;
-    border-top: 2px solid var(--win-border-dark);
-    border-left: 2px solid var(--win-border-dark);
-    border-right: 2px solid var(--win-border-light);
-    border-bottom: 2px solid var(--win-border-light);
-    padding: 8px; /* Padding lebih besar untuk jari */
-    font-size: 14px;
+    padding: 14px 16px;
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius-md);
+    font-size: 15px;
+    font-weight: 500;
     outline: none;
-    background: #fff;
+    color: var(--text-dark);
+    transition: all 0.2s ease;
   }
 
-  /* Custom Number Input UI */
-  .custom-number-wrapper {
+  .input-field:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(24, 119, 242, 0.15);
+  }
+
+  .action-row {
     display: flex;
-    width: 100%;
-    height: 34px;
+    gap: 12px;
   }
 
-  .custom-number-wrapper button {
-    flex: 0 0 40px;
+  .btn {
+    flex: 1;
+    padding: 14px;
+    border-radius: var(--radius-md);
+    border: none;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .btn-primary {
+    background: var(--primary);
+    color: white;
+  }
+  .btn-primary:active { background: var(--primary-hover); transform: scale(0.98); }
+
+  .btn-secondary {
+    background: var(--secondary);
+    color: var(--text-dark);
+  }
+  .btn-secondary:active { background: var(--secondary-hover); transform: scale(0.98); }
+
+  .batch-box {
+    background: #f8f9fa;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    padding: 16px;
+  }
+
+  .stepper {
+    display: flex;
+    align-items: center;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    overflow: hidden;
+    height: 40px;
+    margin-bottom: 12px;
+  }
+
+  .stepper button {
+    width: 40px;
+    height: 100%;
+    background: var(--secondary);
+    border: none;
     font-size: 18px;
     font-weight: bold;
-    padding: 0;
+    color: var(--text-dark);
+    cursor: pointer;
+  }
+  .stepper button:active { background: var(--secondary-hover); }
+
+  .stepper input {
+    flex: 1;
+    height: 100%;
+    border: none;
+    text-align: center;
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text-dark);
+    pointer-events: none;
+  }
+
+  /* Modal Preview */
+  .modal-overlay {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.4);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 100;
+    padding: 20px;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+  
+  .modal-overlay.active {
+    opacity: 1;
+    display: flex;
+  }
+
+  .modal-content {
+    background: var(--surface);
+    width: 100%;
+    max-width: 400px;
+    border-radius: var(--radius-lg);
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+    transform: translateY(20px);
+    transition: transform 0.3s ease;
+  }
+
+  .modal-overlay.active .modal-content {
+    transform: translateY(0);
+  }
+
+  .modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+  }
+
+  .modal-title { font-size: 18px; font-weight: 700; color: var(--text-dark); }
+  
+  .close-btn { 
+    background: var(--secondary); 
+    border: none; 
+    width: 32px; 
+    height: 32px; 
+    border-radius: 50%; 
+    font-size: 18px; 
+    cursor: pointer; 
+    color: var(--text-dark);
     display: flex;
     justify-content: center;
     align-items: center;
   }
 
-  .custom-number-wrapper input {
-    flex: 1;
+  .preview-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
+    gap: 12px;
+    max-height: 50vh;
+    overflow-y: auto;
+    margin-bottom: 20px;
+    padding-right: 4px;
+  }
+
+  .preview-grid img {
     width: 100%;
-    text-align: center;
-    font-size: 14px;
-    border: none;
-    border-top: 2px solid var(--win-border-dark);
-    border-left: 2px solid var(--win-border-dark);
-    border-right: 2px solid var(--win-border-light);
-    border-bottom: 2px solid var(--win-border-light);
-    outline: none;
-    border-radius: 0;
-    background: #fff;
+    aspect-ratio: 1;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid var(--border);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
   }
 
-  /* Menghilangkan spinner bawaan browser */
-  input[type="number"]::-webkit-inner-spin-button,
-  input[type="number"]::-webkit-outer-spin-button {
-    -webkit-appearance: none;
-    margin: 0;
-  }
-  input[type="number"] {
-    -moz-appearance: textfield;
-  }
-
-  .actions {
-    display: flex;
-    gap: 10px;
-    width: 100%;
-    flex-wrap: wrap; /* Agar membungkus jika layar terlalu kecil */
-  }
-  
-  button {
-    flex: 1;
-    min-width: 120px;
-    padding: 10px 8px; /* Area sentuh yang lebih nyaman */
-    font-size: 13px;
-    background: var(--win-panel);
-    border-top: 2px solid var(--win-border-light);
-    border-left: 2px solid var(--win-border-light);
-    border-right: 2px solid var(--win-border-darker);
-    border-bottom: 2px solid var(--win-border-darker);
-    cursor: pointer;
-    user-select: none;
-  }
-  
-  button:active {
-    border-top: 2px solid var(--win-border-darker);
-    border-left: 2px solid var(--win-border-darker);
-    border-right: 2px solid var(--win-border-light);
-    border-bottom: 2px solid var(--win-border-light);
-    padding-top: 11px;
-    padding-left: 9px;
-    padding-bottom: 9px;
-    padding-right: 7px;
-  }
-
-  .status-bar {
-    margin-top: 15px;
-    padding: 6px;
-    border-top: 2px solid var(--win-border-dark);
-    border-left: 2px solid var(--win-border-dark);
-    border-right: 2px solid var(--win-border-light);
-    border-bottom: 2px solid var(--win-border-light);
-    font-size: 12px;
-    width: 100%;
-    background: var(--win-panel);
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-
-  /* Penyesuaian Responsif untuk Mobile */
-  @media (max-width: 380px) {
-    .input-group {
-      flex-direction: column;
-      align-items: flex-start;
-      gap: 5px;
-    }
-    .input-group label {
-      margin-bottom: 2px;
-    }
-    .actions {
-      flex-direction: column;
-    }
-    button {
-      width: 100%;
-    }
-  }
 </style>
 </head>
 <body>
 
-<div class="window">
-  <div class="title-bar">
-    <span>Avatar Engine - Batch Mode</span>
+<div class="app-card">
+  <div class="app-header">
+    <div class="app-title">Avatar Studio</div>
   </div>
 
-  <div class="content">
-    <div class="canvas-container">
+  <div class="canvas-section">
+    <div class="canvas-wrapper">
       <canvas id="canvas" width="256" height="256"></canvas>
     </div>
+    <div class="username-display" id="displayUsername">@memuat...</div>
+    <div class="status-badge" id="statusInfo">Menyiapkan aset...</div>
+  </div>
 
-    <div class="controls-section">
-      <div class="input-group">
-        <label for="seedInput">Identifier:</label>
-        <input type="text" id="seedInput" class="seed-input" placeholder="Ketik nama..." autocomplete="off">
-      </div>
-      
-      <!-- Kontrol Batch Kustom (Mengganti Bawaan) -->
-      <div class="input-group">
-        <label for="batchCount">Jumlah:</label>
-        <div class="custom-number-wrapper">
-          <button type="button" onclick="updateBatchCount(-1)">-</button>
-          <input type="number" id="batchCount" value="5" min="2" max="50" readonly>
-          <button type="button" onclick="updateBatchCount(1)">+</button>
-        </div>
-      </div>
-
-      <div class="actions">
-        <button onclick="generateRandom()">Acak 1x</button>
-        <button onclick="downloadImage()">Simpan 1x</button>
-      </div>
-      <div class="actions">
-        <button onclick="downloadBatch()" style="font-weight: bold; padding: 12px;">Generasi & Download Batch (.zip)</button>
-      </div>
+  <div class="controls-section">
+    <div class="input-group">
+      <label class="input-label">Identifier (Seed)</label>
+      <input type="text" id="seedInput" class="input-field" placeholder="Ketik nama atau ID..." autocomplete="off">
     </div>
-    
-    <div id="statusInfo" class="status-bar">Memuat aset eksternal...</div>
+
+    <div class="action-row">
+      <button class="btn btn-secondary" onclick="generateRandom()">🔄 Acak</button>
+      <button class="btn btn-secondary" onclick="downloadImage()">💾 Simpan (JPG)</button>
+    </div>
+
+    <div class="batch-box">
+      <label class="input-label" style="display:block; margin-bottom: 10px;">Mode Batch (Maks 10)</label>
+      <div class="stepper">
+        <button type="button" onclick="updateBatchCount(-1)">-</button>
+        <input type="number" id="batchCount" value="5" min="2" max="10" readonly>
+        <button type="button" onclick="updateBatchCount(1)">+</button>
+      </div>
+      <button class="btn btn-primary" style="width: 100%;" onclick="prepareBatch()">Lihat Preview & Download ZIP</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Pratinjau Batch -->
+<div class="modal-overlay" id="previewModal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <div class="modal-title">Pratinjau Batch</div>
+      <button class="close-btn" onclick="closePreview()">&times;</button>
+    </div>
+    <div class="preview-grid" id="previewGrid"></div>
+    <button class="btn btn-primary" id="btnDownloadZip" onclick="downloadBatchZip()" style="width: 100%;">
+      Mulai Download ZIP
+    </button>
   </div>
 </div>
 
@@ -277,6 +368,8 @@
 const canvas = document.getElementById("canvas");
 const ctx = canvas.getContext("2d");
 const seedInput = document.getElementById("seedInput");
+const displayUsername = document.getElementById("displayUsername");
+const statusInfo = document.getElementById("statusInfo");
 
 // Kanvas rahasia untuk memproses warna & bentuk
 const offCanvas = document.createElement("canvas");
@@ -286,54 +379,23 @@ const offCtx = offCanvas.getContext("2d");
 
 const TOTAL_TEXTURES = 29;
 let loadedTextures = [];
-let loadedParts = {
-  body: [],
-  eyes: [],
-  hair_b: [],
-  hair_f_female: [],
-  hair_f_male: [],
-  head: [],
-  mouth: []
-};
+let loadedParts = { body: [], eyes: [], hair_b: [], hair_f_female: [], hair_f_male: [], head: [], mouth: [] };
 
-// Daftar file berdasarkan struktur folder
+// Daftar file
 const assetList = {
   body: ['body/body_01.png', 'body/body_02.png', 'body/body_03.png', 'body/body_04.png', 'body/body_05.png', 'body/body_06.png'],
   eyes: ['eyes/eyes_01.png', 'eyes/eyes_02.png', 'eyes/eyes_03.png', 'eyes/eyes_04.png', 'eyes/eyes_05.png', 'eyes/eyes_06.png', 'eyes/eyes_07.png', 'eyes/eyes_08.png'],
-  hair_b: [
-    'hair_b/hrb_01.png', 'hair_b/hrb_02.png', 'hair_b/hrb_03.png', 'hair_b/hrb_04.png',
-    'hair_b/hrb_05.png', 'hair_b/hrb_06.png', 'hair_b/hrb_07.png'
-  ],
-  hair_f_female: [
-    'hair_f/female/hrf_01.png', 'hair_f/female/hrf_02.png', 'hair_f/female/hrf_03.png', 'hair_f/female/hrf_04.png',
-    'hair_f/female/hrf_05.png', 'hair_f/female/hrf_06.png', 'hair_f/female/hrf_07.png', 'hair_f/female/hrf_08.png',
-    'hair_f/female/hrf_09.png', 'hair_f/female/hrf_10.png', 'hair_f/female/hrf_11.png', 'hair_f/female/hrf_12.png',
-    'hair_f/female/hrf_13.png', 'hair_f/female/hrf_14.png', 'hair_f/female/hrf_15.png', 'hair_f/female/hrf_16.png',
-    'hair_f/female/hrf_17.png'
-  ],
-  hair_f_male: [
-    'hair_f/male/hrf_01.png', 'hair_f/male/hrf_02.png', 'hair_f/male/hrf_03.png', 'hair_f/male/hrf_04.png',
-    'hair_f/male/hrf_05.png', 'hair_f/male/hrf_06.png', 'hair_f/male/hrf_07.png', 'hair_f/male/hrf_08.png',
-    'hair_f/male/hrf_09.png', 'hair_f/male/hrf_10.png', 'hair_f/male/hrf_11.png', 'hair_f/male/hrf_12.png',
-    'hair_f/male/hrf_13.png'
-  ],
+  hair_b: ['hair_b/hrb_01.png', 'hair_b/hrb_02.png', 'hair_b/hrb_03.png', 'hair_b/hrb_04.png', 'hair_b/hrb_05.png', 'hair_b/hrb_06.png', 'hair_b/hrb_07.png'],
+  hair_f_female: ['hair_f/female/hrf_01.png', 'hair_f/female/hrf_02.png', 'hair_f/female/hrf_03.png', 'hair_f/female/hrf_04.png', 'hair_f/female/hrf_05.png', 'hair_f/female/hrf_06.png', 'hair_f/female/hrf_07.png', 'hair_f/female/hrf_08.png', 'hair_f/female/hrf_09.png', 'hair_f/female/hrf_10.png', 'hair_f/female/hrf_11.png', 'hair_f/female/hrf_12.png', 'hair_f/female/hrf_13.png', 'hair_f/female/hrf_14.png', 'hair_f/female/hrf_15.png', 'hair_f/female/hrf_16.png', 'hair_f/female/hrf_17.png'],
+  hair_f_male: ['hair_f/male/hrf_01.png', 'hair_f/male/hrf_02.png', 'hair_f/male/hrf_03.png', 'hair_f/male/hrf_04.png', 'hair_f/male/hrf_05.png', 'hair_f/male/hrf_06.png', 'hair_f/male/hrf_07.png', 'hair_f/male/hrf_08.png', 'hair_f/male/hrf_09.png', 'hair_f/male/hrf_10.png', 'hair_f/male/hrf_11.png', 'hair_f/male/hrf_12.png', 'hair_f/male/hrf_13.png'],
   head: ['head/head.png'],
-  mouth: [
-    'mouth/mouth_01.png', 'mouth/mouth_02.png', 'mouth/mouth_03.png', 'mouth/mouth_04.png', 'mouth/mouth_05.png', 
-    'mouth/mouth_06.png', 'mouth/mouth_07.png', 'mouth/mouth_08.png', 'mouth/mouth_09.png', 'mouth/mouth_10.png',
-    'mouth/mouth_11.png', 'mouth/mouth_12.png', 'mouth/mouth_13.png', 'mouth/mouth_14.png', 'mouth/mouth_15.png',
-    'mouth/mouth_16.png', 'mouth/mouth_17.png', 'mouth/mouth_18.png', 'mouth/mouth_19.png', 'mouth/mouth_20.png',
-    'mouth/mouth_21.png', 'mouth/mouth_22.png', 'mouth/mouth_23.png', 'mouth/mouth_24.png', 'mouth/mouth_25.png',
-    'mouth/mouth_26.png', 'mouth/mouth_27.png', 'mouth/mouth_28.png', 'mouth/mouth_29.png', 'mouth/mouth_30.png',
-    'mouth/mouth_31.png'
-  ]
+  mouth: ['mouth/mouth_01.png', 'mouth/mouth_02.png', 'mouth/mouth_03.png', 'mouth/mouth_04.png', 'mouth/mouth_05.png', 'mouth/mouth_06.png', 'mouth/mouth_07.png', 'mouth/mouth_08.png', 'mouth/mouth_09.png', 'mouth/mouth_10.png', 'mouth/mouth_11.png', 'mouth/mouth_12.png', 'mouth/mouth_13.png', 'mouth/mouth_14.png', 'mouth/mouth_15.png', 'mouth/mouth_16.png', 'mouth/mouth_17.png', 'mouth/mouth_18.png', 'mouth/mouth_19.png', 'mouth/mouth_20.png', 'mouth/mouth_21.png', 'mouth/mouth_22.png', 'mouth/mouth_23.png', 'mouth/mouth_24.png', 'mouth/mouth_25.png', 'mouth/mouth_26.png', 'mouth/mouth_27.png', 'mouth/mouth_28.png', 'mouth/mouth_29.png', 'mouth/mouth_30.png', 'mouth/mouth_31.png']
 };
 
 const loadImg = (url) => new Promise((resolve) => { 
   const img = new Image(); 
   img.onload = () => resolve(img); 
   img.onerror = () => {
-    // Fallback transparan jika gagal
     const canvasFallback = document.createElement("canvas");
     canvasFallback.width = 256; canvasFallback.height = 256;
     resolve(canvasFallback);
@@ -342,44 +404,26 @@ const loadImg = (url) => new Promise((resolve) => {
 });
 
 async function loadAssets() {
-  document.getElementById("statusInfo").textContent = "Memuat tekstur...";
+  statusInfo.textContent = "Memuat tekstur...";
   for (let i = 1; i <= TOTAL_TEXTURES; i++) {
     let num = i.toString().padStart(2, '0');
     let imgElement = await loadImg(`img_${num}.png`); 
     loadedTextures.push(ctx.createPattern(imgElement, "repeat"));
   }
-
-  document.getElementById("statusInfo").textContent = "Memuat parts eksternal...";
   for (const category in assetList) {
     for (const url of assetList[category]) {
       const img = await loadImg(url);
       loadedParts[category].push(img);
     }
   }
+  statusInfo.textContent = "Siap digunakan";
+  statusInfo.style.background = "#e6f4ea";
+  statusInfo.style.color = "#1e8e3e";
 }
 
-// Konfigurasi Palet
 const palettes = {
-  skin: [
-    { base: "#ffead1", dark: "#eac09d", blush: "#ffc4b8" },
-    { base: "#fde2cd", dark: "#d9ae87", blush: "#fba9a1" },
-    { base: "#e2b896", dark: "#bf8e6a", blush: "#d28174" },
-    { base: "#c8946e", dark: "#a36c4b", blush: "#a66155" },
-    { base: "#a8e6cf", dark: "#74c69d", blush: "#dcedc1" }, 
-    { base: "#cad2c5", dark: "#84a98c", blush: "#a3b18a" }, 
-    { base: "#9bf6ff", dark: "#48cae4", blush: "#caf0f8" }, 
-    { base: "#e0b1cb", dark: "#9f86c0", blush: "#f3d2c1" }  
-  ],
-  themes: [
-    { main: "#1e293b", sec: "#0f172a", hair: "#111827", hDark: "#030712" }, 
-    { main: "#3b82f6", sec: "#1d4ed8", hair: "#3f2814", hDark: "#241408" }, 
-    { main: "#10b981", sec: "#047857", hair: "#d97706", hDark: "#b45309" }, 
-    { main: "#f43f5e", sec: "#be123c", hair: "#7e22ce", hDark: "#581c87" }, 
-    { main: "#f472b6", sec: "#db2777", hair: "#f59e0b", hDark: "#d97706" }, 
-    { main: "#fb923c", sec: "#c2410c", hair: "#475569", hDark: "#334155" }, 
-    { main: "#2dd4bf", sec: "#0f766e", hair: "#be185d", hDark: "#831843" }, 
-    { main: "#818cf8", sec: "#4f46e5", hair: "#e11d48", hDark: "#9f1239" }  
-  ]
+  skin: [ { base: "#ffead1", dark: "#eac09d", blush: "#ffc4b8" }, { base: "#fde2cd", dark: "#d9ae87", blush: "#fba9a1" }, { base: "#e2b896", dark: "#bf8e6a", blush: "#d28174" }, { base: "#c8946e", dark: "#a36c4b", blush: "#a66155" }, { base: "#a8e6cf", dark: "#74c69d", blush: "#dcedc1" }, { base: "#cad2c5", dark: "#84a98c", blush: "#a3b18a" }, { base: "#9bf6ff", dark: "#48cae4", blush: "#caf0f8" }, { base: "#e0b1cb", dark: "#9f86c0", blush: "#f3d2c1" } ],
+  themes: [ { main: "#1e293b", sec: "#0f172a", hair: "#111827", hDark: "#030712" }, { main: "#3b82f6", sec: "#1d4ed8", hair: "#3f2814", hDark: "#241408" }, { main: "#10b981", sec: "#047857", hair: "#d97706", hDark: "#b45309" }, { main: "#f43f5e", sec: "#be123c", hair: "#7e22ce", hDark: "#581c87" }, { main: "#f472b6", sec: "#db2777", hair: "#f59e0b", hDark: "#d97706" }, { main: "#fb923c", sec: "#c2410c", hair: "#475569", hDark: "#334155" }, { main: "#2dd4bf", sec: "#0f766e", hair: "#be185d", hDark: "#831843" }, { main: "#818cf8", sec: "#4f46e5", hair: "#e11d48", hDark: "#9f1239" } ]
 };
 
 function invertHexColor(hex) {
@@ -394,24 +438,18 @@ class PRNG {
   constructor(seedStr) { this.seed = this.hashString(seedStr); }
   hashString(str) {
     let h = 2166136261;
-    for(let i = 0; i < str.length; i++) {
-      h ^= str.charCodeAt(i);
-      h += (h << 1) + (h << 4) + (h << 7) + (h << 8) + (h << 24);
-    }
+    for(let i = 0; i < str.length; i++) { h ^= str.charCodeAt(i); h += (h << 1) + (h << 4) + (h << 7) + (h << 8) + (h << 24); }
     return h >>> 0;
   }
-  next() {
-    this.seed = (this.seed * 1664525 + 1013904223) >>> 0;
-    return this.seed / 4294967296;
-  }
+  next() { this.seed = (this.seed * 1664525 + 1013904223) >>> 0; return this.seed / 4294967296; }
 }
 
 let currentConfig = {};
 let currentSeedName = "";
+let batchImagesData = [];
 
 function drawPart(imgElement, color, texture = null) {
   if (!imgElement) return;
-
   offCtx.clearRect(0, 0, 256, 256);
   offCtx.globalCompositeOperation = 'source-over';
   offCtx.fillStyle = color || "#ffffff";
@@ -426,16 +464,13 @@ function drawPart(imgElement, color, texture = null) {
 
   offCtx.globalCompositeOperation = 'destination-in';
   offCtx.drawImage(imgElement, 0, 0, 256, 256);
-
   offCtx.globalCompositeOperation = 'multiply';
   offCtx.drawImage(imgElement, 0, 0, 256, 256);
-
   ctx.drawImage(offCanvas, 0, 0, canvas.width, canvas.height);
 }
 
 function drawAvatar() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
-
   const skin = palettes.skin[currentConfig.skinIdx];
   const theme = palettes.themes[currentConfig.themeIdx];
   const fabricTex = loadedTextures.length ? loadedTextures[currentConfig.texFabricIdx] : null;
@@ -456,9 +491,7 @@ function drawAvatar() {
     ctx.globalAlpha = 1.0;
   }
   
-  if(currentConfig.hairBIdx !== -1 && loadedParts.hair_b[currentConfig.hairBIdx]) {
-    drawPart(loadedParts.hair_b[currentConfig.hairBIdx], theme.hDark, hairTex);
-  }
+  if(currentConfig.hairBIdx !== -1 && loadedParts.hair_b[currentConfig.hairBIdx]) drawPart(loadedParts.hair_b[currentConfig.hairBIdx], theme.hDark, hairTex);
   if(loadedParts.head[0]) drawPart(loadedParts.head[0], skin.base);
   if(loadedParts.body[currentConfig.bodyIdx]) drawPart(loadedParts.body[currentConfig.bodyIdx], theme.main, fabricTex);
   if(loadedParts.eyes[currentConfig.eyeIdx]) drawPart(loadedParts.eyes[currentConfig.eyeIdx], "#ffffff");
@@ -470,47 +503,40 @@ function drawAvatar() {
     if(loadedParts.hair_f_male[currentConfig.hairFIdx]) drawPart(loadedParts.hair_f_male[currentConfig.hairFIdx], theme.hair, hairTex);
   }
 
-  document.getElementById("statusInfo").textContent = `ID: ${currentSeedName}`;
+  displayUsername.textContent = `@${currentSeedName.toLowerCase()}`;
 }
 
 function applySeed(seedStr) {
   if (!seedStr) seedStr = "Anonim"; 
   currentSeedName = seedStr;
-  
-  if (document.activeElement !== seedInput) { seedInput.value = seedStr; }
+  if (document.activeElement !== seedInput) seedInput.value = seedStr; 
   
   const rng = new PRNG(seedStr);
   const isFemale = rng.next() > 0.5;
-  
-  let hairBIndex = -1;
-  let hairFIndex = 0;
+  let hairBIndex = -1, hairFIndex = 0;
 
   if (isFemale) {
     hairBIndex = Math.floor(rng.next() * Math.max(1, loadedParts.hair_b.length));
     hairFIndex = Math.floor(rng.next() * Math.max(1, loadedParts.hair_f_female.length));
   } else {
-    hairBIndex = -1;
     hairFIndex = Math.floor(rng.next() * Math.max(1, loadedParts.hair_f_male.length));
   }
 
   currentConfig = {
-    isFemale: isFemale,
-    skinIdx: Math.floor(rng.next() * palettes.skin.length),
+    isFemale: isFemale, skinIdx: Math.floor(rng.next() * palettes.skin.length),
     themeIdx: Math.floor(rng.next() * palettes.themes.length),
     bodyIdx: Math.floor(rng.next() * Math.max(1, loadedParts.body.length)),
     eyeIdx: Math.floor(rng.next() * Math.max(1, loadedParts.eyes.length)),
     mouthIdx: Math.floor(rng.next() * Math.max(1, loadedParts.mouth.length)),
-    hairBIdx: hairBIndex,
-    hairFIdx: hairFIndex,
+    hairBIdx: hairBIndex, hairFIdx: hairFIndex,
     texFabricIdx: Math.floor(rng.next() * Math.max(1, TOTAL_TEXTURES)),
     texHairIdx: Math.floor(rng.next() * Math.max(1, TOTAL_TEXTURES)),
     texPaperIdx: Math.floor(rng.next() * Math.max(1, TOTAL_TEXTURES))
   };
-
   drawAvatar();
 }
 
-seedInput.addEventListener("input", (e) => { applySeed(e.target.value); });
+seedInput.addEventListener("input", (e) => applySeed(e.target.value));
 
 function generateRandomName() {
   const kons = "bcdfghjklmnprstvwxyz", voks = "aeiou";
@@ -519,83 +545,94 @@ function generateRandomName() {
   return name.charAt(0).toUpperCase() + name.slice(1) + Math.floor(10+Math.random()*89);
 }
 
-function generateRandom() {
-  applySeed(generateRandomName());
-}
+function generateRandom() { applySeed(generateRandomName()); }
 
 function getHDCanvasData() {
   const hdCanvas = document.createElement("canvas");
-  hdCanvas.width = 1024;
-  hdCanvas.height = 1024;
+  hdCanvas.width = 1024; hdCanvas.height = 1024;
   const hdCtx = hdCanvas.getContext("2d");
+  hdCtx.fillStyle = "#FFFFFF";
+  hdCtx.fillRect(0, 0, 1024, 1024);
   hdCtx.imageSmoothingEnabled = false; 
   hdCtx.drawImage(canvas, 0, 0, 1024, 1024);
-  return hdCanvas.toDataURL("image/png", 1.0);
+  return hdCanvas.toDataURL("image/jpeg", 0.95);
 }
 
 function downloadImage() {
-  const name = currentSeedName || 'Avatar_Engine';
+  const name = currentSeedName || 'Avatar_Studio';
   const link = document.createElement("a");
-  link.download = `${name}_HD.png`;
+  link.download = `${name}_HD.jpg`; 
   link.href = getHDCanvasData();
   link.click();
 }
 
-// FUNGSI BARU: Mengontrol Input Angka Kustom
 function updateBatchCount(change) {
   const input = document.getElementById("batchCount");
   let currentValue = parseInt(input.value) || 5;
   const min = parseInt(input.min) || 2;
-  const max = parseInt(input.max) || 50;
-  
+  const max = parseInt(input.max) || 10;
   let newValue = currentValue + change;
-  if(newValue >= min && newValue <= max) {
-    input.value = newValue;
-  }
+  if(newValue >= min && newValue <= max) input.value = newValue;
 }
 
-// Fungsi: Generate dan Download Batch
-async function downloadBatch() {
+function prepareBatch() {
+  const batchCount = parseInt(document.getElementById("batchCount").value) || 5;
+  const grid = document.getElementById("previewGrid");
+  grid.innerHTML = "";
+  batchImagesData = [];
+
+  for (let i = 0; i < batchCount; i++) {
+    const randomName = generateRandomName();
+    applySeed(randomName);
+    
+    const dataURL = getHDCanvasData();
+    const base64Data = dataURL.split(',')[1];
+    
+    batchImagesData.push({ name: randomName, data: base64Data });
+    
+    const img = document.createElement("img");
+    img.src = dataURL;
+    grid.appendChild(img);
+  }
+  
+  const modal = document.getElementById("previewModal");
+  modal.classList.add("active");
+}
+
+function closePreview() {
+  const modal = document.getElementById("previewModal");
+  modal.classList.remove("active");
+  generateRandom();
+}
+
+async function downloadBatchZip() {
   if (typeof JSZip === 'undefined') {
     alert("Error: Library JSZip gagal dimuat. Harap periksa koneksi internet Anda.");
     return;
   }
-
-  const batchCount = parseInt(document.getElementById("batchCount").value) || 5;
-  const statusInfo = document.getElementById("statusInfo");
+  const btn = document.getElementById("btnDownloadZip");
+  btn.textContent = "Memproses...";
   const zip = new JSZip();
   const folder = zip.folder("Avatars");
 
-  statusInfo.textContent = `Memproses ${batchCount} gambar... Harap tunggu.`;
-
-  for (let i = 0; i < batchCount; i++) {
-    // Membangkitkan nama acak dan merender avatar ke canvas
-    const randomName = generateRandomName();
-    applySeed(randomName);
-    
-    // Mendapatkan data base64 HD dan menghapus header "data:image/png;base64,"
-    const base64Data = getHDCanvasData().split(',')[1];
-    
-    // Menambahkan file ke dalam ZIP
-    folder.file(`${randomName}_HD.png`, base64Data, {base64: true});
+  for (const item of batchImagesData) {
+    folder.file(`${item.name}_HD.jpg`, item.data, {base64: true});
   }
 
-  statusInfo.textContent = "Mengompresi ke format .zip...";
-
-  // Proses pembuatan file ZIP
   zip.generateAsync({ type: "blob" }).then(function(content) {
     const link = document.createElement("a");
     link.href = URL.createObjectURL(content);
-    link.download = `Avatars_Batch_${batchCount}.zip`;
+    
+    const randomId = Math.random().toString(36).substring(2, 10);
+    link.download = `_avatars_${randomId}.zip`;
     link.click();
     
-    statusInfo.textContent = `Sukses mengunduh ${batchCount} gambar!`;
-    
-    // Mereset layar dengan satu avatar acak baru setelah selesai
-    generateRandom();
+    btn.textContent = "Mulai Download ZIP";
+    closePreview();
   }).catch(function(err) {
-    statusInfo.textContent = "Gagal memproses file batch.";
+    btn.textContent = "Mulai Download ZIP";
     console.error(err);
+    alert("Gagal memproses file batch.");
   });
 }
 
