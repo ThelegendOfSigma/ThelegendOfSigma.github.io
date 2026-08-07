@@ -3,7 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Avatar Engine - External Assets</title>
+<title>Avatar Engine - External Assets & Batch</title>
+<!-- Menambahkan library JSZip untuk kompresi file batch -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 
 <style>
   :root {
@@ -16,7 +18,12 @@
     --win-title-text: #ffffff;
   }
 
-  * { box-sizing: border-box; font-family: 'MS Sans Serif', Tahoma, sans-serif; margin: 0; padding: 0; }
+  * { 
+    box-sizing: border-box; 
+    font-family: 'MS Sans Serif', Tahoma, sans-serif; 
+    margin: 0; 
+    padding: 0; 
+  }
 
   body {
     background-color: var(--win-bg);
@@ -24,7 +31,7 @@
     justify-content: center;
     align-items: center;
     min-height: 100vh;
-    padding: 20px;
+    padding: 15px; /* Padding ditingkatkan untuk mobile */
   }
 
   .window {
@@ -35,8 +42,8 @@
     border-left: 2px solid var(--win-border-light);
     border-right: 2px solid var(--win-border-darker);
     border-bottom: 2px solid var(--win-border-darker);
-    padding: 2px;
-    box-shadow: 2px 2px 0 rgba(0,0,0,0.5);
+    padding: 3px;
+    box-shadow: 3px 3px 0 rgba(0,0,0,0.5);
     display: flex;
     flex-direction: column;
   }
@@ -44,10 +51,13 @@
   .title-bar {
     background: var(--win-title);
     color: var(--win-title-text);
-    padding: 4px 6px;
+    padding: 6px 8px; /* Disesuaikan agar lebih mudah disentuh */
     font-weight: bold;
     font-size: 14px;
-    margin-bottom: 10px;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    user-select: none;
   }
 
   .content {
@@ -55,6 +65,7 @@
     display: flex;
     flex-direction: column;
     align-items: center;
+    width: 100%;
   }
 
   .canvas-container {
@@ -64,33 +75,18 @@
     border-bottom: 2px solid var(--win-border-light);
     background: #fff;
     padding: 2px;
-    margin-bottom: 15px;
+    margin-bottom: 20px;
     width: 100%;
+    max-width: 256px;
     display: flex;
     justify-content: center;
   }
 
   canvas {
     width: 100%;
-    max-width: 256px;
     height: auto;
     display: block;
     image-rendering: pixelated;
-  }
-
-  .status-bar {
-    margin-top: 10px;
-    padding: 4px;
-    border-top: 2px solid var(--win-border-dark);
-    border-left: 2px solid var(--win-border-dark);
-    border-right: 2px solid var(--win-border-light);
-    border-bottom: 2px solid var(--win-border-light);
-    font-size: 12px;
-    width: 100%;
-    background: var(--win-panel);
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
   }
 
   .controls-section {
@@ -110,30 +106,77 @@
   .input-group label {
     font-size: 13px;
     white-space: nowrap;
+    min-width: 70px;
+    font-weight: bold;
   }
 
+  /* Elemen Input */
   .seed-input {
     flex-grow: 1;
-    min-width: 0;
     width: 100%;
     border-top: 2px solid var(--win-border-dark);
     border-left: 2px solid var(--win-border-dark);
     border-right: 2px solid var(--win-border-light);
     border-bottom: 2px solid var(--win-border-light);
-    padding: 4px;
+    padding: 8px; /* Padding lebih besar untuk jari */
     font-size: 14px;
     outline: none;
+    background: #fff;
+  }
+
+  /* Custom Number Input UI */
+  .custom-number-wrapper {
+    display: flex;
+    width: 100%;
+    height: 34px;
+  }
+
+  .custom-number-wrapper button {
+    flex: 0 0 40px;
+    font-size: 18px;
+    font-weight: bold;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .custom-number-wrapper input {
+    flex: 1;
+    width: 100%;
+    text-align: center;
+    font-size: 14px;
+    border: none;
+    border-top: 2px solid var(--win-border-dark);
+    border-left: 2px solid var(--win-border-dark);
+    border-right: 2px solid var(--win-border-light);
+    border-bottom: 2px solid var(--win-border-light);
+    outline: none;
+    border-radius: 0;
+    background: #fff;
+  }
+
+  /* Menghilangkan spinner bawaan browser */
+  input[type="number"]::-webkit-inner-spin-button,
+  input[type="number"]::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+  input[type="number"] {
+    -moz-appearance: textfield;
   }
 
   .actions {
     display: flex;
     gap: 10px;
     width: 100%;
+    flex-wrap: wrap; /* Agar membungkus jika layar terlalu kecil */
   }
   
   button {
     flex: 1;
-    padding: 6px;
+    min-width: 120px;
+    padding: 10px 8px; /* Area sentuh yang lebih nyaman */
     font-size: 13px;
     background: var(--win-panel);
     border-top: 2px solid var(--win-border-light);
@@ -141,6 +184,7 @@
     border-right: 2px solid var(--win-border-darker);
     border-bottom: 2px solid var(--win-border-darker);
     cursor: pointer;
+    user-select: none;
   }
   
   button:active {
@@ -148,10 +192,43 @@
     border-left: 2px solid var(--win-border-darker);
     border-right: 2px solid var(--win-border-light);
     border-bottom: 2px solid var(--win-border-light);
-    padding-top: 7px;
-    padding-left: 7px;
-    padding-bottom: 5px;
-    padding-right: 5px;
+    padding-top: 11px;
+    padding-left: 9px;
+    padding-bottom: 9px;
+    padding-right: 7px;
+  }
+
+  .status-bar {
+    margin-top: 15px;
+    padding: 6px;
+    border-top: 2px solid var(--win-border-dark);
+    border-left: 2px solid var(--win-border-dark);
+    border-right: 2px solid var(--win-border-light);
+    border-bottom: 2px solid var(--win-border-light);
+    font-size: 12px;
+    width: 100%;
+    background: var(--win-panel);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  /* Penyesuaian Responsif untuk Mobile */
+  @media (max-width: 380px) {
+    .input-group {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 5px;
+    }
+    .input-group label {
+      margin-bottom: 2px;
+    }
+    .actions {
+      flex-direction: column;
+    }
+    button {
+      width: 100%;
+    }
   }
 </style>
 </head>
@@ -159,7 +236,7 @@
 
 <div class="window">
   <div class="title-bar">
-    <span>Avatar Engine - Image Mode</span>
+    <span>Avatar Engine - Batch Mode</span>
   </div>
 
   <div class="content">
@@ -172,9 +249,23 @@
         <label for="seedInput">Identifier:</label>
         <input type="text" id="seedInput" class="seed-input" placeholder="Ketik nama..." autocomplete="off">
       </div>
+      
+      <!-- Kontrol Batch Kustom (Mengganti Bawaan) -->
+      <div class="input-group">
+        <label for="batchCount">Jumlah:</label>
+        <div class="custom-number-wrapper">
+          <button type="button" onclick="updateBatchCount(-1)">-</button>
+          <input type="number" id="batchCount" value="5" min="2" max="50" readonly>
+          <button type="button" onclick="updateBatchCount(1)">+</button>
+        </div>
+      </div>
+
       <div class="actions">
-        <button onclick="generateRandom()">Acak Baru</button>
-        <button onclick="downloadImage()">Simpan (HD)</button>
+        <button onclick="generateRandom()">Acak 1x</button>
+        <button onclick="downloadImage()">Simpan 1x</button>
+      </div>
+      <div class="actions">
+        <button onclick="downloadBatch()" style="font-weight: bold; padding: 12px;">Generasi & Download Batch (.zip)</button>
       </div>
     </div>
     
@@ -205,7 +296,7 @@ let loadedParts = {
   mouth: []
 };
 
-// Daftar file berdasarkan struktur folder yang disediakan dengan update terbaru
+// Daftar file berdasarkan struktur folder
 const assetList = {
   body: ['body/body_01.png', 'body/body_02.png', 'body/body_03.png', 'body/body_04.png', 'body/body_05.png', 'body/body_06.png'],
   eyes: ['eyes/eyes_01.png', 'eyes/eyes_02.png', 'eyes/eyes_03.png', 'eyes/eyes_04.png', 'eyes/eyes_05.png', 'eyes/eyes_06.png', 'eyes/eyes_07.png', 'eyes/eyes_08.png'],
@@ -227,7 +318,6 @@ const assetList = {
     'hair_f/male/hrf_13.png'
   ],
   head: ['head/head.png'],
-  // Update: 31 Model Mulut
   mouth: [
     'mouth/mouth_01.png', 'mouth/mouth_02.png', 'mouth/mouth_03.png', 'mouth/mouth_04.png', 'mouth/mouth_05.png', 
     'mouth/mouth_06.png', 'mouth/mouth_07.png', 'mouth/mouth_08.png', 'mouth/mouth_09.png', 'mouth/mouth_10.png',
@@ -243,7 +333,7 @@ const loadImg = (url) => new Promise((resolve) => {
   const img = new Image(); 
   img.onload = () => resolve(img); 
   img.onerror = () => {
-    // Fallback jika file tidak ditemukan, buat canvas transparan kosong
+    // Fallback transparan jika gagal
     const canvasFallback = document.createElement("canvas");
     canvasFallback.width = 256; canvasFallback.height = 256;
     resolve(canvasFallback);
@@ -252,7 +342,7 @@ const loadImg = (url) => new Promise((resolve) => {
 });
 
 async function loadAssets() {
-  document.getElementById("statusInfo").textContent = "Memuat tekstur (img_01 - img_29)...";
+  document.getElementById("statusInfo").textContent = "Memuat tekstur...";
   for (let i = 1; i <= TOTAL_TEXTURES; i++) {
     let num = i.toString().padStart(2, '0');
     let imgElement = await loadImg(`img_${num}.png`); 
@@ -268,7 +358,7 @@ async function loadAssets() {
   }
 }
 
-// --- KONFIGURASI CORE & PALET ---
+// Konfigurasi Palet
 const palettes = {
   skin: [
     { base: "#ffead1", dark: "#eac09d", blush: "#ffc4b8" },
@@ -323,7 +413,6 @@ function drawPart(imgElement, color, texture = null) {
   if (!imgElement) return;
 
   offCtx.clearRect(0, 0, 256, 256);
-
   offCtx.globalCompositeOperation = 'source-over';
   offCtx.fillStyle = color || "#ffffff";
   offCtx.fillRect(0, 0, 256, 256);
@@ -353,7 +442,6 @@ function drawAvatar() {
   const hairTex = loadedTextures.length ? loadedTextures[currentConfig.texHairIdx] : null;
   const paperTex = loadedTextures.length ? loadedTextures[currentConfig.texPaperIdx] : null;
 
-  // Latar Belakang
   const bgInvMain = invertHexColor(theme.main);
   const bgInvSec = invertHexColor(theme.sec);
   const bgGrd = ctx.createRadialGradient(128, 128, 0, 128, 128, 200);
@@ -367,43 +455,19 @@ function drawAvatar() {
     ctx.fillRect(0, 0, canvas.width, canvas.height);
     ctx.globalAlpha = 1.0;
   }
-
-  // --- URUTAN RENDERING ---
   
-  // 1. Rambut Belakang (Hanya digambar jika gender female dan menggunakan warna hDark agar lebih gelap)
   if(currentConfig.hairBIdx !== -1 && loadedParts.hair_b[currentConfig.hairBIdx]) {
     drawPart(loadedParts.hair_b[currentConfig.hairBIdx], theme.hDark, hairTex);
   }
+  if(loadedParts.head[0]) drawPart(loadedParts.head[0], skin.base);
+  if(loadedParts.body[currentConfig.bodyIdx]) drawPart(loadedParts.body[currentConfig.bodyIdx], theme.main, fabricTex);
+  if(loadedParts.eyes[currentConfig.eyeIdx]) drawPart(loadedParts.eyes[currentConfig.eyeIdx], "#ffffff");
+  if(loadedParts.mouth[currentConfig.mouthIdx]) drawPart(loadedParts.mouth[currentConfig.mouthIdx], "#ffffff");
 
-  // 2. Kepala
-  if(loadedParts.head[0]) {
-    drawPart(loadedParts.head[0], skin.base);
-  }
-
-  // 3. Badan/Baju
-  if(loadedParts.body[currentConfig.bodyIdx]) {
-    drawPart(loadedParts.body[currentConfig.bodyIdx], theme.main, fabricTex);
-  }
-
-  // 4. Mata
-  if(loadedParts.eyes[currentConfig.eyeIdx]) {
-    drawPart(loadedParts.eyes[currentConfig.eyeIdx], "#ffffff");
-  }
-
-  // 5. Mulut
-  if(loadedParts.mouth[currentConfig.mouthIdx]) {
-    drawPart(loadedParts.mouth[currentConfig.mouthIdx], "#ffffff");
-  }
-
-  // 6. Rambut Depan (Sesuai gender yang didapatkan di seed)
   if (currentConfig.isFemale) {
-    if(loadedParts.hair_f_female[currentConfig.hairFIdx]) {
-      drawPart(loadedParts.hair_f_female[currentConfig.hairFIdx], theme.hair, hairTex);
-    }
+    if(loadedParts.hair_f_female[currentConfig.hairFIdx]) drawPart(loadedParts.hair_f_female[currentConfig.hairFIdx], theme.hair, hairTex);
   } else {
-    if(loadedParts.hair_f_male[currentConfig.hairFIdx]) {
-      drawPart(loadedParts.hair_f_male[currentConfig.hairFIdx], theme.hair, hairTex);
-    }
+    if(loadedParts.hair_f_male[currentConfig.hairFIdx]) drawPart(loadedParts.hair_f_male[currentConfig.hairFIdx], theme.hair, hairTex);
   }
 
   document.getElementById("statusInfo").textContent = `ID: ${currentSeedName}`;
@@ -416,19 +480,15 @@ function applySeed(seedStr) {
   if (document.activeElement !== seedInput) { seedInput.value = seedStr; }
   
   const rng = new PRNG(seedStr);
-  
-  // Penentuan Gender (Peluang 50%)
   const isFemale = rng.next() > 0.5;
   
   let hairBIndex = -1;
   let hairFIndex = 0;
 
   if (isFemale) {
-    // Jika Female, gunakan rambut belakang dan rambut depan female
     hairBIndex = Math.floor(rng.next() * Math.max(1, loadedParts.hair_b.length));
     hairFIndex = Math.floor(rng.next() * Math.max(1, loadedParts.hair_f_female.length));
   } else {
-    // Jika Male, rambut belakang ditiadakan (-1) dan gunakan rambut depan male
     hairBIndex = -1;
     hairFIndex = Math.floor(rng.next() * Math.max(1, loadedParts.hair_f_male.length));
   }
@@ -452,28 +512,91 @@ function applySeed(seedStr) {
 
 seedInput.addEventListener("input", (e) => { applySeed(e.target.value); });
 
-function generateRandom() {
+function generateRandomName() {
   const kons = "bcdfghjklmnprstvwxyz", voks = "aeiou";
   let name = "";
   for(let i=0; i<6; i++) name += i%2===0 ? kons[Math.floor(Math.random()*kons.length)] : voks[Math.floor(Math.random()*voks.length)];
-  name = name.charAt(0).toUpperCase() + name.slice(1) + Math.floor(10+Math.random()*89);
-  applySeed(name);
+  return name.charAt(0).toUpperCase() + name.slice(1) + Math.floor(10+Math.random()*89);
 }
 
-function downloadImage() {
-  const name = currentSeedName || 'Avatar_Engine';
-  const link = document.createElement("a");
-  link.download = `${name}_HD.png`;
-  
+function generateRandom() {
+  applySeed(generateRandomName());
+}
+
+function getHDCanvasData() {
   const hdCanvas = document.createElement("canvas");
   hdCanvas.width = 1024;
   hdCanvas.height = 1024;
   const hdCtx = hdCanvas.getContext("2d");
   hdCtx.imageSmoothingEnabled = false; 
   hdCtx.drawImage(canvas, 0, 0, 1024, 1024);
-  
-  link.href = hdCanvas.toDataURL("image/png", 1.0);
+  return hdCanvas.toDataURL("image/png", 1.0);
+}
+
+function downloadImage() {
+  const name = currentSeedName || 'Avatar_Engine';
+  const link = document.createElement("a");
+  link.download = `${name}_HD.png`;
+  link.href = getHDCanvasData();
   link.click();
+}
+
+// FUNGSI BARU: Mengontrol Input Angka Kustom
+function updateBatchCount(change) {
+  const input = document.getElementById("batchCount");
+  let currentValue = parseInt(input.value) || 5;
+  const min = parseInt(input.min) || 2;
+  const max = parseInt(input.max) || 50;
+  
+  let newValue = currentValue + change;
+  if(newValue >= min && newValue <= max) {
+    input.value = newValue;
+  }
+}
+
+// Fungsi: Generate dan Download Batch
+async function downloadBatch() {
+  if (typeof JSZip === 'undefined') {
+    alert("Error: Library JSZip gagal dimuat. Harap periksa koneksi internet Anda.");
+    return;
+  }
+
+  const batchCount = parseInt(document.getElementById("batchCount").value) || 5;
+  const statusInfo = document.getElementById("statusInfo");
+  const zip = new JSZip();
+  const folder = zip.folder("Avatars");
+
+  statusInfo.textContent = `Memproses ${batchCount} gambar... Harap tunggu.`;
+
+  for (let i = 0; i < batchCount; i++) {
+    // Membangkitkan nama acak dan merender avatar ke canvas
+    const randomName = generateRandomName();
+    applySeed(randomName);
+    
+    // Mendapatkan data base64 HD dan menghapus header "data:image/png;base64,"
+    const base64Data = getHDCanvasData().split(',')[1];
+    
+    // Menambahkan file ke dalam ZIP
+    folder.file(`${randomName}_HD.png`, base64Data, {base64: true});
+  }
+
+  statusInfo.textContent = "Mengompresi ke format .zip...";
+
+  // Proses pembuatan file ZIP
+  zip.generateAsync({ type: "blob" }).then(function(content) {
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(content);
+    link.download = `Avatars_Batch_${batchCount}.zip`;
+    link.click();
+    
+    statusInfo.textContent = `Sukses mengunduh ${batchCount} gambar!`;
+    
+    // Mereset layar dengan satu avatar acak baru setelah selesai
+    generateRandom();
+  }).catch(function(err) {
+    statusInfo.textContent = "Gagal memproses file batch.";
+    console.error(err);
+  });
 }
 
 window.onload = async () => {
