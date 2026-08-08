@@ -3,28 +3,28 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Avatar Studio</title>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<title>Pabrik Muka Kartun 🤪</title>
+<!-- Menggunakan font Fredoka yang bulat dan kartunis -->
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&display=swap" rel="stylesheet">
 
 <style>
   :root {
-    --bg-main: #f0f2f5;
-    --surface: #ffffff;
-    --text-dark: #1c1e21;
-    --text-muted: #65676b;
-    --border: #e4e6eb;
-    --primary: #1877f2;
-    --primary-hover: #166fe5;
-    --secondary: #e4e6eb;
-    --secondary-hover: #d8dadf;
-    --radius-lg: 24px;
-    --radius-md: 12px;
-    --radius-sm: 8px;
+    --bg-main: #38BDF8; /* Biru langit cerah */
+    --card-bg: #FFFFFF;
+    --border-color: #000000;
+    --text-primary: #000000;
+    --text-secondary: #444444;
+    --accent: #FFDE59; /* Kuning pisang */
+    --accent-hover: #FADA5E;
+    --btn-primary: #FF5757; /* Merah komik */
+    --danger: #FF3131;
+    --border-thick: 4px solid var(--border-color);
+    --shadow-chunky: 6px 6px 0px var(--border-color);
   }
 
   * { 
     box-sizing: border-box; 
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
+    font-family: 'Fredoka', 'Comic Sans MS', cursive, sans-serif; 
     margin: 0; 
     padding: 0; 
     -webkit-user-select: none;
@@ -43,87 +43,120 @@
 
   body {
     background-color: var(--bg-main);
+    /* Pola polkadot ala komik retro */
+    background-image: radial-gradient(#ffffff 15%, transparent 16%), radial-gradient(#ffffff 15%, transparent 16%);
+    background-size: 40px 40px;
+    background-position: 0 0, 20px 20px;
     display: flex;
     justify-content: center;
     align-items: center;
     min-height: 100vh;
     padding: 20px;
+    color: var(--text-primary);
   }
 
-  /* --- Loading Overlay Styles --- */
+  /* --- Loading Overlay Styles (Kocak Version) --- */
   .loading-overlay {
     position: fixed; top: 0; left: 0; right: 0; bottom: 0;
-    background: var(--bg-main);
+    background: rgba(255, 222, 89, 0.95);
     z-index: 1000;
     display: flex; flex-direction: column; justify-content: center; align-items: center;
     transition: opacity 0.4s ease, visibility 0.4s ease;
   }
-  .loading-overlay.hidden {
-    opacity: 0;
-    visibility: hidden;
+  .loading-overlay.hidden { opacity: 0; visibility: hidden; }
+  
+  .loading-spinner {
+    font-size: 50px;
+    animation: bounce 0.5s alternate infinite cubic-bezier(.5,0.05,1,.5);
+    margin-bottom: 20px;
   }
-  .loading-box {
-    width: 80%; max-width: 280px;
+
+  @keyframes bounce { 
+    from { transform: translateY(0); }
+    to { transform: translateY(-30px) scale(1.1); }
   }
+
   .loading-text {
-    font-size: 15px; font-weight: 700; color: var(--text-dark);
-    text-align: center; margin-bottom: 14px;
+    font-size: 20px; font-weight: 700; color: var(--border-color);
+    margin-bottom: 16px; letter-spacing: 1px;
+    text-transform: uppercase;
   }
   .loading-bar-bg {
-    width: 100%; height: 8px; background: var(--secondary);
-    border-radius: 20px; overflow: hidden;
+    width: 250px; height: 16px; 
+    background: #FFF;
+    border: var(--border-thick);
+    border-radius: 20px;
+    box-shadow: 4px 4px 0px var(--border-color);
+    overflow: hidden;
   }
   .loading-bar-fill {
-    height: 100%; width: 0%; background: var(--primary);
-    border-radius: 20px; transition: width 0.15s ease-out;
+    height: 100%; width: 0%; background: var(--btn-primary);
+    transition: width 0.2s ease-out;
   }
 
   /* --- App Styles --- */
   .app-card {
-    background: var(--surface);
+    background: var(--card-bg);
     width: 100%;
-    max-width: 420px;
-    border-radius: var(--radius-lg);
-    box-shadow: 0 8px 30px rgba(0,0,0,0.06);
-    overflow: hidden;
+    max-width: 400px;
+    border: var(--border-thick);
+    border-radius: 24px;
+    box-shadow: 10px 10px 0px var(--border-color);
     display: flex;
     flex-direction: column;
+    overflow: hidden;
+    transform: rotate(-1deg); /* Sedikit miring biar nyeleneh */
   }
 
   .app-header {
+    padding: 20px;
     text-align: center;
-    padding: 24px 20px 10px;
-  }
-
-  .app-title {
-    font-size: 18px;
     font-weight: 700;
-    color: var(--text-dark);
-    letter-spacing: -0.5px;
+    font-size: 24px;
+    letter-spacing: 1px;
+    border-bottom: var(--border-thick);
+    background: var(--accent);
+    color: var(--border-color);
+    text-transform: uppercase;
   }
 
   .canvas-section {
     display: flex;
     flex-direction: column;
     align-items: center;
-    padding: 20px;
+    padding: 24px;
+    background: repeating-linear-gradient(
+      45deg,
+      #f8fafc,
+      #f8fafc 10px,
+      #f1f5f9 10px,
+      #f1f5f9 20px
+    );
   }
 
   .canvas-wrapper {
     width: 180px;
     height: 180px;
-    border-radius: var(--radius-md); /* Diubah menjadi kotak dengan sudut tumpul modern */
-    background: var(--bg-main);
+    background: #FFF;
+    border-radius: 20px;
+    border: var(--border-thick);
+    box-shadow: var(--shadow-chunky);
     display: flex;
     justify-content: center;
     align-items: center;
+    margin-bottom: 20px;
     overflow: hidden;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.1) inset, 0 0 0 4px var(--surface), 0 0 0 6px var(--border);
-    margin-bottom: 16px;
+    position: relative;
+    transform: rotate(2deg);
+    transition: transform 0.3s ease;
+  }
+
+  .canvas-wrapper:hover {
+    transform: rotate(-2deg) scale(1.05);
   }
   
   canvas {
-    width: 100%; /* Dikembalikan ke 100% agar pas pada kotak */
+    width: 100%; 
     height: auto;
     display: block;
     image-rendering: pixelated;
@@ -131,26 +164,31 @@
   }
 
   .username-display {
-    font-size: 20px;
+    font-size: 22px;
     font-weight: 700;
-    color: var(--text-dark);
+    color: var(--border-color);
     margin-bottom: 4px;
+    text-decoration: underline;
+    text-decoration-thickness: 3px;
+    text-decoration-color: var(--btn-primary);
   }
 
   .status-badge {
-    font-size: 12px;
-    color: var(--text-muted);
-    background: var(--bg-main);
+    font-size: 14px;
+    color: var(--border-color);
+    font-weight: 600;
+    background: var(--accent);
     padding: 4px 12px;
     border-radius: 20px;
-    font-weight: 500;
+    border: 2px solid var(--border-color);
   }
 
   .controls-section {
-    padding: 0 24px 24px;
+    padding: 24px;
     display: flex;
     flex-direction: column;
     gap: 20px;
+    background: #FFF;
   }
 
   .input-group {
@@ -160,110 +198,131 @@
   }
 
   .input-label {
-    font-size: 13px;
-    font-weight: 600;
-    color: var(--text-muted);
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--border-color);
     text-transform: uppercase;
-    letter-spacing: 0.5px;
   }
 
   .input-field {
     width: 100%;
     padding: 14px 16px;
-    border: 1.5px solid var(--border);
-    border-radius: var(--radius-md);
-    font-size: 15px;
-    font-weight: 500;
+    background: #FFF;
+    border: var(--border-thick);
+    border-radius: 12px;
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--text-primary);
     outline: none;
-    color: var(--text-dark);
+    box-shadow: inset 3px 3px 0px rgba(0,0,0,0.1);
     transition: all 0.2s ease;
   }
 
   .input-field:focus {
-    border-color: var(--primary);
-    box-shadow: 0 0 0 3px rgba(24, 119, 242, 0.15);
+    background: #FFFBEB;
+    box-shadow: inset 3px 3px 0px rgba(0,0,0,0.1), 0 0 0 4px var(--accent);
   }
 
   .action-row {
     display: flex;
-    gap: 12px;
+    gap: 16px;
   }
 
   .btn {
     flex: 1;
     padding: 14px;
-    border-radius: var(--radius-md);
-    border: none;
-    font-size: 14px;
-    font-weight: 600;
+    background: #FFF;
+    color: var(--border-color);
+    border: var(--border-thick);
+    border-radius: 12px;
+    font-size: 16px;
+    font-weight: 700;
     cursor: pointer;
-    transition: all 0.2s;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 8px;
+    text-align: center;
+    box-shadow: var(--shadow-chunky);
+    transition: all 0.1s ease;
+    text-transform: uppercase;
   }
 
-  .btn-primary {
-    background: var(--primary);
-    color: white;
+  .btn:hover:not(:disabled) { 
+    transform: translateY(-2px);
+    box-shadow: 8px 8px 0px var(--border-color);
   }
-  .btn-primary:active { background: var(--primary-hover); transform: scale(0.98); }
+  
+  .btn:active:not(:disabled) { 
+    transform: translateY(6px) translateX(6px);
+    box-shadow: 0px 0px 0px var(--border-color);
+  }
+  
+  .btn:disabled {
+    opacity: 0.6; cursor: not-allowed;
+    box-shadow: 2px 2px 0px var(--border-color);
+    transform: translateY(4px) translateX(4px);
+  }
 
-  .btn-secondary {
-    background: var(--secondary);
-    color: var(--text-dark);
+  /* Tombol Utama ala Komik */
+  .btn-premium {
+    background: var(--btn-primary);
+    color: #FFF;
   }
-  .btn-secondary:active { background: var(--secondary-hover); transform: scale(0.98); }
+  
+  .btn-premium:hover:not(:disabled) {
+    background: #FF4040;
+  }
 
   .batch-box {
-    background: #f8f9fa;
-    border: 1px solid var(--border);
-    border-radius: var(--radius-md);
+    background: #E0F2FE;
+    border: var(--border-thick);
+    border-radius: 16px;
     padding: 16px;
+    box-shadow: var(--shadow-chunky);
   }
 
   .stepper {
     display: flex;
     align-items: center;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-sm);
+    height: 48px;
+    margin-bottom: 16px;
+    background: #FFF;
+    border-radius: 12px;
+    border: var(--border-thick);
     overflow: hidden;
-    height: 40px;
-    margin-bottom: 12px;
   }
 
   .stepper button {
-    width: 40px;
+    width: 48px;
     height: 100%;
-    background: var(--secondary);
+    background: var(--accent);
     border: none;
-    font-size: 18px;
-    font-weight: bold;
-    color: var(--text-dark);
+    color: var(--border-color);
+    font-size: 24px;
+    font-weight: 900;
     cursor: pointer;
+    transition: background 0.2s;
   }
-  .stepper button:active { background: var(--secondary-hover); }
+  .stepper button:hover { background: #FCD34D; }
+  .stepper button:active { background: #FBBF24; }
+  .stepper button:first-child { border-right: var(--border-thick); }
+  .stepper button:last-child { border-left: var(--border-thick); }
 
   .stepper input {
     flex: 1;
     height: 100%;
+    background: #FFF;
     border: none;
     text-align: center;
-    font-size: 15px;
-    font-weight: 600;
-    color: var(--text-dark);
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--border-color);
     pointer-events: none;
   }
 
-  /* Modal Preview */
+  /* Modal Preview bergaya Kartun */
   .modal-overlay {
     position: fixed;
     top: 0; left: 0; right: 0; bottom: 0;
-    background: rgba(0,0,0,0.4);
+    background: rgba(0, 0, 0, 0.7);
     backdrop-filter: blur(4px);
-    -webkit-backdrop-filter: blur(4px);
     display: none;
     justify-content: center;
     align-items: center;
@@ -274,67 +333,89 @@
   }
   
   .modal-overlay.active {
-    opacity: 1;
     display: flex;
+    opacity: 1;
   }
 
   .modal-content {
-    background: var(--surface);
+    background: var(--card-bg);
     width: 100%;
-    max-width: 400px;
-    border-radius: var(--radius-lg);
-    padding: 24px;
+    max-width: 460px;
+    border: var(--border-thick);
+    border-radius: 24px;
+    box-shadow: 12px 12px 0px var(--border-color);
     display: flex;
     flex-direction: column;
-    box-shadow: 0 20px 40px rgba(0,0,0,0.2);
-    transform: translateY(20px);
-    transition: transform 0.3s ease;
+    overflow: hidden;
+    transform: scale(0.8) rotate(-2deg);
+    transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
   }
 
   .modal-overlay.active .modal-content {
-    transform: translateY(0);
+    transform: scale(1) rotate(0deg);
   }
 
   .modal-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 20px;
+    padding: 16px 20px;
+    border-bottom: var(--border-thick);
+    background: var(--accent);
+    font-weight: 700;
+    font-size: 20px;
+    text-transform: uppercase;
   }
 
-  .modal-title { font-size: 18px; font-weight: 700; color: var(--text-dark); }
-  
-  .close-btn { 
-    background: var(--secondary); 
-    border: none; 
-    width: 32px; 
-    height: 32px; 
-    border-radius: 50%; 
-    font-size: 18px; 
-    cursor: pointer; 
-    color: var(--text-dark);
-    display: flex;
-    justify-content: center;
-    align-items: center;
+  .btn-close {
+    background: var(--danger);
+    border: 3px solid var(--border-color);
+    color: #FFF;
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    cursor: pointer;
+    font-weight: bold;
+    font-size: 16px;
+    box-shadow: 2px 2px 0px var(--border-color);
+    transition: all 0.1s;
+  }
+  .btn-close:active {
+    transform: translate(2px, 2px);
+    box-shadow: 0px 0px 0px var(--border-color);
   }
 
   .preview-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
-    gap: 12px;
+    gap: 16px;
     max-height: 50vh;
     overflow-y: auto;
-    margin-bottom: 20px;
-    padding-right: 4px;
+    padding: 24px;
+    background: #FFFBEB;
   }
+
+  .preview-grid::-webkit-scrollbar { width: 12px; }
+  .preview-grid::-webkit-scrollbar-track { background: #FFF; border-left: 2px solid #000; }
+  .preview-grid::-webkit-scrollbar-thumb { background: var(--accent); border: 2px solid #000; border-radius: 10px; }
 
   .preview-grid img {
     width: 100%;
     aspect-ratio: 1;
-    border-radius: var(--radius-sm); /* Kotak */
     object-fit: cover;
-    border: 2px solid var(--border);
-    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    border-radius: 16px;
+    border: 3px solid var(--border-color);
+    box-shadow: 4px 4px 0px var(--border-color);
+    transition: transform 0.2s;
+  }
+  
+  .preview-grid img:hover {
+    transform: scale(1.1) rotate(5deg);
+  }
+
+  .modal-footer {
+    padding: 20px;
+    border-top: var(--border-thick);
+    background: #FFF;
   }
 
 </style>
@@ -343,46 +424,43 @@
 
 <!-- Layar Loading -->
 <div id="loadingOverlay" class="loading-overlay">
-  <div class="loading-box">
-    <div class="loading-text" id="loadingText">Menyiapkan Studio... 0%</div>
-    <div class="loading-bar-bg">
-      <div class="loading-bar-fill" id="loadingBar"></div>
-    </div>
+  <div class="loading-spinner">🤪</div>
+  <div class="loading-text" id="loadingText">Bentar Ya Nyet... 0%</div>
+  <div class="loading-bar-bg">
+    <div class="loading-bar-fill" id="loadingBar"></div>
   </div>
 </div>
 
 <div class="app-card">
-  <div class="app-header">
-    <div class="app-title">Avatar Studio</div>
-  </div>
+  <div class="app-header">Pabrik Muka Kartun 🎨</div>
 
   <div class="canvas-section">
     <div class="canvas-wrapper">
       <canvas id="canvas" width="256" height="256"></canvas>
     </div>
-    <div class="username-display" id="displayUsername">@memuat...</div>
-    <div class="status-badge" id="statusInfo">Menyiapkan aset...</div>
+    <div class="username-display" id="displayUsername">@siapaCuy</div>
+    <div class="status-badge" id="statusInfo">Lagi dandan...</div>
   </div>
 
   <div class="controls-section">
     <div class="input-group">
-      <label class="input-label">Identifier (Seed)</label>
-      <input type="text" id="seedInput" class="input-field" placeholder="Ketik nama atau ID..." autocomplete="off">
+      <label class="input-label">Ketik Nama 🪄</label>
+      <input type="text" id="seedInput" class="input-field" placeholder="Ketik apa aja di sini..." autocomplete="off">
     </div>
 
     <div class="action-row">
-      <button class="btn btn-secondary" onclick="generateRandom()">Acak</button>
-      <button class="btn btn-secondary" onclick="downloadImage()">Simpan (JPG)</button>
+      <button class="btn" onclick="generateRandom()">Acak 🎲</button>
+      <button class="btn btn-premium" onclick="downloadImage()">Comot 📸</button>
     </div>
 
     <div class="batch-box">
-      <label class="input-label" style="display:block; margin-bottom: 10px;">Mode Batch (Maks 10)</label>
+      <label class="input-label" style="display:block; margin-bottom: 12px;">Borongan (Maks 27) 📦</label>
       <div class="stepper">
         <button type="button" onclick="updateBatchCount(-1)">-</button>
-        <input type="number" id="batchCount" value="5" min="2" max="10" readonly>
+        <input type="number" id="batchCount" value="5" min="2" max="27" readonly>
         <button type="button" onclick="updateBatchCount(1)">+</button>
       </div>
-      <button class="btn btn-primary" style="width: 100%;" onclick="prepareBatch()">Lihat Preview & Download ZIP</button>
+      <button class="btn btn-premium" id="btnGenerateBatch" style="width: 100%; background: #22C55E;" onclick="prepareBatch()">Bikin Sekebon! 🌳</button>
     </div>
   </div>
 </div>
@@ -391,13 +469,15 @@
 <div class="modal-overlay" id="previewModal">
   <div class="modal-content">
     <div class="modal-header">
-      <div class="modal-title">Pratinjau Batch</div>
-      <button class="close-btn" onclick="closePreview()">&times;</button>
+      <span>Hasil Borongan 🥳</span>
+      <button class="btn-close" onclick="closePreview()">✕</button>
     </div>
     <div class="preview-grid" id="previewGrid"></div>
-    <button class="btn btn-primary" id="btnDownloadZip" onclick="downloadBatchZip()" style="width: 100%;">
-      Mulai Download ZIP
-    </button>
+    <div class="modal-footer">
+      <button class="btn btn-premium" id="btnDownloadBatch" onclick="downloadBatchImages()" style="width: 100%;">
+        Unduh Semua Hasil 🚀
+      </button>
+    </div>
   </div>
 </div>
 
@@ -408,7 +488,6 @@ const seedInput = document.getElementById("seedInput");
 const displayUsername = document.getElementById("displayUsername");
 const statusInfo = document.getElementById("statusInfo");
 
-// Kanvas rahasia untuk memproses warna & bentuk
 const offCanvas = document.createElement("canvas");
 offCanvas.width = 256;
 offCanvas.height = 256;
@@ -418,7 +497,6 @@ const TOTAL_TEXTURES = 29;
 let loadedTextures = [];
 let loadedParts = { body: [], eyes_male: [], eyes_female: [], hair_b: [], hair_f_female: [], hair_f_male: [], head: [], mouth: [] };
 
-// Daftar file (Dibuat otomatis agar lebih rapi)
 const assetList = {
   body: Array.from({length: 12}, (_, i) => `body/body_${String(i+1).padStart(2, '0')}.png`),
   eyes_male: Array.from({length: 30}, (_, i) => `eyes_male/eyes_${String(i+1).padStart(2, '0')}.png`),
@@ -446,7 +524,6 @@ async function loadAssets() {
   const loadingBar = document.getElementById("loadingBar");
   const loadingText = document.getElementById("loadingText");
   
-  // Hitung total aset untuk persentase progress
   const totalAssets = TOTAL_TEXTURES + Object.values(assetList).flat().length;
   let loaded = 0;
   
@@ -454,7 +531,7 @@ async function loadAssets() {
     loaded++;
     const percent = Math.min(100, Math.floor((loaded / totalAssets) * 100));
     loadingBar.style.width = percent + "%";
-    loadingText.textContent = `Menyiapkan Studio... ${percent}%`;
+    loadingText.textContent = `Bentar Ya Nyet... ${percent}%`;
   };
 
   const loadWithProgress = async (url) => {
@@ -463,18 +540,15 @@ async function loadAssets() {
     return img;
   };
 
-  // Muat tekstur secara paralel
   const texturePromises = Array.from({length: TOTAL_TEXTURES}, (_, i) => {
     return loadWithProgress(`img_${String(i+1).padStart(2, '0')}.png`);
   });
 
-  // Muat bagian avatar secara paralel
   const partPromises = {};
   for (const category in assetList) {
     partPromises[category] = Promise.all(assetList[category].map(loadWithProgress));
   }
 
-  // Tunggu semua selesai
   const resolvedTextures = await Promise.all(texturePromises);
   loadedTextures = resolvedTextures.map(img => ctx.createPattern(img, "repeat"));
 
@@ -482,14 +556,11 @@ async function loadAssets() {
     loadedParts[category] = await partPromises[category];
   }
 
-  // Sembunyikan loading dengan animasi
   setTimeout(() => {
     loadingOverlay.classList.add("hidden");
   }, 400);
 
-  statusInfo.textContent = "Siap digunakan";
-  statusInfo.style.background = "#e6f4ea";
-  statusInfo.style.color = "#1e8e3e";
+  statusInfo.textContent = "Udah Siap Nih Cuy! ✨";
 }
 
 const palettes = {
@@ -562,12 +633,10 @@ function drawAvatar() {
     ctx.globalAlpha = 1.0;
   }
   
-  // Draw Layer secara berurutan
   if(currentConfig.hairBIdx !== -1 && loadedParts.hair_b[currentConfig.hairBIdx]) drawPart(loadedParts.hair_b[currentConfig.hairBIdx], theme.hDark, hairTex);
   if(loadedParts.head[0]) drawPart(loadedParts.head[0], skin.base);
   if(loadedParts.body[currentConfig.bodyIdx]) drawPart(loadedParts.body[currentConfig.bodyIdx], theme.main, fabricTex);
   
-  // Render mata berdasarkan sistem gender
   if (currentConfig.isFemale) {
     if(loadedParts.eyes_female[currentConfig.eyeIdx]) drawPart(loadedParts.eyes_female[currentConfig.eyeIdx], "#ffffff");
   } else {
@@ -576,7 +645,6 @@ function drawAvatar() {
 
   if(loadedParts.mouth[currentConfig.mouthIdx]) drawPart(loadedParts.mouth[currentConfig.mouthIdx], "#ffffff");
 
-  // Render rambut depan berdasarkan sistem gender
   if (currentConfig.isFemale) {
     if(loadedParts.hair_f_female[currentConfig.hairFIdx]) drawPart(loadedParts.hair_f_female[currentConfig.hairFIdx], theme.hair, hairTex);
   } else {
@@ -587,7 +655,7 @@ function drawAvatar() {
 }
 
 function applySeed(seedStr) {
-  if (!seedStr) seedStr = "Anonim"; 
+  if (!seedStr) seedStr = "OrangAsing"; 
   currentSeedName = seedStr;
   if (document.activeElement !== seedInput) seedInput.value = seedStr; 
   
@@ -640,26 +708,24 @@ function getHDCanvasData() {
   hdCtx.imageSmoothingEnabled = false; 
   hdCtx.drawImage(canvas, 0, 0, 1024, 1024);
   
-  // Tambahkan watermark ID Avatar kecil di pojok kanan bawah
-  hdCtx.imageSmoothingEnabled = true; // Smoothing aktif khusus teks agar rapi
+  hdCtx.imageSmoothingEnabled = true;
   const watermarkText = "ID: " + currentSeedName;
-  hdCtx.font = "bold 26px -apple-system, BlinkMacSystemFont, sans-serif";
+  hdCtx.font = "bold 28px 'Fredoka', sans-serif";
   hdCtx.textAlign = "right";
   hdCtx.textBaseline = "bottom";
   
-  // Efek bayangan ringan agar terlihat jelas di berbagai warna background
-  hdCtx.fillStyle = "rgba(0, 0, 0, 0.4)";
-  hdCtx.fillText(watermarkText, 1024 - 18, 1024 - 18);
-  hdCtx.fillStyle = "rgba(255, 255, 255, 0.95)";
+  hdCtx.fillStyle = "#000000";
+  hdCtx.fillText(watermarkText, 1024 - 17, 1024 - 17);
+  hdCtx.fillStyle = "#FFDE59";
   hdCtx.fillText(watermarkText, 1024 - 20, 1024 - 20);
 
   return hdCanvas.toDataURL("image/jpeg", 0.95);
 }
 
 function downloadImage() {
-  const name = currentSeedName || 'Avatar_Studio';
+  const name = currentSeedName || 'Muka_Kartun';
   const link = document.createElement("a");
-  link.download = `${name}_HD.jpg`; 
+  link.download = `${name}_SuperHD.jpg`; 
   link.href = getHDCanvasData();
   link.click();
 }
@@ -668,33 +734,44 @@ function updateBatchCount(change) {
   const input = document.getElementById("batchCount");
   let currentValue = parseInt(input.value) || 5;
   const min = parseInt(input.min) || 2;
-  const max = parseInt(input.max) || 10;
+  const max = parseInt(input.max) || 27; 
   let newValue = currentValue + change;
   if(newValue >= min && newValue <= max) input.value = newValue;
 }
 
 function prepareBatch() {
-  const batchCount = parseInt(document.getElementById("batchCount").value) || 5;
-  const grid = document.getElementById("previewGrid");
-  grid.innerHTML = "";
-  batchImagesData = [];
-
-  for (let i = 0; i < batchCount; i++) {
-    const randomName = generateRandomName();
-    applySeed(randomName); // generate dan render avatar ke canvas, juga merubah currentSeedName
-    
-    const dataURL = getHDCanvasData();
-    const base64Data = dataURL.split(',')[1];
-    
-    batchImagesData.push({ name: randomName, data: base64Data });
-    
-    const img = document.createElement("img");
-    img.src = dataURL;
-    grid.appendChild(img);
-  }
+  const btn = document.getElementById("btnGenerateBatch");
+  const originalText = btn.textContent;
   
-  const modal = document.getElementById("previewModal");
-  modal.classList.add("active");
+  btn.innerHTML = `Mikir Bentar... 🤯`;
+  btn.disabled = true;
+
+  setTimeout(() => {
+    const batchCount = parseInt(document.getElementById("batchCount").value) || 5;
+    const grid = document.getElementById("previewGrid");
+    grid.innerHTML = "";
+    batchImagesData = [];
+
+    for (let i = 0; i < batchCount; i++) {
+      const randomName = generateRandomName();
+      applySeed(randomName); 
+      
+      const dataURL = getHDCanvasData();
+      const base64Data = dataURL.split(',')[1];
+      
+      batchImagesData.push({ name: randomName, data: base64Data });
+      
+      const img = document.createElement("img");
+      img.src = dataURL;
+      grid.appendChild(img);
+    }
+    
+    const modal = document.getElementById("previewModal");
+    modal.classList.add("active");
+    
+    btn.textContent = originalText;
+    btn.disabled = false;
+  }, 2000); 
 }
 
 function closePreview() {
@@ -703,35 +780,30 @@ function closePreview() {
   generateRandom();
 }
 
-async function downloadBatchZip() {
-  if (typeof JSZip === 'undefined') {
-    alert("Error: Library JSZip gagal dimuat. Harap periksa koneksi internet Anda.");
-    return;
-  }
-  const btn = document.getElementById("btnDownloadZip");
-  btn.textContent = "Memproses...";
-  const zip = new JSZip();
-  const folder = zip.folder("Avatars");
+async function downloadBatchImages() {
+  const btn = document.getElementById("btnDownloadBatch");
+  btn.textContent = "Lagi Nyedot... 🧃";
+  btn.disabled = true;
 
-  for (const item of batchImagesData) {
-    folder.file(`${item.name}_HD.jpg`, item.data, {base64: true});
-  }
-
-  zip.generateAsync({ type: "blob" }).then(function(content) {
+  for (let i = 0; i < batchImagesData.length; i++) {
+    const item = batchImagesData[i];
     const link = document.createElement("a");
-    link.href = URL.createObjectURL(content);
+    link.href = "data:image/jpeg;base64," + item.data;
+    link.download = `${item.name}_SuperHD.jpg`;
     
-    const randomId = Math.random().toString(36).substring(2, 10);
-    link.download = `_avatars_${randomId}.zip`;
+    document.body.appendChild(link);
     link.click();
+    document.body.removeChild(link);
     
-    btn.textContent = "Mulai Download ZIP";
+    await new Promise(resolve => setTimeout(resolve, 300));
+  }
+  
+  btn.textContent = "Beres Cuy! 🎉";
+  setTimeout(() => {
+    btn.textContent = "Unduh Semua Hasil 🚀";
+    btn.disabled = false;
     closePreview();
-  }).catch(function(err) {
-    btn.textContent = "Mulai Download ZIP";
-    console.error(err);
-    alert("Gagal memproses file batch.");
-  });
+  }, 1500);
 }
 
 window.onload = async () => {
