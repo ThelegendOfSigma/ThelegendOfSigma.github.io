@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Pabrik Muka Kartun 🤪</title>
+<title>Pabrik Muka Kartun</title>
 <!-- Menggunakan font Fredoka yang bulat dan kartunis -->
 <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&display=swap" rel="stylesheet">
 
@@ -55,7 +55,35 @@
     color: var(--text-primary);
   }
 
-  /* --- Loading Overlay Styles (Kocak Version) --- */
+  /* --- Tombol Floating Bahasa --- */
+  .floating-lang-btn {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background: #FFF;
+    color: var(--border-color);
+    border: 3px solid var(--border-color);
+    border-radius: 50%;
+    width: 48px;
+    height: 48px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    box-shadow: 4px 4px 0px var(--border-color);
+    z-index: 999;
+    transition: transform 0.1s, box-shadow 0.1s;
+  }
+  .floating-lang-btn:hover {
+    transform: scale(1.1);
+    background: var(--accent);
+  }
+  .floating-lang-btn:active {
+    transform: scale(0.95) translate(2px, 2px);
+    box-shadow: 2px 2px 0px var(--border-color);
+  }
+
+  /* --- Loading Overlay Styles --- */
   .loading-overlay {
     position: fixed; top: 0; left: 0; right: 0; bottom: 0;
     background: rgba(255, 222, 89, 0.95);
@@ -66,9 +94,9 @@
   .loading-overlay.hidden { opacity: 0; visibility: hidden; }
   
   .loading-spinner {
-    font-size: 50px;
     animation: bounce 0.5s alternate infinite cubic-bezier(.5,0.05,1,.5);
     margin-bottom: 20px;
+    color: var(--border-color);
   }
 
   @keyframes bounce { 
@@ -105,7 +133,7 @@
     display: flex;
     flex-direction: column;
     overflow: hidden;
-    transform: rotate(-1deg); /* Sedikit miring biar nyeleneh */
+    transform: rotate(-1deg);
   }
 
   .app-header {
@@ -118,6 +146,10 @@
     background: var(--accent);
     color: var(--border-color);
     text-transform: uppercase;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
   }
 
   .canvas-section {
@@ -181,6 +213,9 @@
     padding: 4px 12px;
     border-radius: 20px;
     border: 2px solid var(--border-color);
+    display: flex;
+    align-items: center;
+    gap: 4px;
   }
 
   .controls-section {
@@ -202,6 +237,9 @@
     font-weight: 700;
     color: var(--border-color);
     text-transform: uppercase;
+    display: flex;
+    align-items: center;
+    gap: 6px;
   }
 
   .input-field {
@@ -242,6 +280,10 @@
     box-shadow: var(--shadow-chunky);
     transition: all 0.1s ease;
     text-transform: uppercase;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
   }
 
   .btn:hover:not(:disabled) { 
@@ -260,15 +302,11 @@
     transform: translateY(4px) translateX(4px);
   }
 
-  /* Tombol Utama ala Komik */
-  .btn-premium {
-    background: var(--btn-primary);
-    color: #FFF;
-  }
+  .btn-premium { background: var(--btn-primary); color: #FFF; }
+  .btn-premium:hover:not(:disabled) { background: #FF4040; }
   
-  .btn-premium:hover:not(:disabled) {
-    background: #FF4040;
-  }
+  .lang-btn { background: #38BDF8; margin-bottom: 8px; justify-content: flex-start; padding-left: 20px;}
+  .lang-btn:hover:not(:disabled) { background: #0ea5e9; }
 
   .batch-box {
     background: #E0F2FE;
@@ -317,7 +355,7 @@
     pointer-events: none;
   }
 
-  /* Modal Preview bergaya Kartun */
+  /* Modal Preview */
   .modal-overlay {
     position: fixed;
     top: 0; left: 0; right: 0; bottom: 0;
@@ -326,7 +364,7 @@
     display: none;
     justify-content: center;
     align-items: center;
-    z-index: 100;
+    z-index: 2000;
     padding: 20px;
     opacity: 0;
     transition: opacity 0.3s ease;
@@ -366,6 +404,12 @@
     font-size: 20px;
     text-transform: uppercase;
   }
+  
+  .modal-header span {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
 
   .btn-close {
     background: var(--danger);
@@ -378,6 +422,9 @@
     font-size: 16px;
     box-shadow: 2px 2px 0px var(--border-color);
     transition: all 0.1s;
+    display: flex;
+    justify-content: center;
+    align-items: center;
   }
   .btn-close:active {
     transform: translate(2px, 2px);
@@ -408,31 +455,74 @@
     transition: transform 0.2s;
   }
   
-  .preview-grid img:hover {
-    transform: scale(1.1) rotate(5deg);
-  }
+  .preview-grid img:hover { transform: scale(1.1) rotate(5deg); }
 
   .modal-footer {
     padding: 20px;
     border-top: var(--border-thick);
     background: #FFF;
   }
-
 </style>
 </head>
 <body>
 
+<!-- Tombol Ganti Bahasa Mengambang -->
+<button id="btnFloatingLang" onclick="openLangModal()" class="floating-lang-btn" title="Ganti Bahasa">
+  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <circle cx="12" cy="12" r="10"></circle>
+    <line x1="2" y1="12" x2="22" y2="12"></line>
+    <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+  </svg>
+</button>
+
+<!-- Popup Pilihan Bahasa -->
+<div id="langModal" class="modal-overlay">
+  <div class="modal-content" style="max-width: 350px;">
+    <div class="modal-header">
+      <span style="margin: 0 auto;" id="langModalTitle">
+        Pilih Bahasa / Language
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>
+      </span>
+    </div>
+    <div style="padding: 24px; display: flex; flex-direction: column; gap: 8px; background: #FFFBEB;">
+      <button class="btn btn-premium lang-btn" onclick="selectLanguage('id')">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        Indonesia (Kocak)
+      </button>
+      <button class="btn btn-premium lang-btn" onclick="selectLanguage('en')">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        English (Slang)
+      </button>
+      <button class="btn btn-premium lang-btn" onclick="selectLanguage('ar')">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        العربية (Farafish)
+      </button>
+      <button class="btn btn-premium lang-btn" onclick="selectLanguage('ja')">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        日本語 (Kansai)
+      </button>
+      <button class="btn btn-premium lang-btn" onclick="selectLanguage('tl')">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        Tagalog (Lods)
+      </button>
+    </div>
+  </div>
+</div>
+
 <!-- Layar Loading -->
 <div id="loadingOverlay" class="loading-overlay">
-  <div class="loading-spinner">🤪</div>
-  <div class="loading-text" id="loadingText">Bentar Ya Nyet... 0%</div>
+  <!-- Spinner Face SVG -->
+  <svg width="50" height="50" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="loading-spinner">
+    <circle cx="12" cy="12" r="10"/><path d="M8 9h.01M16 9h.01M9 15c1.5 1.5 4.5 1.5 6 0"/>
+  </svg>
+  <div class="loading-text" id="loadingText">Memuat... 0%</div>
   <div class="loading-bar-bg">
     <div class="loading-bar-fill" id="loadingBar"></div>
   </div>
 </div>
 
 <div class="app-card">
-  <div class="app-header">Pabrik Muka Kartun 🎨</div>
+  <div class="app-header" id="appTitle">Pabrik Muka Kartun</div>
 
   <div class="canvas-section">
     <div class="canvas-wrapper">
@@ -444,23 +534,23 @@
 
   <div class="controls-section">
     <div class="input-group">
-      <label class="input-label">Ketik Nama 🪄</label>
-      <input type="text" id="seedInput" class="input-field" placeholder="Ketik apa aja di sini..." autocomplete="off">
+      <label class="input-label" id="labelName">Ketik Nama</label>
+      <input type="text" id="seedInput" class="input-field" placeholder="Ketik apa aja..." autocomplete="off">
     </div>
 
     <div class="action-row">
-      <button class="btn" onclick="generateRandom()">Acak 🎲</button>
-      <button class="btn btn-premium" onclick="downloadImage()">Comot 📸</button>
+      <button class="btn" id="btnAcak" onclick="generateRandom()">Acak</button>
+      <button class="btn btn-premium" id="btnComot" onclick="downloadImage()">Comot</button>
     </div>
 
     <div class="batch-box">
-      <label class="input-label" style="display:block; margin-bottom: 12px;">Borongan (Maks 27) 📦</label>
+      <label class="input-label" id="labelBatch" style="display:block; margin-bottom: 12px;">Borongan (Maks 27)</label>
       <div class="stepper">
         <button type="button" onclick="updateBatchCount(-1)">-</button>
         <input type="number" id="batchCount" value="5" min="2" max="27" readonly>
         <button type="button" onclick="updateBatchCount(1)">+</button>
       </div>
-      <button class="btn btn-premium" id="btnGenerateBatch" style="width: 100%; background: #22C55E;" onclick="prepareBatch()">Bikin Sekebon! 🌳</button>
+      <button class="btn btn-premium" id="btnGenerateBatch" style="width: 100%; background: #22C55E;" onclick="prepareBatch()">Bikin Sekebon!</button>
     </div>
   </div>
 </div>
@@ -469,19 +559,158 @@
 <div class="modal-overlay" id="previewModal">
   <div class="modal-content">
     <div class="modal-header">
-      <span>Hasil Borongan 🥳</span>
-      <button class="btn-close" onclick="closePreview()">✕</button>
+      <span id="modalBatchTitle">Hasil Borongan</span>
+      <button class="btn-close" onclick="closePreview()">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+      </button>
     </div>
     <div class="preview-grid" id="previewGrid"></div>
     <div class="modal-footer">
       <button class="btn btn-premium" id="btnDownloadBatch" onclick="downloadBatchImages()" style="width: 100%;">
-        Unduh Semua Hasil 🚀
+        Unduh Semua Hasil
       </button>
     </div>
   </div>
 </div>
 
 <script>
+// --- Generator SVG Dinamis ---
+const svgIcon = (path, size=20) => `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${path}</svg>`;
+
+const icons = {
+  palette: svgIcon('<path d="M12 22a10 10 0 1 1 0-20c2.5 0 4.5 2 4.5 4.5a4.5 4.5 0 0 1-4.5 4.5 3 3 0 0 0-3 3c0 1.5.5 2.5 1 3.5.5 1 1.5 2 1.5 3.5a1 1 0 0 1-1 1h-.5z"/><circle cx="7.5" cy="10.5" r=".5" fill="currentColor"/><circle cx="10.5" cy="7.5" r=".5" fill="currentColor"/><circle cx="14.5" cy="7.5" r=".5" fill="currentColor"/><circle cx="17.5" cy="10.5" r=".5" fill="currentColor"/>', 22),
+  wand: svgIcon('<path d="M15 4V2M15 16v-2M8 9h2M20 9h2M17.8 11.8l1.4 1.4M17.8 6.2l1.4-1.4M12.2 6.2l-1.4-1.4M12.2 11.8l-1.4 1.4M3 21l9-9M12.2 6.2l-1.4 1.4"/>'),
+  dice: svgIcon('<rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5" fill="currentColor"/><circle cx="15.5" cy="15.5" r="1.5" fill="currentColor"/>'),
+  camera: svgIcon('<path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/>'),
+  box: svgIcon('<path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/>'),
+  tree: svgIcon('<path d="M12 22v-6M12 8V2M4 12l8-8 8 8M4 22l8-8 8 8"/>'),
+  party: svgIcon('<path d="m5.8 11.3 2.9-2.9a2 2 0 0 1 2.8 0L17 14.1a2 2 0 0 1 0 2.8l-2.9 2.9a2 2 0 0 1-2.8 0L5.8 14.1a2 2 0 0 1 0-2.8z"/><path d="M4 20 7.3 16.7M15 5l-1.3 1.3M21 9l-1.3 1.3M8 3 9.3 4.3M3 8l1.3 1.3"/>'),
+  rocket: svgIcon('<path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z"/><path d="m12 15-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z"/><path d="M9 12H4s.55-3.03 2-4c1.62-1.08 5-4 5-4v5"/>'),
+  sparkles: svgIcon('<path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/>', 16),
+  brain: svgIcon('<path d="M12 5a3 3 0 1 0-5.997.125 4 4 0 0 0-2.526 5.77 4 4 0 0 0 .556 6.588A4 4 0 1 0 12 18Z"/><path d="M12 5a3 3 0 1 1 5.997.125 4 4 0 0 1 2.526 5.77 4 4 0 0 1-.556 6.588A4 4 0 1 1 12 18Z"/><path d="M15 13a4.5 4.5 0 0 1-3-4 4.5 4.5 0 0 1-3 4"/>'),
+  drink: svgIcon('<path d="M7 11V3.2c0-.6.4-1 1-1h8c.6 0 1 .4 1 1V11M5 11h14M7 11l1.5 10c.1.6.6 1 1.2 1h4.6c.6 0 1.1-.4 1.2-1L17 11M10 2v5M14 2v5M12 16v-2"/>'),
+  done: svgIcon('<path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>')
+};
+
+// --- Sistem Terjemahan ---
+let isAppReady = false;
+
+const translations = {
+  id: {
+    appTitle: `Pabrik Muka Kartun ${icons.palette}`,
+    loadingPrefix: "Bentar Ya Nyet...",
+    loadingReady: `Udah Siap Nih Cuy! ${icons.sparkles}`,
+    statusInit: "Lagi dandan...",
+    labelName: `Ketik Nama ${icons.wand}`,
+    placeholderName: "Ketik apa aja di sini...",
+    btnAcak: `Acak ${icons.dice}`,
+    btnComot: `Comot ${icons.camera}`,
+    labelBatch: `Borongan (Maks 27) ${icons.box}`,
+    btnBatch: `Bikin Sekebon! ${icons.tree}`,
+    batchThinking: `Mikir Bentar... ${icons.brain}`,
+    modalBatchTitle: `Hasil Borongan ${icons.party}`,
+    btnDownloadAll: `Unduh Semua Hasil ${icons.rocket}`,
+    batchDownloading: `Lagi Nyedot... ${icons.drink}`,
+    batchDone: `Beres Cuy! ${icons.done}`
+  },
+  en: {
+    appTitle: `Toon Face Factory ${icons.palette}`,
+    loadingPrefix: "Hold your horses...",
+    loadingReady: `All Set, Bro! ${icons.sparkles}`,
+    statusInit: "Getting pretty...",
+    labelName: `Type a Name ${icons.wand}`,
+    placeholderName: "Type whatever here...",
+    btnAcak: `Yolo ${icons.dice}`,
+    btnComot: `Snatch It ${icons.camera}`,
+    labelBatch: `Bulk Mode (Max 27) ${icons.box}`,
+    btnBatch: `Make a Ton! ${icons.tree}`,
+    batchThinking: `Thinking Hard... ${icons.brain}`,
+    modalBatchTitle: `The Stash ${icons.party}`,
+    btnDownloadAll: `Download Em All ${icons.rocket}`,
+    batchDownloading: `Slurping... ${icons.drink}`,
+    batchDone: `Done Deal! ${icons.done}`
+  },
+  ar: {
+    appTitle: `مصنع الوجوه الفرفوشة ${icons.palette}`,
+    loadingPrefix: "دقيقة يا حلو...",
+    loadingReady: `جاهزين يا باشا! ${icons.sparkles}`,
+    statusInit: "جاري التكشخ...",
+    labelName: `اكتب اسمك ${icons.wand}`,
+    placeholderName: "اكتب أي حاجة هنا...",
+    btnAcak: `عشوائي ${icons.dice}`,
+    btnComot: `اخطفها ${icons.camera}`,
+    labelBatch: `بالجملة (آخرك ٢٧) ${icons.box}`,
+    btnBatch: `اعمل كووومة! ${icons.tree}`,
+    batchThinking: `بشغل مخي... ${icons.brain}`,
+    modalBatchTitle: `الحصيلة ${icons.party}`,
+    btnDownloadAll: `نزلهم كلهم ${icons.rocket}`,
+    batchDownloading: `جاري الشفط... ${icons.drink}`,
+    batchDone: `خلصنا يا وحش! ${icons.done}`
+  },
+  ja: {
+    appTitle: `アニメ顔工場 ${icons.palette}`,
+    loadingPrefix: "ちょい待ちや...",
+    loadingReady: `できたで！ ${icons.sparkles}`,
+    statusInit: "メイク中...",
+    labelName: `名前を入れてな ${icons.wand}`,
+    placeholderName: "適当に書いてや...",
+    btnAcak: `ガチャ ${icons.dice}`,
+    btnComot: `ゲット ${icons.camera}`,
+    labelBatch: `まとめて (最大27) ${icons.box}`,
+    btnBatch: `大量生産！ ${icons.tree}`,
+    batchThinking: `考え中... ${icons.brain}`,
+    modalBatchTitle: `成果物 ${icons.party}`,
+    btnDownloadAll: `全部保存や ${icons.rocket}`,
+    batchDownloading: `吸い込み中... ${icons.drink}`,
+    batchDone: `完了やで！ ${icons.done}`
+  },
+  tl: {
+    appTitle: `Pabrika ng Mukha ${icons.palette}`,
+    loadingPrefix: "Teka lang lods...",
+    loadingReady: `G na lods! ${icons.sparkles}`,
+    statusInit: "Nagpapaganda pa...",
+    labelName: `Lagay Pangalan ${icons.wand}`,
+    placeholderName: "Type ka lang kahit ano...",
+    btnAcak: `Balasahin ${icons.dice}`,
+    btnComot: `Kunin ${icons.camera}`,
+    labelBatch: `Bultuhan (Max 27) ${icons.box}`,
+    btnBatch: `Gumawa Madami! ${icons.tree}`,
+    batchThinking: `Nag-iisip pa... ${icons.brain}`,
+    modalBatchTitle: `Ang Mga Nakuha ${icons.party}`,
+    btnDownloadAll: `I-download Lahat ${icons.rocket}`,
+    batchDownloading: `Sinasipsip... ${icons.drink}`,
+    batchDone: `Tapos na repa! ${icons.done}`
+  }
+};
+
+let currentLang = 'id';
+function t(key) { return translations[currentLang][key] || translations['id'][key]; }
+
+function applyTranslations(lang) {
+  currentLang = lang;
+  document.getElementById('appTitle').innerHTML = t('appTitle');
+  document.getElementById('labelName').innerHTML = t('labelName');
+  document.getElementById('seedInput').placeholder = t('placeholderName');
+  document.getElementById('btnAcak').innerHTML = t('btnAcak');
+  document.getElementById('btnComot').innerHTML = t('btnComot');
+  document.getElementById('labelBatch').innerHTML = t('labelBatch');
+  document.getElementById('btnGenerateBatch').innerHTML = t('btnBatch');
+  document.getElementById('modalBatchTitle').innerHTML = t('modalBatchTitle');
+  document.getElementById('btnDownloadBatch').innerHTML = t('btnDownloadAll');
+  document.getElementById('statusInfo').innerHTML = isAppReady ? t('loadingReady') : t('statusInit');
+}
+
+function openLangModal() {
+  document.getElementById('langModal').classList.add('active');
+}
+
+function selectLanguage(lang) {
+  localStorage.setItem('pabrikKartunLang', lang);
+  applyTranslations(lang);
+  document.getElementById('langModal').classList.remove('active');
+}
+
+// --- Logika Canvas dan Aplikasi ---
 const canvas = document.getElementById("canvas");
 const ctx = canvas.getContext("2d");
 const seedInput = document.getElementById("seedInput");
@@ -531,7 +760,7 @@ async function loadAssets() {
     loaded++;
     const percent = Math.min(100, Math.floor((loaded / totalAssets) * 100));
     loadingBar.style.width = percent + "%";
-    loadingText.textContent = `Bentar Ya Nyet... ${percent}%`;
+    loadingText.textContent = `${t('loadingPrefix')} ${percent}%`;
   };
 
   const loadWithProgress = async (url) => {
@@ -560,7 +789,8 @@ async function loadAssets() {
     loadingOverlay.classList.add("hidden");
   }, 400);
 
-  statusInfo.textContent = "Udah Siap Nih Cuy! ✨";
+  isAppReady = true;
+  statusInfo.innerHTML = t('loadingReady');
 }
 
 const palettes = {
@@ -741,9 +971,9 @@ function updateBatchCount(change) {
 
 function prepareBatch() {
   const btn = document.getElementById("btnGenerateBatch");
-  const originalText = btn.textContent;
+  const originalText = btn.innerHTML;
   
-  btn.innerHTML = `Mikir Bentar... 🤯`;
+  btn.innerHTML = t('batchThinking');
   btn.disabled = true;
 
   setTimeout(() => {
@@ -769,7 +999,7 @@ function prepareBatch() {
     const modal = document.getElementById("previewModal");
     modal.classList.add("active");
     
-    btn.textContent = originalText;
+    btn.innerHTML = originalText;
     btn.disabled = false;
   }, 2000); 
 }
@@ -782,7 +1012,7 @@ function closePreview() {
 
 async function downloadBatchImages() {
   const btn = document.getElementById("btnDownloadBatch");
-  btn.textContent = "Lagi Nyedot... 🧃";
+  btn.innerHTML = t('batchDownloading');
   btn.disabled = true;
 
   for (let i = 0; i < batchImagesData.length; i++) {
@@ -798,15 +1028,23 @@ async function downloadBatchImages() {
     await new Promise(resolve => setTimeout(resolve, 300));
   }
   
-  btn.textContent = "Beres Cuy! 🎉";
+  btn.innerHTML = t('batchDone');
   setTimeout(() => {
-    btn.textContent = "Unduh Semua Hasil 🚀";
+    btn.innerHTML = t('btnDownloadAll');
     btn.disabled = false;
     closePreview();
   }, 1500);
 }
 
+// Inisialisasi saat window dimuat
 window.onload = async () => {
+  const savedLang = localStorage.getItem('pabrikKartunLang');
+  if (!savedLang) {
+    document.getElementById('langModal').classList.add('active');
+  } else {
+    applyTranslations(savedLang);
+  }
+  applyTranslations(savedLang || 'id'); // Set string default
   await loadAssets(); 
   generateRandom();
 };
