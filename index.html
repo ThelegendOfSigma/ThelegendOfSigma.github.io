@@ -27,7 +27,6 @@
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
     margin: 0; 
     padding: 0; 
-    /* Mencegah seleksi teks dan pop-up tekan lama */
     -webkit-user-select: none;
     -moz-user-select: none;
     -ms-user-select: none;
@@ -35,7 +34,6 @@
     -webkit-touch-callout: none; 
   }
 
-  /* Mengizinkan seleksi teks hanya pada input agar bisa diketik */
   input[type="text"], input[type="number"] {
     -webkit-user-select: text;
     -moz-user-select: text;
@@ -52,6 +50,35 @@
     padding: 20px;
   }
 
+  /* --- Loading Overlay Styles --- */
+  .loading-overlay {
+    position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+    background: var(--bg-main);
+    z-index: 1000;
+    display: flex; flex-direction: column; justify-content: center; align-items: center;
+    transition: opacity 0.4s ease, visibility 0.4s ease;
+  }
+  .loading-overlay.hidden {
+    opacity: 0;
+    visibility: hidden;
+  }
+  .loading-box {
+    width: 80%; max-width: 280px;
+  }
+  .loading-text {
+    font-size: 15px; font-weight: 700; color: var(--text-dark);
+    text-align: center; margin-bottom: 14px;
+  }
+  .loading-bar-bg {
+    width: 100%; height: 8px; background: var(--secondary);
+    border-radius: 20px; overflow: hidden;
+  }
+  .loading-bar-fill {
+    height: 100%; width: 0%; background: var(--primary);
+    border-radius: 20px; transition: width 0.15s ease-out;
+  }
+
+  /* --- App Styles --- */
   .app-card {
     background: var(--surface);
     width: 100%;
@@ -85,7 +112,7 @@
   .canvas-wrapper {
     width: 180px;
     height: 180px;
-    border-radius: 50%;
+    border-radius: var(--radius-md); /* Diubah menjadi kotak dengan sudut tumpul modern */
     background: var(--bg-main);
     display: flex;
     justify-content: center;
@@ -96,11 +123,11 @@
   }
   
   canvas {
-    width: 115%; /* Sedikit di-zoom agar pas di lingkaran */
+    width: 100%; /* Dikembalikan ke 100% agar pas pada kotak */
     height: auto;
     display: block;
     image-rendering: pixelated;
-    pointer-events: none; /* Mencegah interaksi langsung pada gambar */
+    pointer-events: none;
   }
 
   .username-display {
@@ -304,7 +331,7 @@
   .preview-grid img {
     width: 100%;
     aspect-ratio: 1;
-    border-radius: 50%;
+    border-radius: var(--radius-sm); /* Kotak */
     object-fit: cover;
     border: 2px solid var(--border);
     box-shadow: 0 2px 8px rgba(0,0,0,0.05);
@@ -313,6 +340,16 @@
 </style>
 </head>
 <body>
+
+<!-- Layar Loading -->
+<div id="loadingOverlay" class="loading-overlay">
+  <div class="loading-box">
+    <div class="loading-text" id="loadingText">Menyiapkan Studio... 0%</div>
+    <div class="loading-bar-bg">
+      <div class="loading-bar-fill" id="loadingBar"></div>
+    </div>
+  </div>
+</div>
 
 <div class="app-card">
   <div class="app-header">
@@ -334,8 +371,8 @@
     </div>
 
     <div class="action-row">
-      <button class="btn btn-secondary" onclick="generateRandom()"> Acak</button>
-      <button class="btn btn-secondary" onclick="downloadImage()"> Simpan (JPG)</button>
+      <button class="btn btn-secondary" onclick="generateRandom()">Acak</button>
+      <button class="btn btn-secondary" onclick="downloadImage()">Simpan (JPG)</button>
     </div>
 
     <div class="batch-box">
@@ -379,24 +416,18 @@ const offCtx = offCanvas.getContext("2d");
 
 const TOTAL_TEXTURES = 29;
 let loadedTextures = [];
-let loadedParts = { body: [], eyes: [], hair_b: [], hair_f_female: [], hair_f_male: [], head: [], mouth: [] };
+let loadedParts = { body: [], eyes_male: [], eyes_female: [], hair_b: [], hair_f_female: [], hair_f_male: [], head: [], mouth: [] };
 
-// Daftar file
+// Daftar file (Dibuat otomatis agar lebih rapi)
 const assetList = {
-  body: ['body/body_01.png', 'body/body_02.png', 'body/body_03.png', 'body/body_04.png', 'body/body_05.png', 'body/body_06.png'],
-  eyes: [
-    'eyes/eyes_01.png', 'eyes/eyes_02.png', 'eyes/eyes_03.png', 'eyes/eyes_04.png', 'eyes/eyes_05.png', 
-    'eyes/eyes_06.png', 'eyes/eyes_07.png', 'eyes/eyes_08.png', 'eyes/eyes_09.png', 'eyes/eyes_10.png',
-    'eyes/eyes_11.png', 'eyes/eyes_12.png', 'eyes/eyes_13.png', 'eyes/eyes_14.png', 'eyes/eyes_15.png',
-    'eyes/eyes_16.png', 'eyes/eyes_17.png', 'eyes/eyes_18.png', 'eyes/eyes_19.png', 'eyes/eyes_20.png',
-    'eyes/eyes_21.png', 'eyes/eyes_22.png', 'eyes/eyes_23.png', 'eyes/eyes_24.png', 'eyes/eyes_25.png',
-    'eyes/eyes_26.png', 'eyes/eyes_27.png', 'eyes/eyes_28.png', 'eyes/eyes_29.png', 'eyes/eyes_30.png'
-  ],
-  hair_b: ['hair_b/hrb_01.png', 'hair_b/hrb_02.png', 'hair_b/hrb_03.png', 'hair_b/hrb_04.png', 'hair_b/hrb_05.png', 'hair_b/hrb_06.png', 'hair_b/hrb_07.png'],
-  hair_f_female: ['hair_f/female/hrf_01.png', 'hair_f/female/hrf_02.png', 'hair_f/female/hrf_03.png', 'hair_f/female/hrf_04.png', 'hair_f/female/hrf_05.png', 'hair_f/female/hrf_06.png', 'hair_f/female/hrf_07.png', 'hair_f/female/hrf_08.png', 'hair_f/female/hrf_09.png', 'hair_f/female/hrf_10.png', 'hair_f/female/hrf_11.png', 'hair_f/female/hrf_12.png', 'hair_f/female/hrf_13.png', 'hair_f/female/hrf_14.png', 'hair_f/female/hrf_15.png', 'hair_f/female/hrf_16.png', 'hair_f/female/hrf_17.png'],
-  hair_f_male: ['hair_f/male/hrf_01.png', 'hair_f/male/hrf_02.png', 'hair_f/male/hrf_03.png', 'hair_f/male/hrf_04.png', 'hair_f/male/hrf_05.png', 'hair_f/male/hrf_06.png', 'hair_f/male/hrf_07.png', 'hair_f/male/hrf_08.png', 'hair_f/male/hrf_09.png', 'hair_f/male/hrf_10.png', 'hair_f/male/hrf_11.png', 'hair_f/male/hrf_12.png', 'hair_f/male/hrf_13.png'],
+  body: Array.from({length: 12}, (_, i) => `body/body_${String(i+1).padStart(2, '0')}.png`),
+  eyes_male: Array.from({length: 30}, (_, i) => `eyes_male/eyes_${String(i+1).padStart(2, '0')}.png`),
+  eyes_female: Array.from({length: 34}, (_, i) => `eyes_female/eyes_${String(i+1).padStart(2, '0')}.png`),
+  hair_b: Array.from({length: 7}, (_, i) => `hair_b/hrb_${String(i+1).padStart(2, '0')}.png`),
+  hair_f_female: Array.from({length: 17}, (_, i) => `hair_f/female/hrf_${String(i+1).padStart(2, '0')}.png`),
+  hair_f_male: Array.from({length: 13}, (_, i) => `hair_f/male/hrf_${String(i+1).padStart(2, '0')}.png`),
   head: ['head/head.png'],
-  mouth: ['mouth/mouth_01.png', 'mouth/mouth_02.png', 'mouth/mouth_03.png', 'mouth/mouth_04.png', 'mouth/mouth_05.png', 'mouth/mouth_06.png', 'mouth/mouth_07.png', 'mouth/mouth_08.png', 'mouth/mouth_09.png', 'mouth/mouth_10.png', 'mouth/mouth_11.png', 'mouth/mouth_12.png', 'mouth/mouth_13.png', 'mouth/mouth_14.png', 'mouth/mouth_15.png', 'mouth/mouth_16.png', 'mouth/mouth_17.png', 'mouth/mouth_18.png', 'mouth/mouth_19.png', 'mouth/mouth_20.png', 'mouth/mouth_21.png', 'mouth/mouth_22.png', 'mouth/mouth_23.png', 'mouth/mouth_24.png', 'mouth/mouth_25.png', 'mouth/mouth_26.png', 'mouth/mouth_27.png', 'mouth/mouth_28.png', 'mouth/mouth_29.png', 'mouth/mouth_30.png', 'mouth/mouth_31.png']
+  mouth: Array.from({length: 31}, (_, i) => `mouth/mouth_${String(i+1).padStart(2, '0')}.png`)
 };
 
 const loadImg = (url) => new Promise((resolve) => { 
@@ -411,18 +442,51 @@ const loadImg = (url) => new Promise((resolve) => {
 });
 
 async function loadAssets() {
-  statusInfo.textContent = "Memuat tekstur...";
-  for (let i = 1; i <= TOTAL_TEXTURES; i++) {
-    let num = i.toString().padStart(2, '0');
-    let imgElement = await loadImg(`img_${num}.png`); 
-    loadedTextures.push(ctx.createPattern(imgElement, "repeat"));
-  }
+  const loadingOverlay = document.getElementById("loadingOverlay");
+  const loadingBar = document.getElementById("loadingBar");
+  const loadingText = document.getElementById("loadingText");
+  
+  // Hitung total aset untuk persentase progress
+  const totalAssets = TOTAL_TEXTURES + Object.values(assetList).flat().length;
+  let loaded = 0;
+  
+  const updateProgress = () => {
+    loaded++;
+    const percent = Math.min(100, Math.floor((loaded / totalAssets) * 100));
+    loadingBar.style.width = percent + "%";
+    loadingText.textContent = `Menyiapkan Studio... ${percent}%`;
+  };
+
+  const loadWithProgress = async (url) => {
+    const img = await loadImg(url);
+    updateProgress();
+    return img;
+  };
+
+  // Muat tekstur secara paralel
+  const texturePromises = Array.from({length: TOTAL_TEXTURES}, (_, i) => {
+    return loadWithProgress(`img_${String(i+1).padStart(2, '0')}.png`);
+  });
+
+  // Muat bagian avatar secara paralel
+  const partPromises = {};
   for (const category in assetList) {
-    for (const url of assetList[category]) {
-      const img = await loadImg(url);
-      loadedParts[category].push(img);
-    }
+    partPromises[category] = Promise.all(assetList[category].map(loadWithProgress));
   }
+
+  // Tunggu semua selesai
+  const resolvedTextures = await Promise.all(texturePromises);
+  loadedTextures = resolvedTextures.map(img => ctx.createPattern(img, "repeat"));
+
+  for (const category in assetList) {
+    loadedParts[category] = await partPromises[category];
+  }
+
+  // Sembunyikan loading dengan animasi
+  setTimeout(() => {
+    loadingOverlay.classList.add("hidden");
+  }, 400);
+
   statusInfo.textContent = "Siap digunakan";
   statusInfo.style.background = "#e6f4ea";
   statusInfo.style.color = "#1e8e3e";
@@ -498,12 +562,21 @@ function drawAvatar() {
     ctx.globalAlpha = 1.0;
   }
   
+  // Draw Layer secara berurutan
   if(currentConfig.hairBIdx !== -1 && loadedParts.hair_b[currentConfig.hairBIdx]) drawPart(loadedParts.hair_b[currentConfig.hairBIdx], theme.hDark, hairTex);
   if(loadedParts.head[0]) drawPart(loadedParts.head[0], skin.base);
   if(loadedParts.body[currentConfig.bodyIdx]) drawPart(loadedParts.body[currentConfig.bodyIdx], theme.main, fabricTex);
-  if(loadedParts.eyes[currentConfig.eyeIdx]) drawPart(loadedParts.eyes[currentConfig.eyeIdx], "#ffffff");
+  
+  // Render mata berdasarkan sistem gender
+  if (currentConfig.isFemale) {
+    if(loadedParts.eyes_female[currentConfig.eyeIdx]) drawPart(loadedParts.eyes_female[currentConfig.eyeIdx], "#ffffff");
+  } else {
+    if(loadedParts.eyes_male[currentConfig.eyeIdx]) drawPart(loadedParts.eyes_male[currentConfig.eyeIdx], "#ffffff");
+  }
+
   if(loadedParts.mouth[currentConfig.mouthIdx]) drawPart(loadedParts.mouth[currentConfig.mouthIdx], "#ffffff");
 
+  // Render rambut depan berdasarkan sistem gender
   if (currentConfig.isFemale) {
     if(loadedParts.hair_f_female[currentConfig.hairFIdx]) drawPart(loadedParts.hair_f_female[currentConfig.hairFIdx], theme.hair, hairTex);
   } else {
@@ -520,20 +593,23 @@ function applySeed(seedStr) {
   
   const rng = new PRNG(seedStr);
   const isFemale = rng.next() > 0.5;
-  let hairBIndex = -1, hairFIndex = 0;
+  let hairBIndex = -1, hairFIndex = 0, eyeIndex = 0;
 
   if (isFemale) {
     hairBIndex = Math.floor(rng.next() * Math.max(1, loadedParts.hair_b.length));
     hairFIndex = Math.floor(rng.next() * Math.max(1, loadedParts.hair_f_female.length));
+    eyeIndex = Math.floor(rng.next() * Math.max(1, loadedParts.eyes_female.length));
   } else {
     hairFIndex = Math.floor(rng.next() * Math.max(1, loadedParts.hair_f_male.length));
+    eyeIndex = Math.floor(rng.next() * Math.max(1, loadedParts.eyes_male.length));
   }
 
   currentConfig = {
-    isFemale: isFemale, skinIdx: Math.floor(rng.next() * palettes.skin.length),
+    isFemale: isFemale, 
+    skinIdx: Math.floor(rng.next() * palettes.skin.length),
     themeIdx: Math.floor(rng.next() * palettes.themes.length),
     bodyIdx: Math.floor(rng.next() * Math.max(1, loadedParts.body.length)),
-    eyeIdx: Math.floor(rng.next() * Math.max(1, loadedParts.eyes.length)),
+    eyeIdx: eyeIndex,
     mouthIdx: Math.floor(rng.next() * Math.max(1, loadedParts.mouth.length)),
     hairBIdx: hairBIndex, hairFIdx: hairFIndex,
     texFabricIdx: Math.floor(rng.next() * Math.max(1, TOTAL_TEXTURES)),
@@ -558,10 +634,25 @@ function getHDCanvasData() {
   const hdCanvas = document.createElement("canvas");
   hdCanvas.width = 1024; hdCanvas.height = 1024;
   const hdCtx = hdCanvas.getContext("2d");
+  
   hdCtx.fillStyle = "#FFFFFF";
   hdCtx.fillRect(0, 0, 1024, 1024);
   hdCtx.imageSmoothingEnabled = false; 
   hdCtx.drawImage(canvas, 0, 0, 1024, 1024);
+  
+  // Tambahkan watermark ID Avatar kecil di pojok kanan bawah
+  hdCtx.imageSmoothingEnabled = true; // Smoothing aktif khusus teks agar rapi
+  const watermarkText = "ID: " + currentSeedName;
+  hdCtx.font = "bold 26px -apple-system, BlinkMacSystemFont, sans-serif";
+  hdCtx.textAlign = "right";
+  hdCtx.textBaseline = "bottom";
+  
+  // Efek bayangan ringan agar terlihat jelas di berbagai warna background
+  hdCtx.fillStyle = "rgba(0, 0, 0, 0.4)";
+  hdCtx.fillText(watermarkText, 1024 - 18, 1024 - 18);
+  hdCtx.fillStyle = "rgba(255, 255, 255, 0.95)";
+  hdCtx.fillText(watermarkText, 1024 - 20, 1024 - 20);
+
   return hdCanvas.toDataURL("image/jpeg", 0.95);
 }
 
@@ -590,7 +681,7 @@ function prepareBatch() {
 
   for (let i = 0; i < batchCount; i++) {
     const randomName = generateRandomName();
-    applySeed(randomName);
+    applySeed(randomName); // generate dan render avatar ke canvas, juga merubah currentSeedName
     
     const dataURL = getHDCanvasData();
     const base64Data = dataURL.split(',')[1];
