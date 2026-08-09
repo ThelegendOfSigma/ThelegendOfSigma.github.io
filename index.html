@@ -4,24 +4,21 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Pabrik Muka Kartun</title>
-<!-- Menggunakan font Fredoka yang bulat dan kartunis -->
 <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&display=swap" rel="stylesheet">
-
 <style>
   :root {
-    --bg-main: #38BDF8; /* Biru langit cerah */
+    --bg-main: #38BDF8;
     --card-bg: #FFFFFF;
     --border-color: #000000;
     --text-primary: #000000;
     --text-secondary: #444444;
-    --accent: #FFDE59; /* Kuning pisang */
+    --accent: #FFDE59;
     --accent-hover: #FADA5E;
-    --btn-primary: #FF5757; /* Merah komik */
+    --btn-primary: #FF5757;
     --danger: #FF3131;
     --border-thick: 4px solid var(--border-color);
     --shadow-chunky: 6px 6px 0px var(--border-color);
   }
-
   * { 
     box-sizing: border-box; 
     font-family: 'Fredoka', 'Comic Sans MS', cursive, sans-serif; 
@@ -33,29 +30,30 @@
     user-select: none;
     -webkit-touch-callout: none; 
   }
-
   input[type="text"], input[type="number"] {
     -webkit-user-select: text;
     -moz-user-select: text;
     -ms-user-select: text;
     user-select: text;
   }
-
   body {
     background-color: var(--bg-main);
-    /* Pola polkadot ala komik retro */
     background-image: radial-gradient(#ffffff 15%, transparent 16%), radial-gradient(#ffffff 15%, transparent 16%);
     background-size: 40px 40px;
     background-position: 0 0, 20px 20px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
+    display: block;
     min-height: 100vh;
-    padding: 20px;
     color: var(--text-primary);
   }
-
-  /* --- Tombol Floating Bahasa --- */
+  .app-container {
+    width: 100%;
+    max-width: 540px;
+    margin: 0 auto;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    padding-bottom: 24px;
+  }
   .floating-lang-btn {
     position: fixed;
     top: 20px;
@@ -82,8 +80,6 @@
     transform: scale(0.95) translate(2px, 2px);
     box-shadow: 2px 2px 0px var(--border-color);
   }
-
-  /* --- Loading Overlay Styles --- */
   .loading-overlay {
     position: fixed; top: 0; left: 0; right: 0; bottom: 0;
     background: rgba(255, 222, 89, 0.95);
@@ -92,18 +88,15 @@
     transition: opacity 0.4s ease, visibility 0.4s ease;
   }
   .loading-overlay.hidden { opacity: 0; visibility: hidden; }
-  
   .loading-spinner {
     animation: bounce 0.5s alternate infinite cubic-bezier(.5,0.05,1,.5);
     margin-bottom: 20px;
     color: var(--border-color);
   }
-
   @keyframes bounce { 
     from { transform: translateY(0); }
     to { transform: translateY(-30px) scale(1.1); }
   }
-
   .loading-text {
     font-size: 20px; font-weight: 700; color: var(--border-color);
     margin-bottom: 16px; letter-spacing: 1px;
@@ -121,28 +114,15 @@
     height: 100%; width: 0%; background: var(--btn-primary);
     transition: width 0.2s ease-out;
   }
-
-  /* --- App Styles --- */
-  .app-card {
-    background: var(--card-bg);
-    width: 100%;
-    max-width: 400px;
-    border: var(--border-thick);
-    border-radius: 24px;
-    box-shadow: 10px 10px 0px var(--border-color);
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-    transform: rotate(-1deg);
-  }
-
   .app-header {
-    padding: 20px;
+    margin: 16px 16px 8px;
+    padding: 16px;
     text-align: center;
     font-weight: 700;
-    font-size: 24px;
+    font-size: 22px;
     letter-spacing: 1px;
-    border-bottom: var(--border-thick);
+    border: var(--border-thick);
+    border-radius: 20px;
     background: var(--accent);
     color: var(--border-color);
     text-transform: uppercase;
@@ -150,22 +130,24 @@
     align-items: center;
     justify-content: center;
     gap: 8px;
+    box-shadow: var(--shadow-chunky);
+    transform: rotate(-1deg);
   }
-
+  .content-card {
+    background: var(--card-bg);
+    border: var(--border-thick);
+    border-radius: 20px;
+    box-shadow: 8px 8px 0px var(--border-color);
+    margin: 8px 16px;
+    overflow: hidden;
+  }
   .canvas-section {
     display: flex;
     flex-direction: column;
     align-items: center;
     padding: 24px;
-    background: repeating-linear-gradient(
-      45deg,
-      #f8fafc,
-      #f8fafc 10px,
-      #f1f5f9 10px,
-      #f1f5f9 20px
-    );
+    background: repeating-linear-gradient(45deg, #f8fafc, #f8fafc 10px, #f1f5f9 10px, #f1f5f9 20px);
   }
-
   .canvas-wrapper {
     width: 180px;
     height: 180px;
@@ -182,300 +164,113 @@
     transform: rotate(2deg);
     transition: transform 0.3s ease;
   }
-
-  .canvas-wrapper:hover {
-    transform: rotate(-2deg) scale(1.05);
-  }
-  
+  .canvas-wrapper:hover { transform: rotate(-2deg) scale(1.05); }
   canvas {
-    width: 100%; 
-    height: auto;
-    display: block;
-    image-rendering: pixelated;
-    pointer-events: none;
+    width: 100%; height: auto;
+    display: block; image-rendering: pixelated; pointer-events: none;
   }
-
   .username-display {
-    font-size: 22px;
-    font-weight: 700;
-    color: var(--border-color);
-    margin-bottom: 4px;
-    text-decoration: underline;
-    text-decoration-thickness: 3px;
+    font-size: 22px; font-weight: 700; color: var(--border-color);
+    margin-bottom: 4px; text-decoration: underline; text-decoration-thickness: 3px;
     text-decoration-color: var(--btn-primary);
   }
-
   .status-badge {
-    font-size: 14px;
-    color: var(--border-color);
-    font-weight: 600;
-    background: var(--accent);
-    padding: 4px 12px;
-    border-radius: 20px;
-    border: 2px solid var(--border-color);
-    display: flex;
-    align-items: center;
-    gap: 4px;
+    font-size: 14px; color: var(--border-color); font-weight: 600;
+    background: var(--accent); padding: 4px 12px; border-radius: 20px;
+    border: 2px solid var(--border-color); display: flex; align-items: center; gap: 4px;
   }
-
-  .controls-section {
-    padding: 24px;
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
-    background: #FFF;
-  }
-
-  .input-group {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-  }
-
-  .input-label {
-    font-size: 15px;
-    font-weight: 700;
-    color: var(--border-color);
-    text-transform: uppercase;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-  }
-
+  .controls-section { padding: 24px; display: flex; flex-direction: column; gap: 20px; background: #FFF; }
+  .input-group { display: flex; flex-direction: column; gap: 8px; }
+  .input-label { font-size: 15px; font-weight: 700; color: var(--border-color); text-transform: uppercase; display: flex; align-items: center; gap: 6px; }
   .input-field {
-    width: 100%;
-    padding: 14px 16px;
-    background: #FFF;
-    border: var(--border-thick);
-    border-radius: 12px;
-    font-size: 16px;
-    font-weight: 600;
-    color: var(--text-primary);
-    outline: none;
-    box-shadow: inset 3px 3px 0px rgba(0,0,0,0.1);
-    transition: all 0.2s ease;
+    width: 100%; padding: 14px 16px; background: #FFF;
+    border: var(--border-thick); border-radius: 12px; font-size: 16px;
+    font-weight: 600; color: var(--text-primary); outline: none;
+    box-shadow: inset 3px 3px 0px rgba(0,0,0,0.1); transition: all 0.2s ease;
   }
-
-  .input-field:focus {
-    background: #FFFBEB;
-    box-shadow: inset 3px 3px 0px rgba(0,0,0,0.1), 0 0 0 4px var(--accent);
-  }
-
-  .action-row {
-    display: flex;
-    gap: 16px;
-  }
-
+  .input-field:focus { background: #FFFBEB; box-shadow: inset 3px 3px 0px rgba(0,0,0,0.1), 0 0 0 4px var(--accent); }
+  .action-row { display: flex; gap: 16px; }
   .btn {
-    flex: 1;
-    padding: 14px;
-    background: #FFF;
-    color: var(--border-color);
-    border: var(--border-thick);
-    border-radius: 12px;
-    font-size: 16px;
-    font-weight: 700;
-    cursor: pointer;
-    text-align: center;
-    box-shadow: var(--shadow-chunky);
-    transition: all 0.1s ease;
-    text-transform: uppercase;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 6px;
+    flex: 1; padding: 14px; background: #FFF; color: var(--border-color);
+    border: var(--border-thick); border-radius: 12px; font-size: 16px;
+    font-weight: 700; cursor: pointer; text-align: center;
+    box-shadow: var(--shadow-chunky); transition: all 0.1s ease;
+    text-transform: uppercase; display: flex; align-items: center; justify-content: center; gap: 6px;
   }
-
-  .btn:hover:not(:disabled) { 
-    transform: translateY(-2px);
-    box-shadow: 8px 8px 0px var(--border-color);
-  }
-  
-  .btn:active:not(:disabled) { 
-    transform: translateY(6px) translateX(6px);
-    box-shadow: 0px 0px 0px var(--border-color);
-  }
-  
-  .btn:disabled {
-    opacity: 0.6; cursor: not-allowed;
-    box-shadow: 2px 2px 0px var(--border-color);
-    transform: translateY(4px) translateX(4px);
-  }
-
+  .btn:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 8px 8px 0px var(--border-color); }
+  .btn:active:not(:disabled) { transform: translateY(6px) translateX(6px); box-shadow: 0px 0px 0px var(--border-color); }
+  .btn:disabled { opacity: 0.6; cursor: not-allowed; box-shadow: 2px 2px 0px var(--border-color); transform: translateY(4px) translateX(4px); }
   .btn-premium { background: var(--btn-primary); color: #FFF; }
   .btn-premium:hover:not(:disabled) { background: #FF4040; }
-  
   .lang-btn { background: #38BDF8; margin-bottom: 8px; justify-content: flex-start; padding-left: 20px;}
   .lang-btn:hover:not(:disabled) { background: #0ea5e9; }
-
   .batch-box {
-    background: #E0F2FE;
-    border: var(--border-thick);
-    border-radius: 16px;
-    padding: 16px;
-    box-shadow: var(--shadow-chunky);
+    background: #E0F2FE; border: var(--border-thick); border-radius: 16px;
+    padding: 16px; box-shadow: var(--shadow-chunky);
   }
-
-  .stepper {
-    display: flex;
-    align-items: center;
-    height: 48px;
-    margin-bottom: 16px;
-    background: #FFF;
-    border-radius: 12px;
-    border: var(--border-thick);
-    overflow: hidden;
-  }
-
-  .stepper button {
-    width: 48px;
-    height: 100%;
-    background: var(--accent);
-    border: none;
-    color: var(--border-color);
-    font-size: 24px;
-    font-weight: 900;
-    cursor: pointer;
-    transition: background 0.2s;
-  }
+  .stepper { display: flex; align-items: center; height: 48px; margin-bottom: 16px; background: #FFF; border-radius: 12px; border: var(--border-thick); overflow: hidden; }
+  .stepper button { width: 48px; height: 100%; background: var(--accent); border: none; color: var(--border-color); font-size: 24px; font-weight: 900; cursor: pointer; transition: background 0.2s; }
   .stepper button:hover { background: #FCD34D; }
   .stepper button:active { background: #FBBF24; }
   .stepper button:first-child { border-right: var(--border-thick); }
   .stepper button:last-child { border-left: var(--border-thick); }
-
-  .stepper input {
-    flex: 1;
-    height: 100%;
-    background: #FFF;
-    border: none;
-    text-align: center;
-    font-size: 20px;
-    font-weight: 700;
-    color: var(--border-color);
-    pointer-events: none;
-  }
-
-  /* Modal Preview */
-  .modal-overlay {
-    position: fixed;
-    top: 0; left: 0; right: 0; bottom: 0;
-    background: rgba(0, 0, 0, 0.7);
-    backdrop-filter: blur(4px);
-    display: none;
-    justify-content: center;
-    align-items: center;
-    z-index: 2000;
-    padding: 20px;
-    opacity: 0;
-    transition: opacity 0.3s ease;
-  }
+  .stepper input { flex: 1; height: 100%; background: #FFF; border: none; text-align: center; font-size: 20px; font-weight: 700; color: var(--border-color); pointer-events: none; }
   
-  .modal-overlay.active {
-    display: flex;
-    opacity: 1;
-  }
-
-  .modal-content {
-    background: var(--card-bg);
-    width: 100%;
-    max-width: 460px;
-    border: var(--border-thick);
-    border-radius: 24px;
-    box-shadow: 12px 12px 0px var(--border-color);
+  #customModeUI { display: none; flex-direction: column; }
+  .c-gender-wrap { display: inline-flex; background: #fff; border: 2px solid #000; border-radius: 12px; overflow: hidden; box-shadow: 2px 2px 0 #000;}
+  .c-gender-btn { padding: 10px 20px; border: none; font-weight: bold; font-size: 14px; cursor: pointer; text-transform: uppercase; transition: 0.2s; }
+  .c-gender-btn.active { background: var(--accent); color: #000; }
+  .c-gender-btn:not(.active) { background: #fff; color: #555; }
+  .c-gender-btn:not(:first-child) { border-left: 2px solid #000; }
+  
+  .c-mid-section { display: flex; align-items: center; justify-content: center; padding: 16px 20px; }
+  
+  .c-bottom-scroll {
+    max-height: 260px;
+    overflow-y: auto;
+    padding: 16px;
+    background: repeating-linear-gradient(45deg, #f8fafc, #f8fafc 10px, #f1f5f9 10px, #f1f5f9 20px);
+    border-top: var(--border-thick);
+    border-bottom: var(--border-thick);
     display: flex;
     flex-direction: column;
-    overflow: hidden;
-    transform: scale(0.8) rotate(-2deg);
-    transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-  }
-
-  .modal-overlay.active .modal-content {
-    transform: scale(1) rotate(0deg);
-  }
-
-  .modal-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 16px 20px;
-    border-bottom: var(--border-thick);
-    background: var(--accent);
-    font-weight: 700;
-    font-size: 20px;
-    text-transform: uppercase;
-  }
-  
-  .modal-header span {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-
-  .btn-close {
-    background: var(--danger);
-    border: 3px solid var(--border-color);
-    color: #FFF;
-    width: 36px; height: 36px;
-    border-radius: 50%;
-    cursor: pointer;
-    font-weight: bold;
-    font-size: 16px;
-    box-shadow: 2px 2px 0px var(--border-color);
-    transition: all 0.1s;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-  }
-  .btn-close:active {
-    transform: translate(2px, 2px);
-    box-shadow: 0px 0px 0px var(--border-color);
-  }
-
-  .preview-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
     gap: 16px;
-    max-height: 50vh;
-    overflow-y: auto;
-    padding: 24px;
-    background: #FFFBEB;
   }
+  .c-bottom-scroll::-webkit-scrollbar { width: 10px; }
+  .c-bottom-scroll::-webkit-scrollbar-track { background: #fff; border-left: 2px solid #000; }
+  .c-bottom-scroll::-webkit-scrollbar-thumb { background: var(--accent); border: 2px solid #000; border-radius: 6px; }
 
+  .c-box { background: #fff; border: 2px solid #000; border-radius: 16px; padding: 12px; box-shadow: 4px 4px 0 #000; display: flex; flex-wrap: wrap; gap: 10px; }
+  .c-box-title { width: 100%; font-size: 13px; font-weight: 800; text-align: left; text-transform: uppercase; margin-bottom: 4px; color: var(--text-secondary); border-bottom: 2px dashed #000; padding-bottom: 6px; }
+  
+  .c-step { flex: 1 1 45%; min-width: 120px; display: flex; align-items: center; justify-content: space-between; background: #fff; border: 2px solid #000; border-radius: 8px; overflow: hidden; height: 34px; }
+  .c-step button { width: 28px; height: 100%; border: none; background: var(--accent); font-weight: 900; cursor: pointer; color: #000; font-size: 14px; display:flex; justify-content:center; align-items:center; }
+  .c-step button:first-child { border-right: 2px solid #000; }
+  .c-step button:last-child { border-left: 2px solid #000; }
+  .c-step button:active { background: #fBBF24; }
+  .c-step span { font-size: 11px; font-weight: 700; text-transform: uppercase; flex: 1; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding: 0 4px; }
+
+  .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.7); backdrop-filter: blur(4px); display: none; justify-content: center; align-items: center; z-index: 2000; padding: 20px; opacity: 0; transition: opacity 0.3s ease; }
+  .modal-overlay.active { display: flex; opacity: 1; }
+  .modal-content { background: var(--card-bg); width: 100%; max-width: 460px; border: var(--border-thick); border-radius: 24px; box-shadow: 12px 12px 0px var(--border-color); display: flex; flex-direction: column; overflow: hidden; transform: scale(0.8) rotate(-2deg); transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+  .modal-overlay.active .modal-content { transform: scale(1) rotate(0deg); }
+  .modal-header { display: flex; justify-content: space-between; align-items: center; padding: 16px 20px; border-bottom: var(--border-thick); background: var(--accent); font-weight: 700; font-size: 20px; text-transform: uppercase; }
+  .modal-header span { display: flex; align-items: center; gap: 8px; }
+  .btn-close { background: var(--danger); border: 3px solid var(--border-color); color: #FFF; width: 36px; height: 36px; border-radius: 50%; cursor: pointer; font-weight: bold; font-size: 16px; box-shadow: 2px 2px 0px var(--border-color); transition: all 0.1s; display: flex; justify-content: center; align-items: center; }
+  .btn-close:active { transform: translate(2px, 2px); box-shadow: 0px 0px 0px var(--border-color); }
+  .preview-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(90px, 1fr)); gap: 16px; max-height: 50vh; overflow-y: auto; padding: 24px; background: #FFFBEB; }
   .preview-grid::-webkit-scrollbar { width: 12px; }
   .preview-grid::-webkit-scrollbar-track { background: #FFF; border-left: 2px solid #000; }
   .preview-grid::-webkit-scrollbar-thumb { background: var(--accent); border: 2px solid #000; border-radius: 10px; }
-
-  .preview-grid img {
-    width: 100%;
-    aspect-ratio: 1;
-    object-fit: cover;
-    border-radius: 16px;
-    border: 3px solid var(--border-color);
-    box-shadow: 4px 4px 0px var(--border-color);
-    transition: transform 0.2s;
-  }
-  
+  .preview-grid img { width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: 16px; border: 3px solid var(--border-color); box-shadow: 4px 4px 0px var(--border-color); transition: transform 0.2s; }
   .preview-grid img:hover { transform: scale(1.1) rotate(5deg); }
-
-  .modal-footer {
-    padding: 20px;
-    border-top: var(--border-thick);
-    background: #FFF;
-  }
+  .modal-footer { padding: 20px; border-top: var(--border-thick); background: #FFF; }
 </style>
 </head>
 <body>
-
-<!-- Tombol Ganti Bahasa Mengambang -->
 <button id="btnFloatingLang" onclick="openLangModal()" class="floating-lang-btn" title="Ganti Bahasa">
-  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-    <circle cx="12" cy="12" r="10"></circle>
-    <line x1="2" y1="12" x2="22" y2="12"></line>
-    <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
-  </svg>
+  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>
 </button>
-
-<!-- Popup Pilihan Bahasa -->
 <div id="langModal" class="modal-overlay">
   <div class="modal-content" style="max-width: 350px;">
     <div class="modal-header">
@@ -485,77 +280,109 @@
       </span>
     </div>
     <div style="padding: 24px; display: flex; flex-direction: column; gap: 8px; background: #FFFBEB;">
-      <button class="btn btn-premium lang-btn" onclick="selectLanguage('id')">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-        Indonesia (Kocak)
-      </button>
-      <button class="btn btn-premium lang-btn" onclick="selectLanguage('en')">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-        English (Slang)
-      </button>
-      <button class="btn btn-premium lang-btn" onclick="selectLanguage('ar')">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-        العربية (Farafish)
-      </button>
-      <button class="btn btn-premium lang-btn" onclick="selectLanguage('ja')">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-        日本語 (Kansai)
-      </button>
-      <button class="btn btn-premium lang-btn" onclick="selectLanguage('tl')">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-        Tagalog (Lods)
-      </button>
+      <button class="btn btn-premium lang-btn" onclick="selectLanguage('id')">Indonesia (Kocak)</button>
+      <button class="btn btn-premium lang-btn" onclick="selectLanguage('en')">English (Slang)</button>
+      <button class="btn btn-premium lang-btn" onclick="selectLanguage('ar')">العربية (Farafish)</button>
+      <button class="btn btn-premium lang-btn" onclick="selectLanguage('ja')">日本語 (Kansai)</button>
+      <button class="btn btn-premium lang-btn" onclick="selectLanguage('tl')">Tagalog (Lods)</button>
     </div>
   </div>
 </div>
-
-<!-- Layar Loading -->
 <div id="loadingOverlay" class="loading-overlay">
-  <!-- Spinner Face SVG -->
-  <svg width="50" height="50" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="loading-spinner">
-    <circle cx="12" cy="12" r="10"/><path d="M8 9h.01M16 9h.01M9 15c1.5 1.5 4.5 1.5 6 0"/>
-  </svg>
+  <svg width="50" height="50" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="loading-spinner"><circle cx="12" cy="12" r="10"/><path d="M8 9h.01M16 9h.01M9 15c1.5 1.5 4.5 1.5 6 0"/></svg>
   <div class="loading-text" id="loadingText">Memuat... 0%</div>
-  <div class="loading-bar-bg">
-    <div class="loading-bar-fill" id="loadingBar"></div>
-  </div>
+  <div class="loading-bar-bg"><div class="loading-bar-fill" id="loadingBar"></div></div>
 </div>
 
-<div class="app-card">
+<div class="app-container">
   <div class="app-header" id="appTitle">Pabrik Muka Kartun</div>
-
-  <div class="canvas-section">
-    <div class="canvas-wrapper">
-      <canvas id="canvas" width="256" height="256"></canvas>
+  
+  <div id="standardModeUI">
+    <div class="content-card">
+      <div class="canvas-section" id="standardCanvasContainer">
+        <div class="canvas-wrapper" id="mainCanvasWrapper">
+          <canvas id="canvas" width="256" height="256"></canvas>
+        </div>
+        <div class="username-display" id="displayUsername">@siapaCuy</div>
+        <div class="status-badge" id="statusInfo">Lagi dandan...</div>
+      </div>
     </div>
-    <div class="username-display" id="displayUsername">@siapaCuy</div>
-    <div class="status-badge" id="statusInfo">Lagi dandan...</div>
+    <div class="content-card controls-section">
+      <button class="btn" id="btnModeToggle" onclick="toggleMode()" style="background: var(--accent); margin-bottom: 8px;">
+        Pindah ke Mode Kustom 🛠️
+      </button>
+      <div class="input-group" id="seedGroup">
+        <label class="input-label" id="labelName">Ketik Nama</label>
+        <input type="text" id="seedInput" class="input-field" placeholder="Ketik apa aja..." autocomplete="off">
+      </div>
+      <div class="action-row">
+        <button class="btn" id="btnAcak" onclick="generateRandom()">Acak</button>
+        <button class="btn btn-premium" id="btnComot" onclick="downloadImage()">Comot</button>
+      </div>
+      <div class="batch-box">
+        <label class="input-label" id="labelBatch" style="display:block; margin-bottom: 12px;">Borongan (Maks 27)</label>
+        <div class="stepper">
+          <button type="button" onclick="updateBatchCount(-1)">-</button>
+          <input type="number" id="batchCount" value="5" min="2" max="27" readonly>
+          <button type="button" onclick="updateBatchCount(1)">+</button>
+        </div>
+        <button class="btn btn-premium" id="btnGenerateBatch" style="width: 100%; background: #22C55E;" onclick="prepareBatch()">Bikin Sekebon!</button>
+      </div>
+    </div>
   </div>
 
-  <div class="controls-section">
-    <div class="input-group">
-      <label class="input-label" id="labelName">Ketik Nama</label>
-      <input type="text" id="seedInput" class="input-field" placeholder="Ketik apa aja..." autocomplete="off">
-    </div>
-
-    <div class="action-row">
-      <button class="btn" id="btnAcak" onclick="generateRandom()">Acak</button>
-      <button class="btn btn-premium" id="btnComot" onclick="downloadImage()">Comot</button>
-    </div>
-
-    <div class="batch-box">
-      <label class="input-label" id="labelBatch" style="display:block; margin-bottom: 12px;">Borongan (Maks 27)</label>
-      <div class="stepper">
-        <button type="button" onclick="updateBatchCount(-1)">-</button>
-        <input type="number" id="batchCount" value="5" min="2" max="27" readonly>
-        <button type="button" onclick="updateBatchCount(1)">+</button>
+  <div id="customModeUI">
+    <div class="content-card" style="display: flex; flex-direction: column; margin-bottom: 16px;">
+      <div style="padding: 20px 20px 10px; text-align: center;">
+        <div class="c-gender-wrap">
+          <button id="btnCGenMale" class="c-gender-btn active" onclick="setCGender(false)">Cowok</button>
+          <button id="btnCGenFemale" class="c-gender-btn" onclick="setCGender(true)">Cewek</button>
+        </div>
       </div>
-      <button class="btn btn-premium" id="btnGenerateBatch" style="width: 100%; background: #22C55E;" onclick="prepareBatch()">Bikin Sekebon!</button>
+      
+      <div class="c-mid-section">
+        <div id="customCanvasSlot" style="flex: 0 0 180px; display: flex; justify-content: center; position: relative;">
+        </div>
+      </div>
+
+      <div class="c-bottom-scroll">
+        <div class="c-box">
+          <div class="c-box-title">Wajah</div>
+          <div class="c-step"><button onclick="changeC('eye', -1)">&lt;</button><span id="c_eye">0</span><button onclick="changeC('eye', 1)">&gt;</button></div>
+          <div class="c-step"><button onclick="changeC('mouth', -1)">&lt;</button><span id="c_mouth">0</span><button onclick="changeC('mouth', 1)">&gt;</button></div>
+          <div class="c-step"><button onclick="changeC('skin', -1)">&lt;</button><span>Warna</span><button onclick="changeC('skin', 1)">&gt;</button></div>
+        </div>
+
+        <div class="c-box">
+          <div class="c-box-title">Background</div>
+          <div class="c-step"><button onclick="changeC('bgColor', -1)">&lt;</button><span>Warna</span><button onclick="changeC('bgColor', 1)">&gt;</button></div>
+          <div class="c-step"><button onclick="changeC('texPaper', -1)">&lt;</button><span>Tekstur</span><button onclick="changeC('texPaper', 1)">&gt;</button></div>
+        </div>
+        
+        <div class="c-box">
+          <div class="c-box-title">Tubuh</div>
+          <div class="c-step"><button onclick="changeC('body', -1)">&lt;</button><span id="c_body">0</span><button onclick="changeC('body', 1)">&gt;</button></div>
+          <div class="c-step"><button onclick="changeC('bodyColor', -1)">&lt;</button><span>Warna</span><button onclick="changeC('bodyColor', 1)">&gt;</button></div>
+          <div class="c-step"><button onclick="changeC('texFabric', -1)">&lt;</button><span>Tekstur</span><button onclick="changeC('texFabric', 1)">&gt;</button></div>
+        </div>
+        
+        <div class="c-box">
+          <div class="c-box-title">Rambut</div>
+          <div class="c-step"><button onclick="changeC('hairF', -1)">&lt;</button><span id="c_hairF">0</span><button onclick="changeC('hairF', 1)">&gt;</button></div>
+          <div class="c-step" id="c_hairB_row" style="display: none;"><button onclick="changeC('hairB', -1)">&lt;</button><span id="c_hairB">0</span><button onclick="changeC('hairB', 1)">&gt;</button></div>
+          <div class="c-step"><button onclick="changeC('hairColor', -1)">&lt;</button><span>Warna</span><button onclick="changeC('hairColor', 1)">&gt;</button></div>
+          <div class="c-step"><button onclick="changeC('texHair', -1)">&lt;</button><span>Tekstur</span><button onclick="changeC('texHair', 1)">&gt;</button></div>
+        </div>
+      </div>
+      
+      <div style="padding: 16px; display: flex; gap: 12px; background: #fff;">
+        <button class="btn" style="flex: 1; background: var(--accent);" onclick="toggleMode()">Kembali Acak 🎲</button>
+        <button class="btn btn-premium" style="flex: 1;" onclick="downloadImage()">Comot Karakter 📸</button>
+      </div>
     </div>
   </div>
 </div>
 
-<!-- Modal Pratinjau Batch -->
 <div class="modal-overlay" id="previewModal">
   <div class="modal-content">
     <div class="modal-header">
@@ -574,9 +401,7 @@
 </div>
 
 <script>
-// --- Generator SVG Dinamis ---
 const svgIcon = (path, size=20) => `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${path}</svg>`;
-
 const icons = {
   palette: svgIcon('<path d="M12 22a10 10 0 1 1 0-20c2.5 0 4.5 2 4.5 4.5a4.5 4.5 0 0 1-4.5 4.5 3 3 0 0 0-3 3c0 1.5.5 2.5 1 3.5.5 1 1.5 2 1.5 3.5a1 1 0 0 1-1 1h-.5z"/><circle cx="7.5" cy="10.5" r=".5" fill="currentColor"/><circle cx="10.5" cy="7.5" r=".5" fill="currentColor"/><circle cx="14.5" cy="7.5" r=".5" fill="currentColor"/><circle cx="17.5" cy="10.5" r=".5" fill="currentColor"/>', 22),
   wand: svgIcon('<path d="M15 4V2M15 16v-2M8 9h2M20 9h2M17.8 11.8l1.4 1.4M17.8 6.2l1.4-1.4M12.2 6.2l-1.4-1.4M12.2 11.8l-1.4 1.4M3 21l9-9M12.2 6.2l-1.4 1.4"/>'),
@@ -592,100 +417,46 @@ const icons = {
   done: svgIcon('<path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>')
 };
 
-// --- Sistem Terjemahan ---
 let isAppReady = false;
-
 const translations = {
   id: {
-    appTitle: `Pabrik Muka Kartun ${icons.palette}`,
-    loadingPrefix: "Bentar Ya Nyet...",
-    loadingReady: `Udah Siap Nih Cuy! ${icons.sparkles}`,
-    statusInit: "Lagi dandan...",
-    labelName: `Ketik Nama ${icons.wand}`,
-    placeholderName: "Ketik apa aja di sini...",
-    btnAcak: `Acak ${icons.dice}`,
-    btnComot: `Comot ${icons.camera}`,
-    labelBatch: `Borongan (Maks 27) ${icons.box}`,
-    btnBatch: `Bikin Sekebon! ${icons.tree}`,
-    batchThinking: `Mikir Bentar... ${icons.brain}`,
-    modalBatchTitle: `Hasil Borongan ${icons.party}`,
-    btnDownloadAll: `Unduh Semua Hasil ${icons.rocket}`,
-    batchDownloading: `Lagi Nyedot... ${icons.drink}`,
-    batchDone: `Beres Cuy! ${icons.done}`
+    appTitle: `Pabrik Muka Kartun ${icons.palette}`, loadingPrefix: "Bentar Ya Nyet...", loadingReady: `Udah Siap Nih Cuy! ${icons.sparkles}`,
+    statusInit: "Lagi dandan...", labelName: `Ketik Nama ${icons.wand}`, placeholderName: "Ketik apa aja di sini...",
+    btnAcak: `Acak ${icons.dice}`, btnComot: `Comot ${icons.camera}`, labelBatch: `Borongan (Maks 27) ${icons.box}`,
+    btnBatch: `Bikin Sekebon! ${icons.tree}`, batchThinking: `Mikir Bentar... ${icons.brain}`, modalBatchTitle: `Hasil Borongan ${icons.party}`,
+    btnDownloadAll: `Unduh Semua Hasil ${icons.rocket}`, batchDownloading: `Lagi Nyedot... ${icons.drink}`, batchDone: `Beres Cuy! ${icons.done}`
   },
   en: {
-    appTitle: `Toon Face Factory ${icons.palette}`,
-    loadingPrefix: "Hold your horses...",
-    loadingReady: `All Set, Bro! ${icons.sparkles}`,
-    statusInit: "Getting pretty...",
-    labelName: `Type a Name ${icons.wand}`,
-    placeholderName: "Type whatever here...",
-    btnAcak: `Yolo ${icons.dice}`,
-    btnComot: `Snatch It ${icons.camera}`,
-    labelBatch: `Bulk Mode (Max 27) ${icons.box}`,
-    btnBatch: `Make a Ton! ${icons.tree}`,
-    batchThinking: `Thinking Hard... ${icons.brain}`,
-    modalBatchTitle: `The Stash ${icons.party}`,
-    btnDownloadAll: `Download Em All ${icons.rocket}`,
-    batchDownloading: `Slurping... ${icons.drink}`,
-    batchDone: `Done Deal! ${icons.done}`
+    appTitle: `Toon Face Factory ${icons.palette}`, loadingPrefix: "Hold your horses...", loadingReady: `All Set, Bro! ${icons.sparkles}`,
+    statusInit: "Getting pretty...", labelName: `Type a Name ${icons.wand}`, placeholderName: "Type whatever here...",
+    btnAcak: `Yolo ${icons.dice}`, btnComot: `Snatch It ${icons.camera}`, labelBatch: `Bulk Mode (Max 27) ${icons.box}`,
+    btnBatch: `Make a Ton! ${icons.tree}`, batchThinking: `Thinking Hard... ${icons.brain}`, modalBatchTitle: `The Stash ${icons.party}`,
+    btnDownloadAll: `Download Em All ${icons.rocket}`, batchDownloading: `Slurping... ${icons.drink}`, batchDone: `Done Deal! ${icons.done}`
   },
   ar: {
-    appTitle: `مصنع الوجوه الفرفوشة ${icons.palette}`,
-    loadingPrefix: "دقيقة يا حلو...",
-    loadingReady: `جاهزين يا باشا! ${icons.sparkles}`,
-    statusInit: "جاري التكشخ...",
-    labelName: `اكتب اسمك ${icons.wand}`,
-    placeholderName: "اكتب أي حاجة هنا...",
-    btnAcak: `عشوائي ${icons.dice}`,
-    btnComot: `اخطفها ${icons.camera}`,
-    labelBatch: `بالجملة (آخرك ٢٧) ${icons.box}`,
-    btnBatch: `اعمل كووومة! ${icons.tree}`,
-    batchThinking: `بشغل مخي... ${icons.brain}`,
-    modalBatchTitle: `الحصيلة ${icons.party}`,
-    btnDownloadAll: `نزلهم كلهم ${icons.rocket}`,
-    batchDownloading: `جاري الشفط... ${icons.drink}`,
-    batchDone: `خلصنا يا وحش! ${icons.done}`
+    appTitle: `مصنع الوجوه الفرفوشة ${icons.palette}`, loadingPrefix: "دقيقة يا حلو...", loadingReady: `جاهزين يا باشا! ${icons.sparkles}`,
+    statusInit: "جاري التكشخ...", labelName: `اكتب اسمك ${icons.wand}`, placeholderName: "اكتب أي حاجة هنا...",
+    btnAcak: `عشوائي ${icons.dice}`, btnComot: `اخطفها ${icons.camera}`, labelBatch: `بالجملة (آخرك ٢٧) ${icons.box}`,
+    btnBatch: `اعمل كووومة! ${icons.tree}`, batchThinking: `بشغل مخي... ${icons.brain}`, modalBatchTitle: `الحصيلة ${icons.party}`,
+    btnDownloadAll: `نزلهم كلهم ${icons.rocket}`, batchDownloading: `جاري الشفط... ${icons.drink}`, batchDone: `خلصنا يا وحش! ${icons.done}`
   },
   ja: {
-    appTitle: `アニメ顔工場 ${icons.palette}`,
-    loadingPrefix: "ちょい待ちや...",
-    loadingReady: `できたで！ ${icons.sparkles}`,
-    statusInit: "メイク中...",
-    labelName: `名前を入れてな ${icons.wand}`,
-    placeholderName: "適当に書いてや...",
-    btnAcak: `ガチャ ${icons.dice}`,
-    btnComot: `ゲット ${icons.camera}`,
-    labelBatch: `まとめて (最大27) ${icons.box}`,
-    btnBatch: `大量生産！ ${icons.tree}`,
-    batchThinking: `考え中... ${icons.brain}`,
-    modalBatchTitle: `成果物 ${icons.party}`,
-    btnDownloadAll: `全部保存や ${icons.rocket}`,
-    batchDownloading: `吸い込み中... ${icons.drink}`,
-    batchDone: `完了やで！ ${icons.done}`
+    appTitle: `アニメ顔工場 ${icons.palette}`, loadingPrefix: "ちょい待ちや...", loadingReady: `できたで！ ${icons.sparkles}`,
+    statusInit: "メイク中...", labelName: `名前を入れてな ${icons.wand}`, placeholderName: "適当に書いてや...",
+    btnAcak: `ガチャ ${icons.dice}`, btnComot: `ゲット ${icons.camera}`, labelBatch: `まとめて (最大27) ${icons.box}`,
+    btnBatch: `大量生産！ ${icons.tree}`, batchThinking: `考え中... ${icons.brain}`, modalBatchTitle: `成果物 ${icons.party}`,
+    btnDownloadAll: `全部保存や ${icons.rocket}`, batchDownloading: `吸い込み中... ${icons.drink}`, batchDone: `完了やで！ ${icons.done}`
   },
   tl: {
-    appTitle: `Pabrika ng Mukha ${icons.palette}`,
-    loadingPrefix: "Teka lang lods...",
-    loadingReady: `G na lods! ${icons.sparkles}`,
-    statusInit: "Nagpapaganda pa...",
-    labelName: `Lagay Pangalan ${icons.wand}`,
-    placeholderName: "Type ka lang kahit ano...",
-    btnAcak: `Balasahin ${icons.dice}`,
-    btnComot: `Kunin ${icons.camera}`,
-    labelBatch: `Bultuhan (Max 27) ${icons.box}`,
-    btnBatch: `Gumawa Madami! ${icons.tree}`,
-    batchThinking: `Nag-iisip pa... ${icons.brain}`,
-    modalBatchTitle: `Ang Mga Nakuha ${icons.party}`,
-    btnDownloadAll: `I-download Lahat ${icons.rocket}`,
-    batchDownloading: `Sinasipsip... ${icons.drink}`,
-    batchDone: `Tapos na repa! ${icons.done}`
+    appTitle: `Pabrika ng Mukha ${icons.palette}`, loadingPrefix: "Teka lang lods...", loadingReady: `G na lods! ${icons.sparkles}`,
+    statusInit: "Nagpapaganda pa...", labelName: `Lagay Pangalan ${icons.wand}`, placeholderName: "Type ka lang kahit ano...",
+    btnAcak: `Balasahin ${icons.dice}`, btnComot: `Kunin ${icons.camera}`, labelBatch: `Bultuhan (Max 27) ${icons.box}`,
+    btnBatch: `Gumawa Madami! ${icons.tree}`, batchThinking: `Nag-iisip pa... ${icons.brain}`, modalBatchTitle: `Ang Mga Nakuha ${icons.party}`,
+    btnDownloadAll: `I-download Lahat ${icons.rocket}`, batchDownloading: `Sinasipsip... ${icons.drink}`, batchDone: `Tapos na repa! ${icons.done}`
   }
 };
-
 let currentLang = 'id';
 function t(key) { return translations[currentLang][key] || translations['id'][key]; }
-
 function applyTranslations(lang) {
   currentLang = lang;
   document.getElementById('appTitle').innerHTML = t('appTitle');
@@ -699,51 +470,42 @@ function applyTranslations(lang) {
   document.getElementById('btnDownloadBatch').innerHTML = t('btnDownloadAll');
   document.getElementById('statusInfo').innerHTML = isAppReady ? t('loadingReady') : t('statusInit');
 }
-
-function openLangModal() {
-  document.getElementById('langModal').classList.add('active');
-}
-
+function openLangModal() { document.getElementById('langModal').classList.add('active'); }
 function selectLanguage(lang) {
   localStorage.setItem('pabrikKartunLang', lang);
   applyTranslations(lang);
   document.getElementById('langModal').classList.remove('active');
 }
-
-// --- Logika Canvas dan Aplikasi ---
 const canvas = document.getElementById("canvas");
 const ctx = canvas.getContext("2d");
 const seedInput = document.getElementById("seedInput");
 const displayUsername = document.getElementById("displayUsername");
 const statusInfo = document.getElementById("statusInfo");
-
 const offCanvas = document.createElement("canvas");
-offCanvas.width = 256;
-offCanvas.height = 256;
+offCanvas.width = 256; offCanvas.height = 256;
 const offCtx = offCanvas.getContext("2d");
 
 const TOTAL_TEXTURES = 29;
 let loadedTextures = [];
 let loadedParts = { body: [], eyes_male: [], eyes_female: [], hair_b: [], hair_f_female: [], hair_f_male: [], head: [], mouth: [] };
-
 const assetList = {
   body: Array.from({length: 12}, (_, i) => `body/body_${String(i+1).padStart(2, '0')}.png`),
   eyes_male: Array.from({length: 30}, (_, i) => `eyes_male/eyes_${String(i+1).padStart(2, '0')}.png`),
   eyes_female: Array.from({length: 34}, (_, i) => `eyes_female/eyes_${String(i+1).padStart(2, '0')}.png`),
   hair_b: Array.from({length: 7}, (_, i) => `hair_b/hrb_${String(i+1).padStart(2, '0')}.png`),
-  hair_f_female: Array.from({length: 17}, (_, i) => `hair_f/female/hrf_${String(i+1).padStart(2, '0')}.png`),
-  hair_f_male: Array.from({length: 13}, (_, i) => `hair_f/male/hrf_${String(i+1).padStart(2, '0')}.png`),
+  hair_f_female: Array.from({length: 20}, (_, i) => `hair_f/female/hrf_${String(i+1).padStart(2, '0')}.png`),
+  hair_f_male: Array.from({length: 18}, (_, i) => `hair_f/male/hrf_${String(i+1).padStart(2, '0')}.png`),
   head: ['head/head.png'],
   mouth: Array.from({length: 31}, (_, i) => `mouth/mouth_${String(i+1).padStart(2, '0')}.png`)
 };
 
 const loadImg = (url) => new Promise((resolve) => { 
-  const img = new Image(); 
-  img.onload = () => resolve(img); 
-  img.onerror = () => {
-    const canvasFallback = document.createElement("canvas");
-    canvasFallback.width = 256; canvasFallback.height = 256;
-    resolve(canvasFallback);
+  const img = new Image();
+  img.onload = () => resolve(img);
+  img.onerror = () => { 
+    const canvasFallback = document.createElement("canvas"); 
+    canvasFallback.width = 256; canvasFallback.height = 256; 
+    resolve(canvasFallback); 
   };
   img.src = url; 
 });
@@ -753,44 +515,41 @@ async function loadAssets() {
   const loadingBar = document.getElementById("loadingBar");
   const loadingText = document.getElementById("loadingText");
   
-  const totalAssets = TOTAL_TEXTURES + Object.values(assetList).flat().length;
+  const allUrls = [];
+  for (let i = 1; i <= TOTAL_TEXTURES; i++) allUrls.push(`img_${String(i).padStart(2, '0')}.png`);
+  for (const category in assetList) allUrls.push(...assetList[category]);
+  
+  const totalAssets = allUrls.length;
   let loaded = 0;
   
   const updateProgress = () => {
     loaded++;
-    const percent = Math.min(100, Math.floor((loaded / totalAssets) * 100));
-    loadingBar.style.width = percent + "%";
+    const percent = Math.floor((loaded / totalAssets) * 100);
+    loadingBar.style.width = percent + "%"; 
     loadingText.textContent = `${t('loadingPrefix')} ${percent}%`;
   };
 
-  const loadWithProgress = async (url) => {
-    const img = await loadImg(url);
-    updateProgress();
-    return img;
-  };
-
-  const texturePromises = Array.from({length: TOTAL_TEXTURES}, (_, i) => {
-    return loadWithProgress(`img_${String(i+1).padStart(2, '0')}.png`);
-  });
-
+  const loadWithProgress = (url) => loadImg(url).then(img => { updateProgress(); return img; });
+  
+  const texturePromises = [];
+  for (let i = 1; i <= TOTAL_TEXTURES; i++) {
+    texturePromises.push(loadWithProgress(`img_${String(i).padStart(2, '0')}.png`));
+  }
+  
   const partPromises = {};
   for (const category in assetList) {
     partPromises[category] = Promise.all(assetList[category].map(loadWithProgress));
   }
-
+  
   const resolvedTextures = await Promise.all(texturePromises);
   loadedTextures = resolvedTextures.map(img => ctx.createPattern(img, "repeat"));
-
+  
   for (const category in assetList) {
     loadedParts[category] = await partPromises[category];
   }
-
-  setTimeout(() => {
-    loadingOverlay.classList.add("hidden");
-  }, 400);
-
-  isAppReady = true;
-  statusInfo.innerHTML = t('loadingReady');
+  
+  setTimeout(() => { loadingOverlay.classList.add("hidden"); }, 500);
+  isAppReady = true; statusInfo.innerHTML = t('loadingReady');
 }
 
 const palettes = {
@@ -808,79 +567,157 @@ function invertHexColor(hex) {
 
 class PRNG {
   constructor(seedStr) { this.seed = this.hashString(seedStr); }
-  hashString(str) {
-    let h = 2166136261;
-    for(let i = 0; i < str.length; i++) { h ^= str.charCodeAt(i); h += (h << 1) + (h << 4) + (h << 7) + (h << 8) + (h << 24); }
-    return h >>> 0;
-  }
+  hashString(str) { let h = 2166136261; for(let i = 0; i < str.length; i++) { h ^= str.charCodeAt(i); h += (h << 1) + (h << 4) + (h << 7) + (h << 8) + (h << 24); } return h >>> 0; }
   next() { this.seed = (this.seed * 1664525 + 1013904223) >>> 0; return this.seed / 4294967296; }
 }
 
 let currentConfig = {};
 let currentSeedName = "";
 let batchImagesData = [];
+let isCustomMode = false;
+
+function toggleMode() {
+  isCustomMode = !isCustomMode;
+  const standardView = document.getElementById("standardModeUI");
+  const customView = document.getElementById("customModeUI");
+  const canvasWrapper = document.getElementById("mainCanvasWrapper");
+  
+  if (isCustomMode) {
+    standardView.style.display = "none";
+    customView.style.display = "flex";
+    document.getElementById("customCanvasSlot").appendChild(canvasWrapper);
+    currentSeedName = "KustomGue";
+    updateCustomUI();
+  } else {
+    standardView.style.display = "block";
+    customView.style.display = "none";
+    document.getElementById("standardCanvasContainer").insertBefore(canvasWrapper, document.getElementById("displayUsername"));
+    applySeed(document.getElementById("seedInput").value || "OrangAsing");
+  }
+}
+
+function setCGender(isFem) {
+  currentConfig.isFemale = isFem;
+  document.getElementById("btnCGenMale").classList.toggle("active", !isFem);
+  document.getElementById("btnCGenFemale").classList.toggle("active", isFem);
+  
+  document.getElementById("c_hairB_row").style.display = isFem ? "flex" : "none";
+  if (!isFem) currentConfig.hairB = -1;
+  else if (currentConfig.hairB === -1) currentConfig.hairB = 0;
+  
+  const maxHairF = isFem ? loadedParts.hair_f_female.length - 1 : loadedParts.hair_f_male.length - 1;
+  const maxEyes = isFem ? loadedParts.eyes_female.length - 1 : loadedParts.eyes_male.length - 1;
+  if(currentConfig.hairF > maxHairF) currentConfig.hairF = 0;
+  if(currentConfig.eye > maxEyes) currentConfig.eye = 0;
+  
+  updateCustomUI();
+  drawAvatar();
+}
+
+function changeC(type, dir) {
+  let max = 0;
+  switch(type) {
+    case 'mouth': max = Math.max(0, loadedParts.mouth.length - 1); break;
+    case 'eye': max = Math.max(0, (currentConfig.isFemale ? loadedParts.eyes_female.length : loadedParts.eyes_male.length) - 1); break;
+    case 'body': max = Math.max(0, loadedParts.body.length - 1); break;
+    case 'skin': max = palettes.skin.length - 1; break;
+    case 'bgColor': case 'bodyColor': case 'hairColor': max = palettes.themes.length - 1; break;
+    case 'texPaper': case 'texFabric': case 'texHair': max = Math.max(0, loadedTextures.length - 1); break;
+    case 'hairF': max = Math.max(0, (currentConfig.isFemale ? loadedParts.hair_f_female.length : loadedParts.hair_f_male.length) - 1); break;
+    case 'hairB': max = Math.max(0, loadedParts.hair_b.length - 1); break;
+  }
+  
+  let val = currentConfig[type];
+  if(val === undefined || val === -1) val = 0;
+  if(max < 0) max = 0;
+  
+  val += dir;
+  if(val < 0) val = max;
+  if(val > max) val = 0;
+  
+  currentConfig[type] = val;
+  updateCustomUI();
+  drawAvatar();
+}
+
+function updateCustomUI() {
+  const mapSpans = ['mouth', 'eye', 'body', 'hairF', 'hairB'];
+  mapSpans.forEach(key => {
+    const el = document.getElementById('c_' + key);
+    if(el && currentConfig[key] !== undefined) el.innerText = currentConfig[key] + 1;
+  });
+  
+  document.getElementById("btnCGenMale").classList.toggle("active", !currentConfig.isFemale);
+  document.getElementById("btnCGenFemale").classList.toggle("active", currentConfig.isFemale);
+  document.getElementById("c_hairB_row").style.display = currentConfig.isFemale ? "flex" : "none";
+}
 
 function drawPart(imgElement, color, texture = null) {
   if (!imgElement) return;
+  
+  if ((!color || color === "#ffffff") && !texture) {
+    ctx.globalCompositeOperation = 'source-over';
+    ctx.drawImage(imgElement, 0, 0, canvas.width, canvas.height);
+    return;
+  }
+  
   offCtx.clearRect(0, 0, 256, 256);
+  
   offCtx.globalCompositeOperation = 'source-over';
-  offCtx.fillStyle = color || "#ffffff";
-  offCtx.fillRect(0, 0, 256, 256);
-
+  offCtx.drawImage(imgElement, 0, 0, 256, 256);
+  
+  if (color && color !== "#ffffff") {
+    offCtx.globalCompositeOperation = 'multiply';
+    offCtx.fillStyle = color;
+    offCtx.fillRect(0, 0, 256, 256);
+  }
+  
   if (texture) {
-    offCtx.fillStyle = texture;
+    offCtx.globalCompositeOperation = 'multiply';
     offCtx.globalAlpha = 0.55;
+    offCtx.fillStyle = texture;
     offCtx.fillRect(0, 0, 256, 256);
     offCtx.globalAlpha = 1.0;
   }
-
+  
   offCtx.globalCompositeOperation = 'destination-in';
   offCtx.drawImage(imgElement, 0, 0, 256, 256);
-  offCtx.globalCompositeOperation = 'multiply';
-  offCtx.drawImage(imgElement, 0, 0, 256, 256);
+  
+  ctx.globalCompositeOperation = 'source-over';
   ctx.drawImage(offCanvas, 0, 0, canvas.width, canvas.height);
 }
 
 function drawAvatar() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
-  const skin = palettes.skin[currentConfig.skinIdx];
-  const theme = palettes.themes[currentConfig.themeIdx];
-  const fabricTex = loadedTextures.length ? loadedTextures[currentConfig.texFabricIdx] : null;
-  const hairTex = loadedTextures.length ? loadedTextures[currentConfig.texHairIdx] : null;
-  const paperTex = loadedTextures.length ? loadedTextures[currentConfig.texPaperIdx] : null;
-
-  const bgInvMain = invertHexColor(theme.main);
-  const bgInvSec = invertHexColor(theme.sec);
+  const skin = palettes.skin[currentConfig.skin];
+  const bgTheme = palettes.themes[currentConfig.bgColor];
+  const bodyTheme = palettes.themes[currentConfig.bodyColor];
+  const hairTheme = palettes.themes[currentConfig.hairColor];
+  
+  const fabricTex = loadedTextures.length ? loadedTextures[currentConfig.texFabric] : null;
+  const hairTex = loadedTextures.length ? loadedTextures[currentConfig.texHair] : null;
+  const paperTex = loadedTextures.length ? loadedTextures[currentConfig.texPaper] : null;
+  
+  const bgInvMain = invertHexColor(bgTheme.main);
+  const bgInvSec = invertHexColor(bgTheme.sec);
   const bgGrd = ctx.createRadialGradient(128, 128, 0, 128, 128, 200);
   bgGrd.addColorStop(0, bgInvMain); bgGrd.addColorStop(1, bgInvSec);
   ctx.fillStyle = bgGrd; 
   ctx.fillRect(0, 0, canvas.width, canvas.height);
+  if (paperTex) { ctx.globalAlpha = 0.35; ctx.fillStyle = paperTex; ctx.fillRect(0, 0, canvas.width, canvas.height); ctx.globalAlpha = 1.0; }
   
-  if (paperTex) {
-    ctx.globalAlpha = 0.35; 
-    ctx.fillStyle = paperTex; 
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-    ctx.globalAlpha = 1.0;
-  }
-  
-  if(currentConfig.hairBIdx !== -1 && loadedParts.hair_b[currentConfig.hairBIdx]) drawPart(loadedParts.hair_b[currentConfig.hairBIdx], theme.hDark, hairTex);
+  if(currentConfig.hairB !== -1 && loadedParts.hair_b[currentConfig.hairB]) drawPart(loadedParts.hair_b[currentConfig.hairB], hairTheme.hDark, hairTex);
   if(loadedParts.head[0]) drawPart(loadedParts.head[0], skin.base);
-  if(loadedParts.body[currentConfig.bodyIdx]) drawPart(loadedParts.body[currentConfig.bodyIdx], theme.main, fabricTex);
+  if(loadedParts.body[currentConfig.body]) drawPart(loadedParts.body[currentConfig.body], bodyTheme.main, fabricTex);
   
-  if (currentConfig.isFemale) {
-    if(loadedParts.eyes_female[currentConfig.eyeIdx]) drawPart(loadedParts.eyes_female[currentConfig.eyeIdx], "#ffffff");
-  } else {
-    if(loadedParts.eyes_male[currentConfig.eyeIdx]) drawPart(loadedParts.eyes_male[currentConfig.eyeIdx], "#ffffff");
-  }
-
-  if(loadedParts.mouth[currentConfig.mouthIdx]) drawPart(loadedParts.mouth[currentConfig.mouthIdx], "#ffffff");
-
-  if (currentConfig.isFemale) {
-    if(loadedParts.hair_f_female[currentConfig.hairFIdx]) drawPart(loadedParts.hair_f_female[currentConfig.hairFIdx], theme.hair, hairTex);
-  } else {
-    if(loadedParts.hair_f_male[currentConfig.hairFIdx]) drawPart(loadedParts.hair_f_male[currentConfig.hairFIdx], theme.hair, hairTex);
-  }
-
+  if (currentConfig.isFemale) { if(loadedParts.eyes_female[currentConfig.eye]) drawPart(loadedParts.eyes_female[currentConfig.eye], "#ffffff"); } 
+  else { if(loadedParts.eyes_male[currentConfig.eye]) drawPart(loadedParts.eyes_male[currentConfig.eye], "#ffffff"); }
+  
+  if(loadedParts.mouth[currentConfig.mouth]) drawPart(loadedParts.mouth[currentConfig.mouth], "#ffffff");
+  
+  if (currentConfig.isFemale) { if(loadedParts.hair_f_female[currentConfig.hairF]) drawPart(loadedParts.hair_f_female[currentConfig.hairF], hairTheme.hair, hairTex); } 
+  else { if(loadedParts.hair_f_male[currentConfig.hairF]) drawPart(loadedParts.hair_f_male[currentConfig.hairF], hairTheme.hair, hairTex); }
+  
   displayUsername.textContent = `@${currentSeedName.toLowerCase()}`;
 }
 
@@ -888,31 +725,23 @@ function applySeed(seedStr) {
   if (!seedStr) seedStr = "OrangAsing"; 
   currentSeedName = seedStr;
   if (document.activeElement !== seedInput) seedInput.value = seedStr; 
-  
   const rng = new PRNG(seedStr);
   const isFemale = rng.next() > 0.5;
-  let hairBIndex = -1, hairFIndex = 0, eyeIndex = 0;
-
-  if (isFemale) {
-    hairBIndex = Math.floor(rng.next() * Math.max(1, loadedParts.hair_b.length));
-    hairFIndex = Math.floor(rng.next() * Math.max(1, loadedParts.hair_f_female.length));
-    eyeIndex = Math.floor(rng.next() * Math.max(1, loadedParts.eyes_female.length));
-  } else {
-    hairFIndex = Math.floor(rng.next() * Math.max(1, loadedParts.hair_f_male.length));
-    eyeIndex = Math.floor(rng.next() * Math.max(1, loadedParts.eyes_male.length));
-  }
-
+  
   currentConfig = {
     isFemale: isFemale, 
-    skinIdx: Math.floor(rng.next() * palettes.skin.length),
-    themeIdx: Math.floor(rng.next() * palettes.themes.length),
-    bodyIdx: Math.floor(rng.next() * Math.max(1, loadedParts.body.length)),
-    eyeIdx: eyeIndex,
-    mouthIdx: Math.floor(rng.next() * Math.max(1, loadedParts.mouth.length)),
-    hairBIdx: hairBIndex, hairFIdx: hairFIndex,
-    texFabricIdx: Math.floor(rng.next() * Math.max(1, TOTAL_TEXTURES)),
-    texHairIdx: Math.floor(rng.next() * Math.max(1, TOTAL_TEXTURES)),
-    texPaperIdx: Math.floor(rng.next() * Math.max(1, TOTAL_TEXTURES))
+    skin: Math.floor(rng.next() * palettes.skin.length),
+    bgColor: Math.floor(rng.next() * palettes.themes.length),
+    bodyColor: Math.floor(rng.next() * palettes.themes.length),
+    hairColor: Math.floor(rng.next() * palettes.themes.length),
+    body: Math.floor(rng.next() * Math.max(1, loadedParts.body.length)),
+    eye: isFemale ? Math.floor(rng.next() * Math.max(1, loadedParts.eyes_female.length)) : Math.floor(rng.next() * Math.max(1, loadedParts.eyes_male.length)),
+    mouth: Math.floor(rng.next() * Math.max(1, loadedParts.mouth.length)),
+    hairB: isFemale ? Math.floor(rng.next() * Math.max(1, loadedParts.hair_b.length)) : -1, 
+    hairF: isFemale ? Math.floor(rng.next() * Math.max(1, loadedParts.hair_f_female.length)) : Math.floor(rng.next() * Math.max(1, loadedParts.hair_f_male.length)),
+    texFabric: Math.floor(rng.next() * Math.max(1, TOTAL_TEXTURES)),
+    texHair: Math.floor(rng.next() * Math.max(1, TOTAL_TEXTURES)),
+    texPaper: Math.floor(rng.next() * Math.max(1, TOTAL_TEXTURES))
   };
   drawAvatar();
 }
@@ -932,121 +761,61 @@ function getHDCanvasData() {
   const hdCanvas = document.createElement("canvas");
   hdCanvas.width = 1024; hdCanvas.height = 1024;
   const hdCtx = hdCanvas.getContext("2d");
-  
-  hdCtx.fillStyle = "#FFFFFF";
-  hdCtx.fillRect(0, 0, 1024, 1024);
-  hdCtx.imageSmoothingEnabled = false; 
-  hdCtx.drawImage(canvas, 0, 0, 1024, 1024);
-  
-  hdCtx.imageSmoothingEnabled = true;
+  hdCtx.fillStyle = "#FFFFFF"; hdCtx.fillRect(0, 0, 1024, 1024);
+  hdCtx.imageSmoothingEnabled = false; hdCtx.drawImage(canvas, 0, 0, 1024, 1024); hdCtx.imageSmoothingEnabled = true;
   const watermarkText = "ID: " + currentSeedName;
-  hdCtx.font = "bold 28px 'Fredoka', sans-serif";
-  hdCtx.textAlign = "right";
-  hdCtx.textBaseline = "bottom";
-  
-  hdCtx.fillStyle = "#000000";
-  hdCtx.fillText(watermarkText, 1024 - 17, 1024 - 17);
-  hdCtx.fillStyle = "#FFDE59";
-  hdCtx.fillText(watermarkText, 1024 - 20, 1024 - 20);
-
+  hdCtx.font = "bold 28px 'Fredoka', sans-serif"; hdCtx.textAlign = "right"; hdCtx.textBaseline = "bottom";
+  hdCtx.fillStyle = "#000000"; hdCtx.fillText(watermarkText, 1024 - 17, 1024 - 17);
+  hdCtx.fillStyle = "#FFDE59"; hdCtx.fillText(watermarkText, 1024 - 20, 1024 - 20);
   return hdCanvas.toDataURL("image/jpeg", 0.95);
 }
 
 function downloadImage() {
   const name = currentSeedName || 'Muka_Kartun';
-  const link = document.createElement("a");
-  link.download = `${name}_SuperHD.jpg`; 
-  link.href = getHDCanvasData();
-  link.click();
+  const link = document.createElement("a"); link.download = `${name}_SuperHD.jpg`; link.href = getHDCanvasData(); link.click();
 }
 
 function updateBatchCount(change) {
   const input = document.getElementById("batchCount");
   let currentValue = parseInt(input.value) || 5;
-  const min = parseInt(input.min) || 2;
-  const max = parseInt(input.max) || 27; 
   let newValue = currentValue + change;
-  if(newValue >= min && newValue <= max) input.value = newValue;
+  if(newValue >= (parseInt(input.min) || 2) && newValue <= (parseInt(input.max) || 27)) input.value = newValue;
 }
 
 function prepareBatch() {
   const btn = document.getElementById("btnGenerateBatch");
-  const originalText = btn.innerHTML;
-  
-  btn.innerHTML = t('batchThinking');
-  btn.disabled = true;
-
+  const originalText = btn.innerHTML; btn.innerHTML = t('batchThinking'); btn.disabled = true;
   setTimeout(() => {
     const batchCount = parseInt(document.getElementById("batchCount").value) || 5;
-    const grid = document.getElementById("previewGrid");
-    grid.innerHTML = "";
-    batchImagesData = [];
-
+    const grid = document.getElementById("previewGrid"); grid.innerHTML = ""; batchImagesData = [];
     for (let i = 0; i < batchCount; i++) {
-      const randomName = generateRandomName();
-      applySeed(randomName); 
-      
-      const dataURL = getHDCanvasData();
-      const base64Data = dataURL.split(',')[1];
-      
-      batchImagesData.push({ name: randomName, data: base64Data });
-      
-      const img = document.createElement("img");
-      img.src = dataURL;
-      grid.appendChild(img);
+      const randomName = generateRandomName(); applySeed(randomName); 
+      const dataURL = getHDCanvasData(); batchImagesData.push({ name: randomName, data: dataURL.split(',')[1] });
+      const img = document.createElement("img"); img.src = dataURL; grid.appendChild(img);
     }
-    
-    const modal = document.getElementById("previewModal");
-    modal.classList.add("active");
-    
-    btn.innerHTML = originalText;
-    btn.disabled = false;
+    document.getElementById("previewModal").classList.add("active");
+    btn.innerHTML = originalText; btn.disabled = false;
   }, 2000); 
 }
 
-function closePreview() {
-  const modal = document.getElementById("previewModal");
-  modal.classList.remove("active");
-  generateRandom();
-}
+function closePreview() { document.getElementById("previewModal").classList.remove("active"); generateRandom(); }
 
 async function downloadBatchImages() {
-  const btn = document.getElementById("btnDownloadBatch");
-  btn.innerHTML = t('batchDownloading');
-  btn.disabled = true;
-
+  const btn = document.getElementById("btnDownloadBatch"); btn.innerHTML = t('batchDownloading'); btn.disabled = true;
   for (let i = 0; i < batchImagesData.length; i++) {
     const item = batchImagesData[i];
-    const link = document.createElement("a");
-    link.href = "data:image/jpeg;base64," + item.data;
-    link.download = `${item.name}_SuperHD.jpg`;
-    
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    
+    const link = document.createElement("a"); link.href = "data:image/jpeg;base64," + item.data; link.download = `${item.name}_SuperHD.jpg`;
+    document.body.appendChild(link); link.click(); document.body.removeChild(link);
     await new Promise(resolve => setTimeout(resolve, 300));
   }
-  
   btn.innerHTML = t('batchDone');
-  setTimeout(() => {
-    btn.innerHTML = t('btnDownloadAll');
-    btn.disabled = false;
-    closePreview();
-  }, 1500);
+  setTimeout(() => { btn.innerHTML = t('btnDownloadAll'); btn.disabled = false; closePreview(); }, 1500);
 }
 
-// Inisialisasi saat window dimuat
 window.onload = async () => {
   const savedLang = localStorage.getItem('pabrikKartunLang');
-  if (!savedLang) {
-    document.getElementById('langModal').classList.add('active');
-  } else {
-    applyTranslations(savedLang);
-  }
-  applyTranslations(savedLang || 'id'); // Set string default
-  await loadAssets(); 
-  generateRandom();
+  if (!savedLang) document.getElementById('langModal').classList.add('active'); else applyTranslations(savedLang);
+  applyTranslations(savedLang || 'id'); await loadAssets(); generateRandom();
 };
 </script>
 </body>
