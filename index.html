@@ -265,6 +265,44 @@
   .preview-grid img { width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: 16px; border: 3px solid var(--border-color); box-shadow: 4px 4px 0px var(--border-color); transition: transform 0.2s; }
   .preview-grid img:hover { transform: scale(1.1) rotate(5deg); }
   .modal-footer { padding: 20px; border-top: var(--border-thick); background: #FFF; }
+
+  /* Style Tambahan Fitur Favorit & Meme Generator */
+  .fav-card {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 12px;
+    background: #FFF;
+    border: 2px solid #000;
+    border-radius: 12px;
+    box-shadow: 3px 3px 0 #000;
+  }
+  .fav-info {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .fav-title {
+    font-size: 14px;
+    font-weight: 700;
+  }
+  .fav-actions {
+    display: flex;
+    gap: 6px;
+  }
+  .fav-actions button {
+    padding: 6px 10px;
+    font-size: 12px;
+  }
+  .meme-canvas-preview {
+    width: 100%;
+    max-width: 300px;
+    border: 3px solid #000;
+    border-radius: 12px;
+    box-shadow: 4px 4px 0 #000;
+    margin: 0 auto 16px;
+    display: block;
+  }
 </style>
 </head>
 <body>
@@ -319,6 +357,13 @@
         <button class="btn" id="btnAcak" onclick="generateRandom()">Acak</button>
         <button class="btn btn-premium" id="btnComot" onclick="downloadImage()">Comot</button>
       </div>
+      
+      <!-- Action Row untuk Favorit di Standard Mode -->
+      <div class="action-row" style="margin-top: -10px;">
+        <button class="btn" onclick="saveToFavorites()" style="background: #FCD34D;">Simpan Favorit ⭐</button>
+        <button class="btn" onclick="openFavoritesModal()" style="background: #A7F3D0;">Lihat Favorit 📂</button>
+      </div>
+
       <div class="batch-box">
         <label class="input-label" id="labelBatch" style="display:block; margin-bottom: 12px;">Borongan (Maks 27)</label>
         <div class="stepper">
@@ -375,14 +420,22 @@
         </div>
       </div>
       
-      <div style="padding: 16px; display: flex; gap: 12px; background: #fff;">
-        <button class="btn" id="btnToggleRandom" style="flex: 1; background: var(--accent);" onclick="toggleMode()">Kembali Acak 🎲</button>
-        <button class="btn btn-premium" id="btnComotCustom" style="flex: 1;" onclick="downloadImage()">Comot Karakter 📸</button>
+      <div style="padding: 16px; display: flex; flex-direction: column; gap: 12px; background: #fff;">
+        <div style="display: flex; gap: 12px;">
+          <button class="btn" onclick="saveToFavorites()" style="background: #FCD34D;">Fav ⭐</button>
+          <button class="btn" onclick="openFavoritesModal()" style="background: #A7F3D0;">Buka Fav 📂</button>
+          <button class="btn" style="background: #C084FC; color: #FFF;" onclick="openMemeModal()">Jadikan Meme 🤡</button>
+        </div>
+        <div style="display: flex; gap: 12px;">
+          <button class="btn" id="btnToggleRandom" style="flex: 1; background: var(--accent);" onclick="toggleMode()">Kembali Acak 🎲</button>
+          <button class="btn btn-premium" id="btnComotCustom" style="flex: 1;" onclick="downloadImage()">Comot Karakter 📸</button>
+        </div>
       </div>
     </div>
   </div>
 </div>
 
+<!-- Modal Pratinjau Borongan -->
 <div class="modal-overlay" id="previewModal">
   <div class="modal-content">
     <div class="modal-header">
@@ -396,6 +449,41 @@
       <button class="btn btn-premium" id="btnDownloadBatch" onclick="downloadBatchImages()" style="width: 100%;">
         Unduh Semua Hasil
       </button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Favorit -->
+<div class="modal-overlay" id="favoritesModal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <span>Kombinasi Favorit ⭐</span>
+      <button class="btn-close" onclick="closeFavoritesModal()">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+      </button>
+    </div>
+    <div style="padding: 16px; display: flex; flex-direction: column; gap: 10px; max-height: 50vh; overflow-y: auto; background: #FFFBEB;" id="favoritesList">
+      <!-- List favorit dirender di JS -->
+    </div>
+  </div>
+</div>
+
+<!-- Modal Meme Generator -->
+<div class="modal-overlay" id="memeModal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <span>Meme Generator 🤡</span>
+      <button class="btn-close" onclick="closeMemeModal()">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+      </button>
+    </div>
+    <div style="padding: 16px; background: #FFFBEB; display: flex; flex-direction: column; gap: 12px;">
+      <canvas id="memeCanvas" width="600" height="800" class="meme-canvas-preview"></canvas>
+      <div class="input-group">
+        <label class="input-label">Teks Atas Meme</label>
+        <input type="text" id="memeTextInput" class="input-field" placeholder="Ketik teks meme disini..." value="Ketiak wangi sepanjang hari">
+      </div>
+      <button class="btn btn-premium" onclick="downloadMemeImage()">Comot Meme 🚀</button>
     </div>
   </div>
 </div>
@@ -854,6 +942,158 @@ async function downloadBatchImages() {
   }
   btn.innerHTML = t('batchDone');
   setTimeout(() => { btn.innerHTML = t('btnDownloadAll'); btn.disabled = false; closePreview(); }, 1500);
+}
+
+/* --- FITUR FAVORIT (LOCALSTORAGE) --- */
+function getFavorites() {
+  return JSON.parse(localStorage.getItem('pabrikKartunFavorites') || '[]');
+}
+
+function saveToFavorites() {
+  const favorites = getFavorites();
+  const exists = favorites.some(fav => fav.id === currentSeedName);
+  if (exists) {
+    alert('Kombinasi ini sudah ada di favorit!');
+    return;
+  }
+  favorites.push({
+    id: currentSeedName,
+    isCustom: isCustomMode,
+    config: { ...currentConfig }
+  });
+  localStorage.setItem('pabrikKartunFavorites', JSON.stringify(favorites));
+  alert('Berhasil disimpan ke Favorit! ⭐');
+}
+
+function deleteFavorite(id) {
+  let favorites = getFavorites();
+  favorites = favorites.filter(fav => fav.id !== id);
+  localStorage.setItem('pabrikKartunFavorites', JSON.stringify(favorites));
+  renderFavoritesList();
+}
+
+function loadFavorite(id) {
+  const favorites = getFavorites();
+  const target = favorites.find(fav => fav.id === id);
+  if (!target) return;
+
+  if (target.isCustom) {
+    if (!isCustomMode) toggleMode();
+    currentConfig = { ...target.config };
+    updateCustomUI();
+    drawAvatar();
+  } else {
+    if (isCustomMode) toggleMode();
+    applySeed(target.id);
+  }
+  closeFavoritesModal();
+}
+
+function renderFavoritesList() {
+  const listEl = document.getElementById('favoritesList');
+  const favorites = getFavorites();
+  if (favorites.length === 0) {
+    listEl.innerHTML = '<div style="text-align:center; padding: 20px; font-weight: bold;">Belum ada favorit tersimpan 😿</div>';
+    return;
+  }
+  listEl.innerHTML = favorites.map(fav => `
+    <div class="fav-card">
+      <div class="fav-info">
+        <span class="fav-title">@${fav.id.toLowerCase()}</span>
+      </div>
+      <div class="fav-actions">
+        <button class="btn" style="background: var(--accent);" onclick="loadFavorite('${fav.id}')">Pakai 🎨</button>
+        <button class="btn btn-premium" onclick="deleteFavorite('${fav.id}')">Hapus 🗑️</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+function openFavoritesModal() {
+  renderFavoritesList();
+  document.getElementById('favoritesModal').classList.add('active');
+}
+
+function closeFavoritesModal() {
+  document.getElementById('favoritesModal').classList.remove('active');
+}
+
+/* --- FITUR MEME GENERATOR (3:4 Ratio, Top 1:4 Text, Bottom 1:1 Image) --- */
+const memeCanvas = document.getElementById("memeCanvas");
+const memeCtx = memeCanvas.getContext("2d");
+const memeTextInput = document.getElementById("memeTextInput");
+
+function updateMemeCanvas() {
+  const w = 600;
+  const h = 800; // Rasio 3:4 (600x800)
+  
+  const textRegionHeight = 200; // Komposisi 1:4 Atas
+  const imageRegionHeight = 600; // Komposisi 1:1 Bawah (600x600)
+  
+  // Background Putih Teks Atas
+  memeCtx.fillStyle = "#FFFFFF";
+  memeCtx.fillRect(0, 0, w, textRegionHeight);
+  
+  // Draw Avatar ke Area Gambar (1:1 Bawah)
+  memeCtx.drawImage(canvas, 0, textRegionHeight, w, imageRegionHeight);
+  
+  // Border Pembatas & Frame
+  memeCtx.lineWidth = 8;
+  memeCtx.strokeStyle = "#000000";
+  memeCtx.strokeRect(0, 0, w, h);
+  memeCtx.beginPath();
+  memeCtx.moveTo(0, textRegionHeight);
+  memeCtx.lineTo(w, textRegionHeight);
+  memeCtx.stroke();
+
+  // Render Teks Meme
+  const text = memeTextInput.value.trim().toUpperCase() || "TEKS MEME";
+  memeCtx.fillStyle = "#000000";
+  memeCtx.font = "bold 36px 'Fredoka', sans-serif";
+  memeCtx.textAlign = "center";
+  memeCtx.textBaseline = "middle";
+
+  // Fit Teks Multiline / Wrap
+  const words = text.split(" ");
+  let lines = [];
+  let currentLine = words[0] || "";
+
+  for (let i = 1; i < words.length; i++) {
+    let testLine = currentLine + " " + words[i];
+    let metrics = memeCtx.measureText(testLine);
+    if (metrics.width > w - 40) {
+      lines.push(currentLine);
+      currentLine = words[i];
+    } else {
+      currentLine = testLine;
+    }
+  }
+  lines.push(currentLine);
+
+  const lineHeight = 42;
+  const startY = (textRegionHeight / 2) - ((lines.length - 1) * lineHeight / 2);
+
+  lines.forEach((line, index) => {
+    memeCtx.fillText(line, w / 2, startY + (index * lineHeight));
+  });
+}
+
+memeTextInput.addEventListener("input", updateMemeCanvas);
+
+function openMemeModal() {
+  document.getElementById("memeModal").classList.add("active");
+  updateMemeCanvas();
+}
+
+function closeMemeModal() {
+  document.getElementById("memeModal").classList.remove("active");
+}
+
+function downloadMemeImage() {
+  const link = document.createElement("a");
+  link.download = `Meme_${currentSeedName}.jpg`;
+  link.href = memeCanvas.toDataURL("image/jpeg", 0.95);
+  link.click();
 }
 
 window.onload = async () => {
