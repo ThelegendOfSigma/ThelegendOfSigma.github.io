@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Pabrik Muka Sosmed</title>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    /* Mewarisi gaya asli aplikasi[span_4](start_span)[span_4](end_span) */
+    :root {
+      --bg-main: #38BDF8;
+      --card-bg: #FFFFFF;
+      --border-color: #000000;
+      --text-primary: #000000;
+      --accent: #FFDE59;
+      --btn-primary: #FF5757;
+      --border-thick: 4px solid var(--border-color);
+      --shadow-chunky: 6px 6px 0px var(--border-color);
+    }
+    
+    body {
+      box-sizing: border-box; 
+      font-family: 'Fredoka', 'Comic Sans MS', cursive, sans-serif; 
+      margin: 0; 
+      padding: 0;
+      background-color: var(--bg-main);
+      background-image: radial-gradient(#ffffff 15%, transparent 16%), radial-gradient(#ffffff 15%, transparent 16%);
+      background-size: 40px 40px;
+      background-position: 0 0, 20px 20px;
+      color: var(--text-primary);
+      min-height: 100vh;
+    }
+
+    .container {
+      max-width: 600px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+
+    /* Elemen UI Dasar */
+    .card {
+      background: var(--card-bg);
+      border: var(--border-thick);
+      border-radius: 20px;
+      box-shadow: var(--shadow-chunky);
+      padding: 24px;
+      margin-bottom: 24px;
+    }
+
+    h2 { text-align: center; margin-top: 0; font-size: 24px; text-transform: uppercase; }
+
+    .input-group { margin-bottom: 16px; display: flex; flex-direction: column; gap: 8px; }
+    .input-label { font-size: 15px; font-weight: 700; text-transform: uppercase; }
+    
+    input, select, textarea {
+      width: 100%; padding: 14px 16px; background: #FFF;
+      border: var(--border-thick); border-radius: 12px; font-size: 16px;
+      font-weight: 600; font-family: inherit; box-sizing: border-box; outline: none;
+    }
+    input:focus, textarea:focus { background: #FFFBEB; box-shadow: inset 3px 3px 0px rgba(0,0,0,0.1), 0 0 0 4px var(--accent); }
+    input[readonly] { background: #e5e7eb; color: #6b7280; cursor: not-allowed; }
+
+    button {
+      width: 100%; padding: 14px; background: var(--accent); color: var(--border-color);
+      border: var(--border-thick); border-radius: 12px; font-size: 16px;
+      font-weight: 700; cursor: pointer; text-transform: uppercase;
+      box-shadow: var(--shadow-chunky); transition: all 0.1s ease; margin-bottom: 12px;
+    }
+    button:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 8px 8px 0px var(--border-color); }
+    button:active:not(:disabled) { transform: translateY(6px) translateX(6px); box-shadow: 0px 0px 0px var(--border-color); }
+    button.primary { background: var(--btn-primary); color: #FFF; }
+    button.danger { background: #ef4444; color: #FFF; margin-top: 20px; }
+    button:disabled { opacity: 0.6; cursor: not-allowed; transform: translateY(4px) translateX(4px); box-shadow: 2px 2px 0px var(--border-color); }
+
+    .hidden { display: none !important; }
+
+    /* Sosmed UI */
+    .app-header {
+      display: flex; justify-content: space-between; align-items: center;
+      background: var(--accent); border: var(--border-thick); border-radius: 20px;
+      padding: 12px 20px; margin-bottom: 24px; box-shadow: var(--shadow-chunky);
+      transform: rotate(-1deg);
+    }
+    .app-header h1 { margin: 0; font-size: 20px; text-transform: uppercase; }
+    .header-user { display: flex; align-items: center; gap: 10px; font-weight: 700; }
+    .header-user img { width: 40px; height: 40px; border-radius: 50%; border: 3px solid var(--border-color); background: #FFF; }
+
+    .post-card {
+      background: var(--card-bg); border: var(--border-thick); border-radius: 20px;
+      box-shadow: 4px 4px 0px var(--border-color); padding: 16px; margin-bottom: 16px;
+      display: flex; gap: 16px; transition: transform 0.2s;
+    }
+    .post-card:hover { transform: scale(1.01) rotate(1deg); }
+    .post-avatar {
+      width: 60px; height: 60px; border-radius: 16px; border: 3px solid var(--border-color);
+      box-shadow: 2px 2px 0px var(--border-color); flex-shrink: 0; background: #f3f4f6; object-fit: cover;
+    }
+    .post-content { flex: 1; }
+    .post-header { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 8px; }
+    .post-name { font-weight: 700; font-size: 18px; text-decoration: underline; text-decoration-thickness: 3px; text-decoration-color: var(--btn-primary); }
+    .post-time { font-size: 12px; color: #6b7280; font-weight: 600; }
+    .post-text { font-size: 16px; line-height: 1.4; word-break: break-word; white-space: pre-wrap; }
+
+    /* Loading Overlay */
+    #loadingOverlay {
+      position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(255, 222, 89, 0.95);
+      z-index: 1000; display: flex; flex-direction: column; justify-content: center; align-items: center;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Loading Aset Mesin Generator -->
+  <div id="loadingOverlay">
+    <h2 style="color: black;">Menyiapkan Pabrik Sosmed...</h2>
+    <p>Memuat aset gambar...</p>
+  </div>
+
+  <!-- Kanvas Tersembunyi Untuk Render Avatar -->
+  <canvas id="hiddenCanvas" width="256" height="256" style="display: none;"></canvas>
+
+  <div class="container">
+    
+    <!-- LAYAR AUTH (LOGIN & REGISTER) -->
+    <div id="auth-screen" class="hidden">
+      
+      <!-- Form Login -->
+      <div class="card" id="login-box">
+        <h2>Masuk Dulu Cuy</h2>
+        <p id="login-status" style="color: red; text-align: center; font-weight: bold;"></p>
+        
+        <div class="input-group">
+          <label class="input-label">Email</label>
+          <input type="email" id="login-email" placeholder="contoh123@main.com">
+        </div>
+        <div class="input-group">
+          <label class="input-label">Password</label>
+          <input type="password" id="login-password">
+        </div>
+        
+        <button class="primary" id="btn-login">Masuk 🚀</button>
+        <button id="toggle-to-register">Belum Punya Akun? Daftar Sini</button>
+      </div>
+
+      <!-- Form Register -->
+      <div class="card hidden" id="register-box">
+        <h2>Buat Akun Baru</h2>
+        <p id="reg-status" style="color: red; text-align: center; font-weight: bold;"></p>
+        
+        <div class="input-group">
+          <label class="input-label">Jenis Kelamin</label>
+          <select id="reg-gender">
+            <option value="Laki-laki">Cowok</option>
+            <option value="Perempuan">Cewek</option>
+          </select>
+        </div>
+        <div class="input-group">
+          <label class="input-label">Nama (Jadi ID / Avatar Kamu)</label>
+          <input type="text" id="reg-name" placeholder="Ketik namamu..." autocomplete="off">
+        </div>
+        <div class="input-group">
+          <label class="input-label">Email (Otomatis)</label>
+          <input type="email" id="reg-email" readonly placeholder="Akan terisi otomatis...">
+        </div>
+        <div class="input-group">
+          <label class="input-label">Password</label>
+          <input type="password" id="reg-password">
+        </div>
+        
+        <button class="primary" id="btn-register">Daftar & Buat Avatar 🎨</button>
+        <button id="toggle-to-login">Sudah Punya Akun? Masuk Sini</button>
+      </div>
+    </div>
+
+    <!-- LAYAR APLIKASI (SOSMED) -->
+    <div id="app-screen" class="hidden">
+      
+      <div class="app-header">
+        <h1>ToonFeed</h1>
+        <div class="header-user">
+          <span id="current-user-name">@kamu</span>
+          <img id="current-user-avatar" src="" alt="Avatar">
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="input-group">
+          <textarea id="post-input" rows="3" placeholder="Lagi mikirin apa cuy?"></textarea>
+        </div>
+        <button class="primary" id="btn-post">Kirim Postingan 📢</button>
+      </div>
+
+      <!-- Tempat Postingan Muncul -->
+      <div id="feed-container">
+        <p style="text-align: center; font-weight: bold;">Memuat timeline...</p>
+      </div>
+
+      <button id="btn-logout" class="danger">Keluar Akun</button>
+    </div>
+
+  </div>
+
+  <script type="module">
+    // --- 1. FIREBASE SETUP ---
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+    import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
+    import { getFirestore, doc, setDoc, getDoc, collection, addDoc, query, orderBy, onSnapshot, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyBgmuGFRyPeXhpk0Je5PKTdSSL3230prJw",
+      authDomain: "fishingcuy-1eb40.firebaseapp.com",
+      projectId: "fishingcuy-1eb40",
+      storageBucket: "fishingcuy-1eb40.firebasestorage.app",
+      messagingSenderId: "562728361595",
+      appId: "1:562728361595:web:5b4c6e10bfc95044868cde"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    // --- 2. MESIN GENERATOR AVATAR (Dari Kode Asli) ---
+    const canvas = document.getElementById("hiddenCanvas");
+    const ctx = canvas.getContext("2d");
+    const offCanvas = document.createElement("canvas");
+    offCanvas.width = 256; offCanvas.height = 256;
+    const offCtx = offCanvas.getContext("2d");
+
+    const TOTAL_TEXTURES = 29;
+    let loadedTextures = [];
+    let loadedParts = { body: [], eyes_male: [], eyes_female: [], hair_b: [], hair_f_female: [], hair_f_male: [], head: [], mouth: [] };
+    
+    // Susunan aset persis seperti sumber asli[span_5](start_span)[span_5](end_span)
+    const assetList = {
+      body: Array.from({length: 12}, (_, i) => `body/body_${String(i+1).padStart(2, '0')}.png`),
+      eyes_male: Array.from({length: 30}, (_, i) => `eyes_male/eyes_${String(i+1).padStart(2, '0')}.png`),
+      eyes_female: Array.from({length: 34}, (_, i) => `eyes_female/eyes_${String(i+1).padStart(2, '0')}.png`),
+      hair_b: Array.from({length: 7}, (_, i) => `hair_b/hrb_${String(i+1).padStart(2, '0')}.png`),
+      hair_f_female: Array.from({length: 20}, (_, i) => `hair_f/female/hrf_${String(i+1).padStart(2, '0')}.png`),
+      hair_f_male: Array.from({length: 18}, (_, i) => `hair_f/male/hrf_${String(i+1).padStart(2, '0')}.png`),
+      head: ['head/head.png'],
+      mouth: Array.from({length: 31}, (_, i) => `mouth/mouth_${String(i+1).padStart(2, '0')}.png`)
+    };
+
+    const loadImg = (url) => new Promise((resolve) => { 
+      const img = new Image();
+      img.onload = () => resolve(img);
+      img.onerror = () => { 
+        const cFallback = document.createElement("canvas"); 
+        cFallback.width = 256; cFallback.height = 256; resolve(cFallback); 
+      };
+      img.src = url; 
+    });
+
+    async function initGenerator() {
+      const allUrls = [];
+      for (let i = 1; i <= TOTAL_TEXTURES; i++) allUrls.push(`img_${String(i).padStart(2, '0')}.png`);
+      
+      const texturePromises = [];
+      for (let i = 1; i <= TOTAL_TEXTURES; i++) texturePromises.push(loadImg(`img_${String(i).padStart(2, '0')}.png`));
+      
+      const partPromises = {};
+      for (const category in assetList) partPromises[category] = Promise.all(assetList[category].map(loadImg));
+      
+      const resolvedTextures = await Promise.all(texturePromises);
+      loadedTextures = resolvedTextures.map(img => ctx.createPattern(img, "repeat"));
+      
+      for (const category in assetList) loadedParts[category] = await partPromises[category];
+      
+      document.getElementById("loadingOverlay").classList.add("hidden");
+      document.getElementById("auth-screen").classList.remove("hidden");
+    }
+
+    // Palet warna bawaan[span_6](start_span)[span_6](end_span)
+    const palettes = {
+      skin: [ { base: "#ffead1", dark: "#eac09d" }, { base: "#fde2cd", dark: "#d9ae87" }, { base: "#e2b896", dark: "#bf8e6a" }, { base: "#c8946e", dark: "#a36c4b" }, { base: "#a8e6cf", dark: "#74c69d" }, { base: "#cad2c5", dark: "#84a98c" }, { base: "#9bf6ff", dark: "#48cae4" }, { base: "#e0b1cb", dark: "#9f86c0" } ],
+      themes: [ { main: "#1e293b", sec: "#0f172a", hair: "#111827", hDark: "#030712" }, { main: "#3b82f6", sec: "#1d4ed8", hair: "#3f2814", hDark: "#241408" }, { main: "#10b981", sec: "#047857", hair: "#d97706", hDark: "#b45309" }, { main: "#f43f5e", sec: "#be123c", hair: "#7e22ce", hDark: "#581c87" }, { main: "#f472b6", sec: "#db2777", hair: "#f59e0b", hDark: "#d97706" }, { main: "#fb923c", sec: "#c2410c", hair: "#475569", hDark: "#334155" }, { main: "#2dd4bf", sec: "#0f766e", hair: "#be185d", hDark: "#831843" }, { main: "#818cf8", sec: "#4f46e5", hair: "#e11d48", hDark: "#9f1239" } ]
+    };
+
+    function invertHexColor(hex) {
+      hex = hex.replace('#', '');
+      let r = (255 - parseInt(hex.substring(0, 2), 16)).toString(16).padStart(2, '0');
+      let g = (255 - parseInt(hex.substring(2, 4), 16)).toString(16).padStart(2, '0');
+      let b = (255 - parseInt(hex.substring(4, 6), 16)).toString(16).padStart(2, '0');
+      return '#' + r + g + b;
+    }
+
+    // PRNG dari kode asli[span_7](start_span)[span_7](end_span)
+    class PRNG {
+      constructor(seedStr) { this.seed = this.hashString(seedStr); }
+      hashString(str) { let h = 2166136261; for(let i = 0; i < str.length; i++) { h ^= str.charCodeAt(i); h += (h << 1) + (h << 4) + (h << 7) + (h << 8) + (h << 24); } return h >>> 0; }
+      next() { this.seed = (this.seed * 1664525 + 1013904223) >>> 0; return this.seed / 4294967296; }
+    }
+
+    function drawPart(imgElement, color, texture = null) {
+      if (!imgElement) return;
+      if ((!color || color === "#ffffff") && !texture) {
+        ctx.globalCompositeOperation = 'source-over';
+        ctx.drawImage(imgElement, 0, 0, canvas.width, canvas.height);
+        return;
+      }
+      offCtx.clearRect(0, 0, 256, 256);
+      offCtx.globalCompositeOperation = 'source-over';
+      offCtx.drawImage(imgElement, 0, 0, 256, 256);
+      if (color && color !== "#ffffff") {
+        offCtx.globalCompositeOperation = 'multiply'; offCtx.fillStyle = color; offCtx.fillRect(0, 0, 256, 256);
+      }
+      if (texture) {
+        offCtx.globalCompositeOperation = 'multiply'; offCtx.globalAlpha = 0.55; offCtx.fillStyle = texture; offCtx.fillRect(0, 0, 256, 256); offCtx.globalAlpha = 1.0;
+      }
+      offCtx.globalCompositeOperation = 'destination-in';
+      offCtx.drawImage(imgElement, 0, 0, 256, 256);
+      ctx.globalCompositeOperation = 'source-over';
+      ctx.drawImage(offCanvas, 0, 0, canvas.width, canvas.height);
+    }
+
+    // Fungsi Utama: Mengubah Nama (Seed) & Gender menjadi URL Gambar Avatar[span_8](start_span)[span_8](end_span)
+    function getAvatarUrl(seedStr, genderStr) {
+      const rng = new PRNG(seedStr);
+      const isFemale = (genderStr === 'Perempuan');
+      
+      const config = {
+        isFemale: isFemale, 
+        skin: Math.floor(rng.next() * palettes.skin.length),
+        bgColor: Math.floor(rng.next() * palettes.themes.length),
+        bodyColor: Math.floor(rng.next() * palettes.themes.length),
+        hairColor: Math.floor(rng.next() * palettes.themes.length),
+        body: Math.floor(rng.next() * Math.max(1, loadedParts.body.length)),
+        eye: isFemale ? Math.floor(rng.next() * Math.max(1, loadedParts.eyes_female.length)) : Math.floor(rng.next() * Math.max(1, loadedParts.eyes_male.length)),
+        mouth: Math.floor(rng.next() * Math.max(1, loadedParts.mouth.length)),
+        hairB: isFemale ? Math.floor(rng.next() * Math.max(1, loadedParts.hair_b.length)) : -1, 
+        hairF: isFemale ? Math.floor(rng.next() * Math.max(1, loadedParts.hair_f_female.length)) : Math.floor(rng.next() * Math.max(1, loadedParts.hair_f_male.length)),
+        texFabric: Math.floor(rng.next() * Math.max(1, TOTAL_TEXTURES)),
+        texHair: Math.floor(rng.next() * Math.max(1, TOTAL_TEXTURES)),
+        texPaper: Math.floor(rng.next() * Math.max(1, TOTAL_TEXTURES))
+      };
+
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      const skin = palettes.skin[config.skin];
+      const bgTheme = palettes.themes[config.bgColor];
+      const bodyTheme = palettes.themes[config.bodyColor];
+      const hairTheme = palettes.themes[config.hairColor];
+      
+      const fabricTex = loadedTextures.length ? loadedTextures[config.texFabric] : null;
+      const hairTex = loadedTextures.length ? loadedTextures[config.texHair] : null;
+      const paperTex = loadedTextures.length ? loadedTextures[config.texPaper] : null;
+      
+      const bgInvMain = invertHexColor(bgTheme.main);
+      const bgInvSec = invertHexColor(bgTheme.sec);
+      const bgGrd = ctx.createRadialGradient(128, 128, 0, 128, 128, 200);
+      bgGrd.addColorStop(0, bgInvMain); bgGrd.addColorStop(1, bgInvSec);
+      ctx.fillStyle = bgGrd; ctx.fillRect(0, 0, canvas.width, canvas.height);
+      if (paperTex) { ctx.globalAlpha = 0.35; ctx.fillStyle = paperTex; ctx.fillRect(0, 0, canvas.width, canvas.height); ctx.globalAlpha = 1.0; }
+      
+      if(config.hairB !== -1 && loadedParts.hair_b[config.hairB]) drawPart(loadedParts.hair_b[config.hairB], hairTheme.hDark, hairTex);
+      if(loadedParts.head[0]) drawPart(loadedParts.head[0], skin.base);
+      if(loadedParts.body[config.body]) drawPart(loadedParts.body[config.body], bodyTheme.main, fabricTex);
+      if (config.isFemale) { if(loadedParts.eyes_female[config.eye]) drawPart(loadedParts.eyes_female[config.eye], "#ffffff"); } 
+      else { if(loadedParts.eyes_male[config.eye]) drawPart(loadedParts.eyes_male[config.eye], "#ffffff"); }
+      if(loadedParts.mouth[config.mouth]) drawPart(loadedParts.mouth[config.mouth], "#ffffff");
+      if (config.isFemale) { if(loadedParts.hair_f_female[config.hairF]) drawPart(loadedParts.hair_f_female[config.hairF], hairTheme.hair, hairTex); } 
+      else { if(loadedParts.hair_f_male[config.hairF]) drawPart(loadedParts.hair_f_male[config.hairF], hairTheme.hair, hairTex); }
+
+      return canvas.toDataURL("image/png");
+    }
+
+    // --- 3. LOGIKA UI & OTENTIKASI ---
+    let currentUserData = null;
+
+    // Toggle Form
+    document.getElementById('toggle-to-register').onclick = () => { document.getElementById('login-box').classList.add('hidden'); document.getElementById('register-box').classList.remove('hidden'); };
+    document.getElementById('toggle-to-login').onclick = () => { document.getElementById('register-box').classList.add('hidden'); document.getElementById('login-box').classList.remove('hidden'); };
+
+    // Auto-generate Email berdasar Nama (Deterministik)
+    document.getElementById('reg-name').addEventListener('input', (e) => {
+      const cleanName = e.target.value.replace(/[^a-zA-Z0-9]/g, '').toLowerCase();
+      if (!cleanName) { document.getElementById('reg-email').value = ''; return; }
+      let hash = 0;
+      for (let i = 0; i < cleanName.length; i++) hash += cleanName.charCodeAt(i);
+      const uniqueNum = (hash % 900) + 100; // Selalu menghasilkan 3 digit yang sama untuk nama yang sama
+      document.getElementById('reg-email').value = `${cleanName}${uniqueNum}@main.com`;
+    });
+
+    // Register
+    document.getElementById('btn-register').addEventListener('click', async () => {
+      const name = document.getElementById('reg-name').value.trim();
+      const gender = document.getElementById('reg-gender').value;
+      const email = document.getElementById('reg-email').value;
+      const password = document.getElementById('reg-password').value;
+      const status = document.getElementById('reg-status');
+
+      if (!name || password.length < 6) { status.innerText = "Nama wajib diisi, password minimal 6 karakter!"; return; }
+
+      try {
+        status.innerText = "Membuat avatar dan akun...";
+        const userCred = await createUserWithEmailAndPassword(auth, email, password);
+        // Simpan data ID ke Firestore
+        await setDoc(doc(db, "users", userCred.user.uid), {
+          name: name,
+          gender: gender,
+          email: email
+        });
+      } catch (error) { status.innerText = error.message; }
+    });
+
+    // Login
+    document.getElementById('btn-login').addEventListener('click', async () => {
+      const email = document.getElementById('login-email').value;
+      const password = document.getElementById('login-password').value;
+      try {
+        document.getElementById('login-status').innerText = "Sedang masuk...";
+        await signInWithEmailAndPassword(auth, email, password);
+      } catch (error) { document.getElementById('login-status').innerText = error.message; }
+    });
+
+    // Logout
+    document.getElementById('btn-logout').onclick = () => signOut(auth);
+
+    // Pantau Auth State
+    onAuthStateChanged(auth, async (user) => {
+      if (user) {
+        // Ambil data ekstra dari Firestore
+        const docSnap = await getDoc(doc(db, "users", user.uid));
+        if (docSnap.exists()) {
+          currentUserData = docSnap.data();
+          document.getElementById('current-user-name').innerText = `@${currentUserData.name}`;
+          // Generate Avatar untuk Header
+          document.getElementById('current-user-avatar').src = getAvatarUrl(currentUserData.name, currentUserData.gender);
+          
+          document.getElementById('auth-screen').classList.add('hidden');
+          document.getElementById('app-screen').classList.remove('hidden');
+          loadFeed();
+        }
+      } else {
+        currentUserData = null;
+        document.getElementById('auth-screen').classList.remove('hidden');
+        document.getElementById('app-screen').classList.add('hidden');
+      }
+    });
+
+    // --- 4. LOGIKA SOSMED (FIRESTORE) ---
+    document.getElementById('btn-post').addEventListener('click', async () => {
+      const input = document.getElementById('post-input');
+      const text = input.value.trim();
+      if (!text) return;
+
+      document.getElementById('btn-post').disabled = true;
+      try {
+        await addDoc(collection(db, "posts"), {
+          content: text,
+          authorUid: auth.currentUser.uid,
+          authorName: currentUserData.name,
+          authorGender: currentUserData.gender,
+          createdAt: serverTimestamp()
+        });
+        input.value = '';
+      } catch (error) { alert("Gagal memposting: " + error.message); }
+      document.getElementById('btn-post').disabled = false;
+    });
+
+    function loadFeed() {
+      const q = query(collection(db, "posts"), orderBy("createdAt", "desc"));
+      onSnapshot(q, (snapshot) => {
+        const feedDiv = document.getElementById('feed-container');
+        if (snapshot.empty) { feedDiv.innerHTML = '<p style="text-align: center;">Belum ada postingan. Jadilah yang pertama!</p>'; return; }
+        
+        feedDiv.innerHTML = '';
+        snapshot.forEach((docSnap) => {
+          const post = docSnap.data();
+          const time = post.createdAt ? new Date(post.createdAt.toDate()).toLocaleTimeString('id-ID', {hour: '2-digit', minute:'2-digit'}) : 'Baru saja';
+          
+          // Game mengambil ID (Name) dari Firebase untuk merender Avatar!
+          const avatarSrc = getAvatarUrl(post.authorName, post.authorGender);
+
+          const postEl = document.createElement('div');
+          postEl.className = 'post-card';
+          postEl.innerHTML = `
+            <img src="${avatarSrc}" class="post-avatar" alt="Avatar">
+            <div class="post-content">
+              <div class="post-header">
+                <span class="post-name">@${post.authorName}</span>
+                <span class="post-time">${time}</span>
+              </div>
+              <div class="post-text">${post.content}</div>
+            </div>
+          `;
+          feedDiv.appendChild(postEl);
+        });
+      });
+    }
+
+    // Mulai inisiasi aplikasi
+    window.onload = initGenerator;
+  </script>
+</body>
+</html>
