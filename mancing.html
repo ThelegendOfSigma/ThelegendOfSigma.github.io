@@ -3,86 +3,189 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Fishing Cuy - Multiplayer Pool</title>
+    <title>3D Mobile Fishing Game Multiplayer</title>
     <style>
-        body { margin: 0; overflow: hidden; background-color: #4FB0C6; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-        .panel { 
-            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
-            width: 90%; max-width: 400px; background: #ffffff; border-radius: 15px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.2); padding: 20px; text-align: center; z-index: 10;
+        /* Optimasi Mobile & Mencegah Scroll/Zoom */
+        body {
+            margin: 0; overflow: hidden;
+            background-color: #008080; /* Estetika Klasik Desktop */
+            font-family: 'MS Sans Serif', Tahoma, Geneva, sans-serif;
+            touch-action: none; user-select: none; -webkit-user-select: none;
         }
-        .hidden { display: none !important; }
-        .input-group { margin-bottom: 15px; text-align: left; }
-        .input-group label { display: block; font-weight: bold; margin-bottom: 5px; }
-        .input-group input, .input-group select { width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #ccc; box-sizing: border-box; }
+
+        /* Menu UI Persiapan Bergaya Retro */
+        .win-window {
+            position: absolute; top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            width: 90%; max-width: 350px;
+            background: #c0c0c0;
+            border: 2px solid;
+            border-color: #dfdfdf #000000 #000000 #dfdfdf;
+            text-align: center; z-index: 10;
+        }
+        
+        .win-titlebar {
+            background: #000080; color: white;
+            font-weight: bold; text-align: left;
+            padding: 4px 6px; font-size: 14px;
+        }
+
+        .win-content { padding: 15px; }
+        .win-content p { font-size: 13px; margin-top: 0; color: #000; }
+
+        .input-field {
+            width: 90%; padding: 6px; margin-bottom: 12px;
+            border: 2px solid; border-color: #000000 #dfdfdf #dfdfdf #000000;
+            background: #ffffff; font-family: inherit;
+        }
+
+        .file-input-wrapper { margin: 15px 0; }
+        input[type="file"] { max-width: 100%; font-size: 12px; }
+        
+        #error-msg {
+            color: #ff0000; font-weight: bold;
+            display: none; margin-top: 10px; font-size: 12px;
+        }
+
+        /* Tombol Retro */
         .btn {
-            background: #3498db; color: white; border: none; border-radius: 25px; padding: 12px 25px;
-            font-size: 16px; font-weight: bold; width: 100%; cursor: pointer; transition: transform 0.1s; margin-top: 10px;
+            background: #c0c0c0; color: black;
+            border: 2px solid; border-color: #dfdfdf #000000 #000000 #dfdfdf;
+            padding: 8px 15px; font-size: 14px; font-weight: bold;
+            cursor: pointer; width: 100%; margin-bottom: 8px;
+            font-family: inherit;
         }
-        .btn:active { transform: scale(0.95); }
-        .btn:disabled { background: #95a5a6; cursor: not-allowed; }
-        #game-ui { display: none; }
-        #player-avatar {
-            position: absolute; top: 15px; right: 15px; background: #fff; padding: 5px;
-            border-radius: 10px; z-index: 5; font-weight: bold; text-align: center; box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+        .btn:active {
+            border-color: #000000 #dfdfdf #dfdfdf #000000;
+            padding: 9px 14px 7px 16px;
         }
-        /* Style Game Memancing */
-        #game-canvas { width: 100vw; height: 100vh; cursor: pointer; display: block; }
-        #action-btn { position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%); width: 80%; max-width: 400px; height: 70px; border-radius: 35px; font-size: 24px; z-index: 5; background: #2ecc71; }
+
+        /* Elemen Game Tiga Dimensi */
+        #game-canvas { display: none; width: 100vw; height: 100vh; cursor: pointer; }
+
+        /* HUD */
+        #hud {
+            display: none; position: absolute; top: 15px; left: 15px;
+            background: #c0c0c0; border: 2px solid; border-color: #dfdfdf #000000 #000000 #dfdfdf;
+            padding: 8px 12px; font-weight: bold; font-size: 16px; color: #000;
+            z-index: 5; pointer-events: none;
+        }
+        #ember-hint {
+            display: none; position: absolute; top: 60px; left: 15px;
+            background: #ffffcc; border: 1px solid #000;
+            padding: 4px 8px; font-size: 12px; color: #000;
+            z-index: 5; pointer-events: none;
+        }
+
+        /* Tombol Aksi Mobile */
+        #action-btn {
+            display: none; position: absolute;
+            bottom: 30px; left: 50%; transform: translateX(-50%);
+            width: 80%; max-width: 400px; height: 60px;
+            font-size: 18px; z-index: 5;
+        }
+        #action-btn.bite { background: #ff0000; color: white; }
+
+        /* Modal Inventaris Ikan 3D */
+        #inventory-modal {
+            display: none; position: absolute;
+            top: 0; left: 0; width: 100vw; height: 100vh;
+            background: rgba(0,0,0,0.6); z-index: 20;
+        }
+        .inventory-content {
+            position: absolute; top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            width: 85%; max-width: 400px; height: 75%;
+            background: #c0c0c0; border: 2px solid; border-color: #dfdfdf #000000 #000000 #dfdfdf;
+            display: flex; flex-direction: column; box-sizing: border-box;
+        }
+        #inv-3d-container {
+            flex-grow: 1; width: 100%; display: flex; 
+            justify-content: center; align-items: center; position: relative;
+            background: #000; border: 2px solid; border-color: #000000 #dfdfdf #dfdfdf #000000;
+            margin-bottom: 15px;
+        }
+        #inv-canvas { width: 100%; height: 100%; display: block; }
+        
+        .inv-controls {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 10px; padding: 0 10px;
+        }
+        .inv-btn { width: 50px; height: 40px; font-size: 18px; padding: 0; }
+        #empty-msg { position: absolute; text-align: center; width: 100%; font-weight: bold; color: #fff; }
+        #close-inventory { margin-top: auto; margin-bottom: 10px; width: 90%; align-self: center; }
     </style>
+    <!-- Three.js Library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 </head>
 <body>
 
-    <!-- Panel Login / Daftar -->
-    <div id="auth-panel" class="panel">
-        <h2>Pendaftaran Pemain</h2>
-        <div class="input-group">
-            <label>Nama (Menentukan Avatar)</label>
-            <input type="text" id="reg-name" placeholder="Masukkan nama...">
+    <!-- CONTAINER UI UTAMA -->
+    <div id="ui-container" class="win-window">
+        
+        <!-- BAGIAN LOGIN/DAFTAR -->
+        <div id="login-section">
+            <div class="win-titlebar">Pendaftaran Pemain</div>
+            <div class="win-content">
+                <input type="text" id="input-nama" placeholder="Masukkan Nama Anda" class="input-field">
+                <select id="input-gender" class="input-field">
+                    <option value="L">Laki-laki</option>
+                    <option value="P">Perempuan</option>
+                </select>
+                <button class="btn" id="login-btn">Masuk / Daftar</button>
+                <div id="login-error-msg" style="color:red; font-size:12px; display:none; margin-top:5px;"></div>
+            </div>
         </div>
-        <div class="input-group">
-            <label>Jenis Kelamin</label>
-            <select id="reg-gender">
-                <option value="male">Laki-laki</option>
-                <option value="female">Perempuan</option>
-            </select>
+
+        <!-- BAGIAN UNGGAH IKAN -->
+        <div id="upload-section" style="display: none;">
+            <div class="win-titlebar">Persiapan Memancing</div>
+            <div class="win-content">
+                <p id="upload-instruction">Wajib unggah 1 - 5 gambar untuk ikan pertamamu!</p>
+                <div class="file-input-wrapper">
+                    <input type="file" id="image-upload" accept="image/*" multiple>
+                </div>
+                <button class="btn" id="start-btn">Setor & Mulai Main</button>
+                <button class="btn" id="skip-btn" style="display: none; background: #95a5a6;">Lewati (Opsional)</button>
+                <div id="error-msg"></div>
+            </div>
         </div>
-        <button id="btn-auth" class="btn">Mulai Petualangan</button>
-        <p id="auth-msg" style="color: red; font-size: 12px;"></p>
+
     </div>
 
-    <!-- Panel Setor Ikan -->
-    <div id="upload-panel" class="panel hidden">
-        <h2 id="upload-title">Setor Ikan (Wajib)</h2>
-        <p>Pilih 1 hingga 5 gambar untuk dilepas ke lautan!</p>
-        <div class="input-group">
-            <input type="file" id="fish-upload" accept="image/*" multiple>
+    <!-- ELEMEN GAME -->
+    <div id="hud">Ikan di Ember: <span id="score">0</span></div>
+    <div id="ember-hint">Klik Ember untuk Cek Ikan</div>
+    
+    <div id="inventory-modal">
+        <div class="inventory-content">
+            <div class="win-titlebar">Galeri Tangkapan</div>
+            <div class="win-content" style="display:flex; flex-direction:column; flex-grow:1; padding:10px;">
+                <div id="inv-3d-container">
+                    <canvas id="inv-canvas"></canvas>
+                    <div id="empty-msg" style="display:none;">Ember kosong.<br>Ayo memancing!</div>
+                </div>
+                <div class="inv-controls">
+                    <button class="btn inv-btn" id="prev-fish">◄</button>
+                    <span id="fish-counter" style="font-weight:bold; font-size:16px;">0 / 0</span>
+                    <button class="btn inv-btn" id="next-fish">►</button>
+                </div>
+                <button class="btn" id="close-inventory">Tutup Galeri</button>
+            </div>
         </div>
-        <button id="btn-upload" class="btn">Lepas Ikan & Main!</button>
-        <button id="btn-skip" class="btn hidden" style="background: #e74c3c;">Lewati (Opsional)</button>
-        <p id="upload-msg" style="color: red; font-size: 12px;"></p>
     </div>
 
-    <!-- Antarmuka Game -->
-    <div id="game-ui">
-        <div id="player-avatar">
-            <canvas id="avatar-canvas" width="64" height="64" style="border-radius: 5px;"></canvas>
-            <div id="avatar-name">@Pemain</div>
-        </div>
-        <button id="action-btn" class="btn">LEMPAR KAIL</button>
-        <canvas id="game-canvas"></canvas>
-    </div>
+    <button id="action-btn" class="btn">LEMPAR KAIL</button>
+    <canvas id="game-canvas"></canvas>
 
-    <!-- Three.js -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-
-    <!-- Firebase SDK (Modular) -->
+    <!-- SCRIPT UTAMA & FIREBASE (Sebagai Module) -->
     <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
-        import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
-        import { getFirestore, doc, setDoc, getDoc, collection, getDocs, addDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
-        import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-storage.js";
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+        import { getFirestore, collection, addDoc, getDocs } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-storage.js";
 
+        // Konfigurasi Firebase
         const firebaseConfig = {
             apiKey: "AIzaSyBgmuGFRyPeXhpk0Je5PKTdSSL3230prJw",
             authDomain: "fishingcuy-1eb40.firebaseapp.com",
@@ -98,148 +201,504 @@
         const db = getFirestore(app);
         const storage = getStorage(app);
 
-        // UI Elements
-        const authPanel = document.getElementById('auth-panel');
-        const uploadPanel = document.getElementById('upload-panel');
-        const gameUI = document.getElementById('game-ui');
-        let currentUserData = null;
+        // --- REFERENSI DOM UI ---
+        const uiContainer = document.getElementById('ui-container');
+        const loginSection = document.getElementById('login-section');
+        const uploadSection = document.getElementById('upload-section');
+        const loginBtn = document.getElementById('login-btn');
+        const startBtn = document.getElementById('start-btn');
+        const skipBtn = document.getElementById('skip-btn');
+        const errorMsg = document.getElementById('error-msg');
+        const loginErrorMsg = document.getElementById('login-error-msg');
+        
+        const canvas = document.getElementById('game-canvas');
+        const hud = document.getElementById('hud');
+        const emberHint = document.getElementById('ember-hint');
+        const actionBtn = document.getElementById('action-btn');
+        const scoreDisplay = document.getElementById('score');
+        const inventoryModal = document.getElementById('inventory-modal');
+        const closeInventoryBtn = document.getElementById('close-inventory');
+        const prevFishBtn = document.getElementById('prev-fish');
+        const nextFishBtn = document.getElementById('next-fish');
 
-        // --- 1. ALUR AUTENTIKASI ---
-        document.getElementById('btn-auth').addEventListener('click', async () => {
-            const name = document.getElementById('reg-name').value.trim();
-            const gender = document.getElementById('reg-gender').value;
-            const msg = document.getElementById('auth-msg');
-            
-            if (!name) { msg.innerText = "Nama harus diisi!"; return; }
-            msg.innerText = "Memproses...";
+        // --- VARIABEL GLOBAL FIREBASE & GAME ---
+        const dummyPassword = "fishingpassword123"; 
+        window.globalFishTextures = []; 
+        let caughtFishData = [];
+        let currentFishTexture = null; 
+        let score = 0;
 
-            const uniqueId = Math.floor(Math.random() * 9000) + 1000;
-            const safeName = name.replace(/[^a-zA-Z0-9]/g, '').toLowerCase();
-            const email = `${safeName}${uniqueId}@fail.com`;
-            const defaultPassword = `fishing123!`;
+        // Cek LocalStorage
+        const savedEmail = localStorage.getItem('fishing_player_email');
+        const hasUploadedFirstTime = localStorage.getItem('fishing_has_uploaded');
+
+        if (savedEmail) {
+            autoLogin(savedEmail);
+        }
+
+        // --- LOGIKA LOGIN ---
+        loginBtn.addEventListener('click', async () => {
+            const nama = document.getElementById('input-nama').value.trim();
+            if (!nama) {
+                showLoginError("Nama tidak boleh kosong!"); return;
+            }
+
+            loginBtn.innerText = "Mendaftarkan...";
+            const cleanName = nama.replace(/\s+/g, '').toLowerCase();
+            const randomNum = Math.floor(Math.random() * 9000) + 1000;
+            const generatedEmail = `${cleanName}${randomNum}@fail.com`;
 
             try {
-                // Cek apakah user dengan nama tersebut sudah ada (simulasi sederhana login vs register)
-                // Dalam skenario produksi, kita perlu mekanisme cek email eksisting
-                const userCredential = await createUserWithEmailAndPassword(auth, email, defaultPassword);
-                const user = userCredential.user;
-
-                currentUserData = { uid: user.uid, nama: name, gender: gender, first_login: true, avatarId: name };
-                
-                await setDoc(doc(db, "users", user.uid), currentUserData);
-                showUploadPanel(true);
+                await createUserWithEmailAndPassword(auth, generatedEmail, dummyPassword);
+                localStorage.setItem('fishing_player_email', generatedEmail);
+                alert(`Pendaftaran berhasil!\nID Pemain: ${generatedEmail}`);
+                showUploadSection();
             } catch (error) {
-                if (error.code === 'auth/email-already-in-use') {
-                    // Jika gagal daftar, anggap ini login (harus tahu email persisnya, ini hanya penyederhanaan)
-                    msg.innerText = "Sistem email pseudo ini mengharuskan nama unik. Coba tambahkan angka di namamu.";
-                } else {
-                    msg.innerText = error.message;
-                }
+                showLoginError("Gagal mendaftar: " + error.message);
+                loginBtn.innerText = "Masuk / Daftar";
             }
         });
 
-        function showUploadPanel(isFirstLogin) {
-            authPanel.classList.add('hidden');
-            uploadPanel.classList.remove('hidden');
-            if (!isFirstLogin) {
-                document.getElementById('upload-title').innerText = "Setor Ikan (Opsional)";
-                document.getElementById('btn-skip').classList.remove('hidden');
+        async function autoLogin(email) {
+            loginBtn.innerText = "Memuat Sesi...";
+            try {
+                await signInWithEmailAndPassword(auth, email, dummyPassword);
+                showUploadSection();
+            } catch (error) {
+                console.error("Gagal auto-login.");
+                localStorage.removeItem('fishing_player_email');
+                loginBtn.innerText = "Masuk / Daftar";
             }
         }
 
-        // --- 2. ALUR SETOR GAMBAR IKAN ---
-        document.getElementById('btn-upload').addEventListener('click', async () => {
-            const files = document.getElementById('fish-upload').files;
-            const msg = document.getElementById('upload-msg');
-            const btn = document.getElementById('btn-upload');
+        function showUploadSection() {
+            loginSection.style.display = 'none';
+            uploadSection.style.display = 'block';
 
-            if (files.length < 1 || files.length > 5) {
-                msg.innerText = "Harap pilih minimal 1 dan maksimal 5 gambar!"; return;
+            if (hasUploadedFirstTime) {
+                document.getElementById('upload-instruction').innerText = "Sumbang ikan baru? (Maksimal 5)";
+                skipBtn.style.display = 'inline-block';
+            }
+        }
+
+        function showError(msg) { errorMsg.innerText = msg; errorMsg.style.display = 'block'; }
+        function showLoginError(msg) { loginErrorMsg.innerText = msg; loginErrorMsg.style.display = 'block'; }
+
+        // --- LOGIKA SETOR GAMBAR ---
+        startBtn.addEventListener('click', async () => {
+            const files = document.getElementById('image-upload').files;
+            
+            if (!hasUploadedFirstTime && (files.length < 1 || files.length > 5)) {
+                showError("Pengguna baru wajib unggah 1 - 5 gambar!"); return;
+            }
+            if (files.length > 5) {
+                showError("Maksimal hanya 5 gambar!"); return;
             }
 
-            btn.disabled = true;
-            btn.innerText = "Mengunggah...";
+            startBtn.innerText = "Menyetorkan...";
+            startBtn.disabled = true;
+            skipBtn.disabled = true;
 
             try {
                 for (let i = 0; i < files.length; i++) {
                     const file = files[i];
-                    const storageRef = ref(storage, `fishes/${currentUserData.uid}_${Date.now()}_${i}`);
-                    await uploadBytes(storageRef, file);
-                    const downloadURL = await getDownloadURL(storageRef);
+                    const fileRef = ref(storage, `ikan_global/${Date.now()}_${file.name}`);
+                    await uploadBytes(fileRef, file);
+                    const downloadURL = await getDownloadURL(fileRef);
                     
-                    // Simpan URL ke lautan publik (Firestore)
-                    await addDoc(collection(db, "lautan"), { url: downloadURL, uploader: currentUserData.nama, timestamp: Date.now() });
+                    await addDoc(collection(db, "global_fishes"), {
+                        url: downloadURL,
+                        uploader: auth.currentUser.email,
+                        timestamp: new Date()
+                    });
                 }
-
-                // Update status first_login
-                if (currentUserData.first_login) {
-                    await setDoc(doc(db, "users", auth.currentUser.uid), { first_login: false }, { merge: true });
-                }
-                
-                startGame();
+                localStorage.setItem('fishing_has_uploaded', 'true');
+                await loadGlobalFishesAndStart();
             } catch (error) {
-                msg.innerText = "Gagal mengunggah: " + error.message;
-                btn.disabled = false;
-                btn.innerText = "Lepas Ikan & Main!";
+                showError("Gagal menyetor: " + error.message);
+                startBtn.disabled = false; skipBtn.disabled = false;
+                startBtn.innerText = "Setor & Mulai Main";
             }
         });
 
-        document.getElementById('btn-skip').addEventListener('click', () => { startGame(); });
+        skipBtn.addEventListener('click', async () => {
+            skipBtn.innerText = "Memuat...";
+            startBtn.disabled = true; skipBtn.disabled = true;
+            await loadGlobalFishesAndStart();
+        });
 
-        // --- 3. INISIALISASI GAME ---
-        async function startGame() {
-            uploadPanel.classList.add('hidden');
-            gameUI.style.display = 'block';
-
-            // Tarik ID dari database untuk merender avatar pemain secara lokal
-            renderAvatar(currentUserData.avatarId);
-
-            // Tarik gambar ikan dari Firestore (lautan)
-            const querySnapshot = await getDocs(collection(db, "lautan"));
-            const fishURLs = [];
-            querySnapshot.forEach((doc) => { fishURLs.push(doc.data().url); });
-
-            // Jika lautan kosong, berikan tekstur *fallback*
-            if (fishURLs.length === 0) fishURLs.push('https://via.placeholder.com/256x256/3498db/ffffff?text=Ikan+Default');
-
-            initFishingGame(fishURLs);
-        }
-
-        // --- 4. GENERATOR AVATAR (Modifikasi dari Pabrik Kartun) ---
-        function renderAvatar(seedName) {
-            document.getElementById('avatar-name').innerText = `@${seedName}`;
-            const avCanvas = document.getElementById('avatar-canvas');
-            const ctx = avCanvas.getContext('2d');
-            
-            // Gambar avatar tidak perlu disimpan ke server[span_2](start_span)[span_2](end_span). 
-            // Kita gunakan seed deterministik untuk menggambar elemen acak yang konsisten
-            let hash = 0;
-            for (let i = 0; i < seedName.length; i++) { hash = seedName.charCodeAt(i) + ((hash << 5) - hash); }
-            const hue = Math.abs(hash % 360);
-            
-            // Logika render sederhana (Bisa dihubungkan dengan aset Pabrik Kartun asli)
-            ctx.fillStyle = `hsl(${hue}, 70%, 50%)`;
-            ctx.fillRect(0, 0, 64, 64);
-            ctx.fillStyle = '#fff';
-            ctx.font = '24px Arial';
-            ctx.textAlign = 'center';
-            ctx.textBaseline = 'middle';
-            ctx.fillText(seedName.charAt(0).toUpperCase(), 32, 32);
-        }
-
-        // --- 5. LOGIKA GAME MEMANCING 3D ---
-        let fishTextures = [];
-        function initFishingGame(urls) {
+        // --- MENGAMBIL DATA DATABASE & MEMULAI GAME ---
+        async function loadGlobalFishesAndStart() {
+            uiContainer.style.display = 'none';
             const textureLoader = new THREE.TextureLoader();
-            // Menyiapkan tekstur yang diambil dari Firebase untuk digunakan pada ikan[span_3](start_span)[span_3](end_span)
-            urls.forEach(url => {
-                textureLoader.load(url, (texture) => { fishTextures.push(texture); });
-            });
+            textureLoader.setCrossOrigin('Anonymous'); 
+            
+            try {
+                const querySnapshot = await getDocs(collection(db, "global_fishes"));
+                let urls = [];
+                querySnapshot.forEach((doc) => urls.push(doc.data().url));
 
-            // (Tempatkan logika inisialisasi scene, camera, renderer, air, joran dari aplikasi 3D Mobile Fishing Game Anda di sini)
-            console.log("Game siap! Menunggu tekstur selesai dimuat...");
+                if (urls.length === 0) {
+                    initGame(); return;
+                }
+
+                let loadedCount = 0;
+                urls.forEach((url) => {
+                    textureLoader.load(url, (texture) => {
+                        window.globalFishTextures.push(texture);
+                        loadedCount++;
+                        if (loadedCount === urls.length) initGame();
+                    }, undefined, (err) => {
+                        loadedCount++;
+                        if (loadedCount === urls.length) initGame();
+                    });
+                });
+            } catch (e) {
+                console.error("Gagal memuat dari database", e);
+                initGame(); 
+            }
         }
 
+        // ==========================================
+        // LOGIKA GAME TIGA DIMENSI (THREE.JS)
+        // ==========================================
+        let scene, camera, renderer;
+        let water, bobber, bucketGroup, rod, rodTipObj, fishingLine; 
+        let currentFish = null;
+        let gameState = 'idle'; 
+        let catchTimer;
+        
+        let ripples = [];
+        let lastRippleTime = 0;
+        let jumpProgress = 0, castProgress = 0;
+        let fishStartPos = new THREE.Vector3();
+        let bobberTarget = new THREE.Vector3();
+        let bucketPos = new THREE.Vector3(1.5, 0.4, 4.5); 
+
+        let invScene, invCamera, invRenderer, invFishMesh;
+        let currentInvIndex = 0;
+
+        const raycaster = new THREE.Raycaster();
+        const mouse = new THREE.Vector2();
+
+        function initGame() {
+            canvas.style.display = 'block';
+            hud.style.display = 'block';
+            emberHint.style.display = 'block';
+            actionBtn.style.display = 'block';
+
+            scene = new THREE.Scene();
+            scene.fog = new THREE.FogExp2(0x87CEEB, 0.02);
+            scene.background = new THREE.Color(0x87CEEB);
+            
+            camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 0.1, 100);
+            camera.position.set(0, 5, 10);
+            camera.lookAt(0, 0, 0);
+
+            renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setPixelRatio(window.devicePixelRatio);
+
+            scene.add(new THREE.AmbientLight(0xffffff, 0.8));
+            const dirLight = new THREE.DirectionalLight(0xffffff, 0.6);
+            dirLight.position.set(5, 10, 5);
+            scene.add(dirLight);
+
+            const waterGeo = new THREE.PlaneGeometry(50, 50);
+            const waterMat = new THREE.MeshLambertMaterial({ color: 0x1E90FF, transparent: true, opacity: 0.7 });
+            water = new THREE.Mesh(waterGeo, waterMat);
+            water.rotation.x = -Math.PI / 2;
+            scene.add(water);
+
+            const dock = new THREE.Mesh(new THREE.BoxGeometry(5, 1, 3), new THREE.MeshLambertMaterial({ color: 0x6e4722 }));
+            dock.position.set(0, -0.2, 5);
+            scene.add(dock);
+
+            rod = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.08, 5), new THREE.MeshLambertMaterial({ color: 0x2c3e50 }));
+            rod.position.set(0, 1.5, 4.5);
+            rod.rotation.x = -Math.PI / 3.5; 
+            scene.add(rod);
+
+            rodTipObj = new THREE.Object3D();
+            rodTipObj.position.set(0, 2.5, 0); 
+            rod.add(rodTipObj);
+
+            bucketGroup = new THREE.Group();
+            const tubeMat = new THREE.MeshLambertMaterial({ color: 0xbdc3c7, side: THREE.DoubleSide });
+            const tube = new THREE.Mesh(new THREE.CylinderGeometry(0.7, 0.55, 0.9, 16, 1, true), tubeMat);
+            const base = new THREE.Mesh(new THREE.CylinderGeometry(0.55, 0.55, 0.1, 16), tubeMat);
+            base.position.y = -0.4;
+            
+            const bucketWaterMat = new THREE.MeshBasicMaterial({ color: 0x3498db, transparent: true, opacity: 0.8 });
+            const bucketWater = new THREE.Mesh(new THREE.CircleGeometry(0.66, 16), bucketWaterMat);
+            bucketWater.rotation.x = -Math.PI / 2; bucketWater.position.y = 0.25; 
+
+            bucketGroup.add(tube); bucketGroup.add(base); bucketGroup.add(bucketWater);
+            bucketGroup.position.copy(bucketPos);
+            bucketGroup.rotation.y = -0.2; 
+            scene.add(bucketGroup);
+
+            bobber = new THREE.Mesh(new THREE.SphereGeometry(0.2, 8, 8), new THREE.MeshLambertMaterial({ color: 0xff3333 }));
+            rodTipObj.getWorldPosition(bobber.position); 
+            scene.add(bobber);
+
+            const lineGeo = new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(), new THREE.Vector3()]);
+            fishingLine = new THREE.Line(lineGeo, new THREE.LineBasicMaterial({ color: 0xffffff, linewidth: 2 }));
+            scene.add(fishingLine);
+
+            initInvScene();
+
+            actionBtn.addEventListener('click', handleAction);
+            window.addEventListener('resize', onWindowResize);
+            canvas.addEventListener('click', onCanvasClick);
+
+            animate();
+        }
+
+        function initInvScene() {
+            invScene = new THREE.Scene();
+            invCamera = new THREE.PerspectiveCamera(45, 1, 0.1, 100);
+            invCamera.position.z = 4;
+            invScene.add(new THREE.AmbientLight(0xffffff, 0.9));
+            const dl = new THREE.DirectionalLight(0xffffff, 0.5);
+            dl.position.set(5, 5, 5);
+            invScene.add(dl);
+            const invCanvasEl = document.getElementById('inv-canvas');
+            invRenderer = new THREE.WebGLRenderer({ canvas: invCanvasEl, alpha: true, antialias: true });
+        }
+
+        function updateInvFish() {
+            if (invFishMesh) invScene.remove(invFishMesh);
+            if (caughtFishData.length === 0) {
+                document.getElementById('empty-msg').style.display = 'block';
+                document.getElementById('fish-counter').innerText = '0 / 0'; return;
+            }
+            document.getElementById('empty-msg').style.display = 'none';
+            document.getElementById('fish-counter').innerText = `${currentInvIndex + 1} / ${caughtFishData.length}`;
+
+            const tex = caughtFishData[currentInvIndex];
+            const geometry = createFishGeometry();
+            const material = new THREE.MeshLambertMaterial({ map: tex });
+            invFishMesh = new THREE.Mesh(geometry, material);
+            invFishMesh.scale.set(0.8, 0.8, 0.8);
+            invScene.add(invFishMesh);
+        }
+
+        prevFishBtn.onclick = () => {
+            if(caughtFishData.length > 0) {
+                currentInvIndex = (currentInvIndex - 1 + caughtFishData.length) % caughtFishData.length;
+                updateInvFish();
+            }
+        };
+        nextFishBtn.onclick = () => {
+            if(caughtFishData.length > 0) {
+                currentInvIndex = (currentInvIndex + 1) % caughtFishData.length;
+                updateInvFish();
+            }
+        };
+
+        function onCanvasClick(event) {
+            if (inventoryModal.style.display === 'block') return;
+            mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+            mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+            raycaster.setFromCamera(mouse, camera);
+
+            const intersects = raycaster.intersectObjects(bucketGroup.children, true);
+            if (intersects.length > 0) {
+                currentInvIndex = Math.max(0, caughtFishData.length - 1);
+                updateInvFish();
+                const container = document.getElementById('inv-3d-container');
+                invRenderer.setSize(container.clientWidth, container.clientHeight);
+                invCamera.aspect = container.clientWidth / container.clientHeight;
+                invCamera.updateProjectionMatrix();
+                inventoryModal.style.display = 'block';
+            }
+        }
+
+        closeInventoryBtn.onclick = () => inventoryModal.style.display = 'none';
+
+        function createFishGeometry() {
+            const shape = new THREE.Shape();
+            shape.moveTo(-1.5, 0); shape.lineTo(-0.5, 0.8); shape.lineTo(0.2, 1.0);
+            shape.lineTo(0.5, 1.8); shape.lineTo(0.8, 1.0); shape.lineTo(1.8, 0.5);
+            shape.lineTo(2.5, 1.0); shape.lineTo(2.5, -1.0); shape.lineTo(1.8, -0.5);
+            shape.lineTo(0, -1.0); shape.lineTo(-0.8, -0.6); shape.lineTo(-1.5, 0);
+
+            const eyePath = new THREE.Path();
+            eyePath.absarc(-0.6, 0.2, 0.25, 0, Math.PI * 2, false);
+            shape.holes.push(eyePath);
+
+            const geometry = new THREE.ExtrudeGeometry(shape, { depth: 0.3, bevelEnabled: true, bevelSegments: 2, steps: 1, bevelSize: 0.05, bevelThickness: 0.05 });
+            geometry.center();
+
+            geometry.computeBoundingBox();
+            const bbox = geometry.boundingBox;
+            const uvAttr = geometry.attributes.uv;
+            const posAttr = geometry.attributes.position;
+            
+            for (let i = 0; i < uvAttr.count; i++) {
+                let x = posAttr.getX(i); let y = posAttr.getY(i);
+                let u = (x - bbox.min.x) / (bbox.max.x - bbox.min.x);
+                let v = (y - bbox.min.y) / (bbox.max.y - bbox.min.y);
+                uvAttr.setXY(i, u, v);
+            }
+            uvAttr.needsUpdate = true;
+            return geometry;
+        }
+
+        function createRipple(pos) {
+            const r = new THREE.Mesh(
+                new THREE.RingGeometry(0.1, 0.3, 16),
+                new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.7, side: THREE.DoubleSide })
+            );
+            r.rotation.x = -Math.PI / 2;
+            r.position.set(pos.x, 0.05, pos.z);
+            scene.add(r); ripples.push({ mesh: r, age: 0 });
+        }
+
+        function handleAction() {
+            if (inventoryModal.style.display === 'block') return;
+
+            if (gameState === 'idle') {
+                gameState = 'casting'; castProgress = 0;
+                actionBtn.innerText = "MELEMPAR...";
+                bobberTarget.set((Math.random() - 0.5) * 4, 0, -1 - Math.random() * 2);
+            } else if (gameState === 'bite') {
+                gameState = 'catching';
+                actionBtn.innerText = "DAPAT! MENGANGKAT...";
+                actionBtn.className = "btn"; actionBtn.style.pointerEvents = 'none';
+                spawnAndJumpFish();
+            } else if (gameState === 'fishing') {
+                clearTimeout(catchTimer);
+                resetToIdle("TERLALU CEPAT! ULANGI");
+            }
+        }
+
+        function triggerBite() {
+            gameState = 'bite';
+            actionBtn.innerText = "TARIK SEKARANG!!";
+            actionBtn.className = "btn bite";
+        }
+
+        function resetToIdle(btnText) {
+            gameState = 'idle';
+            actionBtn.innerText = btnText || "LEMPAR KAIL";
+            actionBtn.className = "btn"; actionBtn.style.pointerEvents = 'auto';
+            rod.rotation.x = -Math.PI / 3.5; 
+            rodTipObj.getWorldPosition(bobber.position); 
+        }
+
+        function spawnAndJumpFish() {
+            // Logika baru untuk mengambil ikan dari server global
+            if (window.globalFishTextures.length > 0) {
+                currentFishTexture = window.globalFishTextures[Math.floor(Math.random() * window.globalFishTextures.length)];
+            } else {
+                currentFishTexture = new THREE.Texture(); // Fallback tekstur kosong
+            }
+
+            const mat = new THREE.MeshLambertMaterial({ map: currentFishTexture });
+            currentFish = new THREE.Mesh(createFishGeometry(), mat);
+
+            currentFish.scale.set(0.5, 0.5, 0.5);
+            currentFish.position.copy(bobber.position);
+            currentFish.position.y = -0.5; currentFish.rotation.y = Math.PI;
+
+            scene.add(currentFish);
+            fishStartPos.copy(currentFish.position);
+            jumpProgress = 0;
+            
+            rod.rotation.x = -Math.PI / 4;
+            rodTipObj.getWorldPosition(bobber.position);
+        }
+
+        function onWindowResize() {
+            if(camera && renderer) {
+                camera.aspect = window.innerWidth / window.innerHeight;
+                camera.updateProjectionMatrix();
+                renderer.setSize(window.innerWidth, window.innerHeight);
+            }
+        }
+
+        const tempVec = new THREE.Vector3();
+        function animate() {
+            requestAnimationFrame(animate);
+            const time = Date.now();
+
+            if (water) water.position.y = Math.sin(time * 0.001) * 0.1;
+
+            if (gameState === 'casting') {
+                castProgress += 0.02; 
+                if (castProgress <= 0.3) {
+                    let t = castProgress / 0.3;
+                    rod.rotation.x = -Math.PI/3.5 + t * (Math.PI/3); 
+                    rodTipObj.getWorldPosition(bobber.position);
+                } else if (castProgress <= 1.0) {
+                    let t = (castProgress - 0.3) / 0.7;
+                    rod.rotation.x = (-Math.PI/3.5 + Math.PI/3) * (1-t) + (-Math.PI/3.5) * t;
+                    rodTipObj.getWorldPosition(tempVec);
+                    bobber.position.lerpVectors(tempVec, bobberTarget, t);
+                    bobber.position.y += Math.sin(t * Math.PI) * 2; 
+                }
+
+                if (castProgress >= 1) {
+                    gameState = 'fishing'; actionBtn.innerText = "MENUNGGU...";
+                    bobber.position.copy(bobberTarget); createRipple(bobber.position);
+                    catchTimer = setTimeout(() => { if (gameState === 'fishing') triggerBite(); }, Math.random() * 3000 + 2000);
+                }
+            }
+
+            if (gameState === 'bite' && bobber) {
+                bobber.position.x = bobberTarget.x + (Math.random() - 0.5) * 0.1;
+                bobber.position.z = bobberTarget.z + (Math.random() - 0.5) * 0.1;
+                bobber.position.y = -0.1 + Math.sin(time * 0.05) * 0.2;
+                if (time - lastRippleTime > 300) { createRipple(bobber.position); lastRippleTime = time; }
+            } else if (gameState === 'fishing' && bobber) {
+                bobber.position.y = Math.sin(time * 0.003) * 0.05;
+            }
+
+            if (rodTipObj && fishingLine) {
+                rodTipObj.getWorldPosition(tempVec);
+                const pos = fishingLine.geometry.attributes.position.array;
+                pos[0] = tempVec.x; pos[1] = tempVec.y; pos[2] = tempVec.z;
+                if (gameState === 'catching' && currentFish) {
+                    pos[3] = currentFish.position.x; pos[4] = currentFish.position.y; pos[5] = currentFish.position.z;
+                } else {
+                    pos[3] = bobber.position.x; pos[4] = bobber.position.y; pos[5] = bobber.position.z;
+                }
+                fishingLine.geometry.attributes.position.needsUpdate = true;
+            }
+
+            for (let i = ripples.length - 1; i >= 0; i--) {
+                let r = ripples[i]; r.age += 0.02;
+                r.mesh.scale.set(1 + r.age * 3, 1 + r.age * 3, 1);
+                r.mesh.material.opacity = 0.7 - (r.age * 0.8);
+                if (r.age > 0.8) { scene.remove(r.mesh); ripples.splice(i, 1); }
+            }
+
+            if (gameState === 'catching' && currentFish) {
+                jumpProgress += 0.012; 
+                if (jumpProgress >= 1) {
+                    scene.remove(currentFish); currentFish = null;
+                    caughtFishData.push(currentFishTexture);
+                    score++; scoreDisplay.innerText = score;
+                    resetToIdle("LEMPAR KAIL LAGI");
+                } else {
+                    currentFish.position.lerpVectors(fishStartPos, bucketPos, jumpProgress);
+                    currentFish.position.y += Math.sin(jumpProgress * Math.PI) * 5;
+                    currentFish.rotation.z += 0.15; currentFish.rotation.x = Math.sin(time * 0.01) * 0.5;
+                }
+            }
+
+            if(renderer && scene && camera) renderer.render(scene, camera);
+
+            if (inventoryModal.style.display === 'block' && invRenderer && invScene) {
+                if (invFishMesh) {
+                    invFishMesh.rotation.y += 0.01; 
+                    invFishMesh.rotation.x = Math.sin(time * 0.002) * 0.1; 
+                }
+                invRenderer.render(invScene, invCamera);
+            }
+        }
     </script>
 </body>
 </html>
