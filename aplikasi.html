@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Pellerbook</title>
   <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <!-- Tambahan Library html2canvas -->
+  <!-- Library html2canvas untuk fitur unduh postingan -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
   <style>
     :root {
@@ -36,7 +36,7 @@
       background-position: 0 0, 20px 20px;
       color: var(--text-primary);
       min-height: 100vh;
-      padding-bottom: 80px; /* Space for bottom nav */
+      padding-bottom: 80px;
     }
 
     .container { max-width: 600px; margin: 0 auto; padding: 12px; }
@@ -92,7 +92,6 @@
     .modal-card { width: 100%; max-width: 400px; animation: popIn 0.3s ease-out; max-height: 90vh; overflow-y: auto; }
     @keyframes popIn { 0% { transform: scale(0.9); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
 
-    /* Lightbox specific */
     #lightbox-img { max-width: 100%; max-height: 80vh; border: var(--border-thick); border-radius: var(--radius-md); box-shadow: var(--shadow-chunky); }
 
     /* App Header */
@@ -105,10 +104,14 @@
     .app-header h1 { margin: 0; font-size: 22px; color: var(--btn-primary); text-transform: uppercase; display: flex; align-items: center; gap: 8px; letter-spacing: -0.5px; text-shadow: 1px 1px 0px var(--border-color); }
     
     .header-actions { display: flex; gap: 10px; align-items: center; }
-    .header-btn { 
-      background: #FFF; border: 2px solid var(--border-color); border-radius: 8px; 
-      padding: 8px 12px; font-size: 13px; font-weight: bold; cursor: pointer;
-      box-shadow: 2px 2px 0px var(--border-color); transition: all 0.1s; margin-bottom: 0;
+
+    /* Feed Controls / Filter Panel */
+    .feed-controls {
+      display: flex; gap: 8px; align-items: center; margin-bottom: 16px; background: var(--card-bg);
+      border: var(--border-thick); border-radius: var(--radius-lg); padding: 10px 14px; box-shadow: var(--shadow-chunky);
+    }
+    .feed-controls select {
+      padding: 8px 10px; font-size: 13px; font-weight: 700; margin: 0; background: #f9fafb; cursor: pointer;
     }
 
     /* Compose Area */
@@ -176,19 +179,32 @@
       border: 2px solid var(--border-color); margin-bottom: 12px; background: #f3f4f6; cursor: pointer;
     }
 
-    /* Action Bar (Reactions & Share) */
-    .action-bar { display: flex; gap: 10px; flex-wrap: wrap; border-top: 2px solid #f3f4f6; border-bottom: 2px solid #f3f4f6; padding: 12px 0; margin-bottom: 12px; justify-content: space-between; align-items: center; }
-    .reaction-group { display: flex; gap: 8px; }
+    /* Action Bar (Reactions Lucu & Custom Warna) */
+    .action-bar { display: flex; gap: 8px; flex-wrap: wrap; border-top: 2px solid #f3f4f6; border-bottom: 2px solid #f3f4f6; padding: 12px 0; margin-bottom: 12px; justify-content: space-between; align-items: center; }
+    .reaction-group { display: flex; gap: 6px; }
+    
     .reaction-btn {
-      background: #f9fafb; border: 2px solid var(--border-color); border-radius: 8px;
-      padding: 6px 12px; font-size: 13px; font-weight: 700; cursor: pointer;
-      display: inline-flex; align-items: center; gap: 6px; box-shadow: 2px 2px 0px var(--border-color);
-      width: auto; margin: 0; text-transform: none;
+      border: 2px solid var(--border-color); border-radius: 8px;
+      padding: 6px 10px; font-size: 12px; font-weight: 700; cursor: pointer;
+      display: inline-flex; align-items: center; gap: 4px; box-shadow: 2px 2px 0px var(--border-color);
+      width: auto; margin: 0; text-transform: none; transition: transform 0.1s;
     }
-    .reaction-btn.active { background: var(--accent); color: var(--text-primary); }
-    .btn-share { background: #fff; box-shadow: none; border-color: #d1d5db; }
+    .reaction-btn:hover { transform: translateY(-2px); }
+    
+    /* Tombol React Custom Warna */
+    .btn-react-like { background: #fef08a; } /* Kuning ceria */
+    .btn-react-like.active { background: #eab308; color: #fff; }
 
-    /* Komentar Section - Bubble Style */
+    .btn-react-meh { background: #bae6fd; } /* Biru santai */
+    .btn-react-meh.active { background: #0284c7; color: #fff; }
+
+    .btn-react-wuttafak { background: #fecaca; } /* Merah kaget */
+    .btn-react-wuttafak.active { background: #dc2626; color: #fff; }
+
+    .reaction-icon-img { width: 18px; height: 18px; object-fit: contain; }
+    .btn-share { background: #fff; box-shadow: none; border-color: #d1d5db; font-size: 12px; }
+
+    /* Komentar Section */
     .comments-section { margin-top: 8px; }
     .comments-list-wrapper { max-height: 300px; overflow-y: auto; padding-right: 4px; margin-bottom: 12px; }
     .comments-list-wrapper::-webkit-scrollbar { width: 4px; }
@@ -210,7 +226,6 @@
     .reply-btn-text:hover { color: var(--btn-primary); text-decoration: underline; }
     .delete-comment-btn { color: #ef4444; }
 
-    /* Balasan Komentar */
     .comment-item.is-reply { margin-left: 24px; margin-top: 4px; }
     .comment-item.is-reply .comment-bubble { border-radius: 18px; border-top-left-radius: 18px; border-bottom-left-radius: 4px; background: #e0f2fe; }
 
@@ -246,7 +261,7 @@
   </div>
   <canvas id="hiddenCanvas" width="256" height="256" style="display: none;"></canvas>
 
-  <!-- MODALS (Auth, Profile, Edit, Friends, Lightbox) -->
+  <!-- MODALS -->
   <!-- Auth Modal -->
   <div id="auth-modal" class="modal-overlay hidden">
     <div class="card modal-card">
@@ -276,11 +291,22 @@
     </div>
   </div>
 
-  <!-- Profil Pribadi & Edit Modal -->
+  <!-- Profil Pribadi & Edit Modal (Dilengkapi Opsi Upload Foto Pribadi / Kompresi 100x100) -->
   <div id="profile-modal" class="modal-overlay hidden">
     <div class="card modal-card">
       <h2>Edit Profil Konyolmu</h2>
       <p style="font-size: 12px; text-align:center; color: #6b7280; margin-top:-10px; margin-bottom: 16px;">(Nama batas maks 2x/bulan)</p>
+      
+      <!-- Opsi Foto Profil Pribadi -->
+      <div class="input-group" style="align-items: center; text-align: center;">
+        <label class="input-label">Foto Profil Pribadi (Kompres Otomatis 100x100)</label>
+        <img id="profile-modal-preview" src="" style="width: 80px; height: 80px; border-radius: 16px; border: var(--border-thick); object-fit: cover; margin-bottom: 8px;">
+        <label for="profile-pic-upload" class="image-upload-btn" style="margin-bottom: 0; width: auto; padding: 6px 12px; font-size: 12px;">📁 Unggah Foto Sendiri</label>
+        <input type="file" id="profile-pic-upload" accept="image/*" class="hidden">
+        <input type="hidden" id="profile-custom-avatar-url">
+        <button type="button" class="small-btn" id="btn-reset-avatar" style="background:#e5e7eb; margin-top: 6px;">Reset ke Avatar Generator</button>
+      </div>
+
       <div class="input-group">
         <label class="input-label">Username (Maks 20)</label>
         <input type="text" id="edit-name" maxlength="20">
@@ -306,10 +332,10 @@
     </div>
   </div>
 
-  <!-- Profil Publik Modal (Melihat Profil Orang Lain) -->
+  <!-- Profil Publik Modal -->
   <div id="public-profile-modal" class="modal-overlay hidden">
     <div class="card modal-card" style="text-align: center;">
-      <img id="pub-avatar" src="" style="width: 100px; height: 100px; border-radius: 24px; border: var(--border-thick); margin-bottom: 10px;">
+      <img id="pub-avatar" src="" style="width: 100px; height: 100px; border-radius: 24px; border: var(--border-thick); margin-bottom: 10px; object-fit: cover;">
       <h2 id="pub-name" style="margin-bottom: 4px; color: var(--btn-primary);"></h2>
       <p id="pub-location" style="font-size: 13px; color: gray; margin-top: 0;"></p>
       <div style="background: #f9fafb; padding: 12px; border-radius: 8px; border: 2px solid #e5e7eb; text-align: left; margin-bottom: 16px;">
@@ -333,18 +359,23 @@
     </div>
   </div>
 
-  <!-- Friends Modal -->
+  <!-- Friends & Penghuni Pellerbook Modal -->
   <div id="friends-modal" class="modal-overlay hidden">
     <div class="card modal-card">
+      <h2>Daftar Penghuni Pellerbook</h2>
+      <div id="all-residents-list" style="margin-bottom: 20px; max-height: 150px; overflow-y:auto; background: #f9fafb; border-radius: 8px; border: 2px solid #e5e7eb; padding: 8px;"></div>
+      
       <h2>Permintaan Pertemanan</h2>
       <div id="friend-requests-list" style="margin-bottom: 20px; max-height: 150px; overflow-y:auto; background: #f9fafb; border-radius: 8px; border: 2px solid #e5e7eb; padding: 8px;"></div>
+      
       <h2>Daftar Teman Kamu</h2>
       <div id="friends-list" style="max-height: 150px; overflow-y:auto; font-size:14px; background: #f9fafb; border-radius: 8px; border: 2px solid #e5e7eb; padding: 12px;"></div>
+      
       <button onclick="document.getElementById('friends-modal').classList.add('hidden')" style="background: #e5e7eb; color: #374151; margin-top: 16px;">Tutup</button>
     </div>
   </div>
 
-  <!-- Lightbox (Preview Gambar Full) -->
+  <!-- Lightbox -->
   <div id="lightbox" class="modal-overlay hidden" onclick="this.classList.add('hidden')">
     <img id="lightbox-img" src="" alt="Full size view" onclick="event.stopPropagation()">
     <span style="position: absolute; top: 20px; right: 20px; color: white; font-size: 30px; cursor: pointer; font-weight: bold;">&times;</span>
@@ -359,7 +390,7 @@
           Pellerbook
         </h1>
         <div class="header-actions">
-          <img id="current-user-avatar" src="" alt="Avatar" style="width:40px; height:40px; border-radius:12px; border:2px solid var(--border-color); cursor:pointer; background:#fff; box-shadow: 2px 2px 0 var(--border-color);">
+          <img id="current-user-avatar" src="" alt="Avatar" style="width:40px; height:40px; border-radius:12px; border:2px solid var(--border-color); cursor:pointer; background:#fff; box-shadow: 2px 2px 0 var(--border-color); object-fit: cover;" onclick="document.getElementById('profile-modal').classList.remove('hidden')">
         </div>
       </div>
     </div>
@@ -392,13 +423,25 @@
       </button>
     </div>
 
-    <!-- Feed Container -->
-    <div id="feed-container">
-      <!-- Skeletons will show via JS -->
+    <!-- Fitur Pengaturan Feed (Filter Berdasarkan Kategori) -->
+    <div class="feed-controls">
+      <span style="font-size: 13px; font-weight: 700; white-space: nowrap;">📌 Filter Feed:</span>
+      <select id="feed-filter-select" onchange="window.handleFeedFilterChange()">
+        <option value="newest">Terbaru</option>
+        <option value="oldest">Terlama</option>
+        <option value="most_like">Like Terbanyak</option>
+        <option value="most_meh">Meh Terbanyak</option>
+        <option value="most_wuttafak">Wuttafak Terbanyak</option>
+        <option value="friends">Teman Saja</option>
+        <option value="public">Publik</option>
+      </select>
     </div>
+
+    <!-- Feed Container -->
+    <div id="feed-container"></div>
   </div>
 
-  <!-- Bottom Navigation Menu (Mobile Feel) -->
+  <!-- Bottom Navigation Menu -->
   <div class="bottom-nav">
     <a href="#" class="nav-item active" onclick="window.scrollTo(0,0)">
       <svg class="svg-icon svg-icon-lg" viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
@@ -406,7 +449,7 @@
     </a>
     <div class="nav-item" onclick="document.getElementById('friends-modal').classList.remove('hidden')">
       <svg class="svg-icon svg-icon-lg" viewBox="0 0 24 24"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg>
-      Teman
+      Penghuni & Teman
     </div>
     <div class="nav-item" onclick="document.getElementById('profile-modal').classList.remove('hidden')">
       <svg class="svg-icon svg-icon-lg" viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
@@ -416,7 +459,7 @@
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
-    import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
+    import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
     import { getFirestore, doc, setDoc, getDoc, collection, addDoc, updateDoc, query, onSnapshot, serverTimestamp, arrayUnion, deleteDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 
     const firebaseConfig = {
@@ -435,15 +478,12 @@
     window.postsCache = {}; 
     let currentUserData = null;
     let allUsersCache = {}; 
+    let currentFeedFilter = 'newest';
 
     const SVGs = {
-      like: `<svg class="svg-icon" viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>`,
-      meh: `<svg class="svg-icon" viewBox="0 0 24 24"><path d="M9 9h6v2H9V9m0 4h6v2H9v-2m12-3c0 5.52-4.48 10-10 10S1 17.52 1 12 5.48 2 11 2s10 4.48 10 10zm-2 0c0-4.41-3.59-8-8-8s-8 3.59-8 8 3.59 8 8 8 8-3.59 8-8z"/></svg>`,
-      wuttafak: `<svg class="svg-icon" viewBox="0 0 24 24"><path d="M11 15h2v2h-2zm0-8h2v6h-2zm.99-5C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8z"/></svg>`,
       share: `<svg class="svg-icon" viewBox="0 0 24 24"><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92s2.92-1.31 2.92-2.92-1.31-2.92-2.92-2.92z"/></svg>`
     };
 
-    // Helper Fungsi Relatif Waktu (Time Ago)
     function timeAgo(timestamp) {
       if (!timestamp) return "Baru saja";
       const seconds = Math.floor((new Date() - timestamp.toDate()) / 1000);
@@ -460,7 +500,7 @@
       return "Baru saja";
     }
 
-    // --- AVATAR ENGINE (Dipertahankan Persis) ---
+    // --- AVATAR ENGINE ---
     const canvas = document.getElementById("hiddenCanvas");
     const ctx = canvas.getContext("2d");
     const offCanvas = document.createElement("canvas"); offCanvas.width = 256; offCanvas.height = 256; const offCtx = offCanvas.getContext("2d");
@@ -501,6 +541,48 @@
       return canvas.toDataURL("image/png");
     }
 
+    // Helper mendapatkan sumber avatar user (custom / generator)
+    function resolveUserAvatar(userData) {
+      if (!userData) return '';
+      if (userData.customAvatar) return userData.customAvatar;
+      return getAvatarUrl(userData.name, userData.gender);
+    }
+
+    // --- UPLOAD & KOMPRESI FOTO PROFIL (100x100) ---
+    document.getElementById('profile-pic-upload').addEventListener('change', function(e) {
+      const file = e.target.files[0]; if (!file) return;
+      const reader = new FileReader();
+      reader.onload = function(event) {
+        const img = new Image();
+        img.onload = function() {
+          const compCanvas = document.createElement('canvas');
+          compCanvas.width = 100; compCanvas.height = 100;
+          const compCtx = compCanvas.getContext('2d');
+          
+          // Potong & Kompres menjadi kotak 100x100 agar ringan
+          let sWidth = img.width; let sHeight = img.height;
+          let sX = 0; let sY = 0;
+          if (sWidth > sHeight) { sX = (sWidth - sHeight) / 2; sWidth = sHeight; } 
+          else { sY = (sHeight - sWidth) / 2; sHeight = sWidth; }
+
+          compCtx.drawImage(img, sX, sY, sWidth, sHeight, 0, 0, 100, 100);
+          const compressedDataUrl = compCanvas.toDataURL('image/jpeg', 0.8);
+
+          document.getElementById('profile-custom-avatar-url').value = compressedDataUrl;
+          document.getElementById('profile-modal-preview').src = compressedDataUrl;
+        };
+        img.src = event.target.result;
+      };
+      reader.readAsDataURL(file); this.value = '';
+    });
+
+    document.getElementById('btn-reset-avatar').addEventListener('click', () => {
+      document.getElementById('profile-custom-avatar-url').value = '';
+      if(currentUserData) {
+        document.getElementById('profile-modal-preview').src = getAvatarUrl(currentUserData.name, currentUserData.gender);
+      }
+    });
+
     // --- AUTH & PROFILE ---
     document.getElementById('toggle-to-register').onclick = () => { document.getElementById('login-box').classList.add('hidden'); document.getElementById('register-box').classList.remove('hidden'); };
     document.getElementById('toggle-to-login').onclick = () => { document.getElementById('register-box').classList.add('hidden'); document.getElementById('login-box').classList.remove('hidden'); };
@@ -519,7 +601,7 @@
       try {
         document.getElementById('reg-status').innerText = "Mendaftarkan...";
         const userCred = await createUserWithEmailAndPassword(auth, email, pass);
-        await setDoc(doc(db, "users", userCred.user.uid), { name, gender, email, friends: [], friendRequests: [], nameChangeCount: 0, lastChangeMonth: new Date().getMonth() });
+        await setDoc(doc(db, "users", userCred.user.uid), { name, gender, email, friends: [], friendRequests: [], customAvatar: "", nameChangeCount: 0, lastChangeMonth: new Date().getMonth() });
       } catch (e) { document.getElementById('reg-status').innerText = e.message; }
     });
 
@@ -530,8 +612,10 @@
 
     document.getElementById('btn-save-profile').addEventListener('click', async () => {
       const newName = document.getElementById('edit-name').value.trim().substring(0, 20); const newGender = document.getElementById('edit-gender').value;
+      const customAvatarUrl = document.getElementById('profile-custom-avatar-url').value;
       let currentMonth = new Date().getMonth();
-      let updates = { gender: newGender, dob: document.getElementById('edit-dob').value, location: document.getElementById('edit-location').value, bio: document.getElementById('edit-bio').value };
+      let updates = { gender: newGender, dob: document.getElementById('edit-dob').value, location: document.getElementById('edit-location').value, bio: document.getElementById('edit-bio').value, customAvatar: customAvatarUrl };
+      
       if (newName !== currentUserData.name) {
         let count = currentUserData.nameChangeCount || 0; let lastMonth = currentUserData.lastChangeMonth !== undefined ? currentUserData.lastChangeMonth : -1;
         if (lastMonth !== currentMonth) { updates.nameChangeCount = 1; updates.lastChangeMonth = currentMonth; updates.name = newName; }
@@ -546,35 +630,41 @@
         onSnapshot(doc(db, "users", user.uid), (docSnap) => {
           if (docSnap.exists()) { 
             currentUserData = docSnap.data(); currentUserData.uid = user.uid; 
-            document.getElementById('current-user-avatar').src = getAvatarUrl(currentUserData.name, currentUserData.gender); 
+            document.getElementById('current-user-avatar').src = resolveUserAvatar(currentUserData); 
+            document.getElementById('profile-modal-preview').src = resolveUserAvatar(currentUserData);
             
-            // Isi form edit otomatis
             document.getElementById('edit-name').value = currentUserData.name; document.getElementById('edit-gender').value = currentUserData.gender;
             document.getElementById('edit-dob').value = currentUserData.dob || ''; document.getElementById('edit-location').value = currentUserData.location || '';
             document.getElementById('edit-bio').value = currentUserData.bio || '';
+            document.getElementById('profile-custom-avatar-url').value = currentUserData.customAvatar || '';
             
             document.getElementById('auth-modal').classList.add('hidden'); 
-            renderFriendsUI(); 
+            renderResidentsAndFriendsUI(); 
           }
         });
         loadFeed();
       } else { currentUserData = null; document.getElementById('auth-modal').classList.remove('hidden'); }
     });
 
-    // --- PUBLIK PROFIL & TEMAN ---
+    // --- PUBLIK PROFIL & PENGHUNI ---
     window.openPublicProfile = function(uid) {
       if(uid === currentUserData.uid) {
         document.getElementById('profile-modal').classList.remove('hidden'); return;
       }
       const u = allUsersCache[uid]; if(!u) return;
-      document.getElementById('pub-avatar').src = getAvatarUrl(u.name, u.gender);
+      document.getElementById('pub-avatar').src = resolveUserAvatar(u);
       document.getElementById('pub-name').innerText = "@" + u.name;
       document.getElementById('pub-location').innerText = u.location ? `📍 ${u.location}` : "Lokasi Misterius";
       document.getElementById('pub-bio').innerText = u.bio ? `"${u.bio}"` : '"Pengguna ini terlalu malas menulis bio."';
       document.getElementById('public-profile-modal').classList.remove('hidden');
     }
 
-    onSnapshot(collection(db, "users"), (snapshot) => { snapshot.forEach(doc => { allUsersCache[doc.id] = doc.data(); }); renderFriendsUI(); });
+    onSnapshot(collection(db, "users"), (snapshot) => { 
+      allUsersCache = {};
+      snapshot.forEach(doc => { allUsersCache[doc.id] = doc.data(); }); 
+      renderResidentsAndFriendsUI(); 
+      loadFeed(); // Refresh feed ketika data user berubah
+    });
     
     window.addFriend = async function(targetUid) { if(!targetUid || targetUid === currentUserData.uid) return; try { await updateDoc(doc(db, "users", targetUid), { friendRequests: arrayUnion(currentUserData.uid) }); alert("Permintaan pertemanan sukses meluncur!"); } catch(e) { alert("Gagal: " + e.message); } };
     
@@ -586,18 +676,41 @@
       } catch(e) { alert(e.message); }
     };
     
-    function renderFriendsUI() {
+    function renderResidentsAndFriendsUI() {
       if(!currentUserData) return;
-      const reqDiv = document.getElementById('friend-requests-list'); const friendDiv = document.getElementById('friends-list');
+      const residentDiv = document.getElementById('all-residents-list');
+      const reqDiv = document.getElementById('friend-requests-list'); 
+      const friendDiv = document.getElementById('friends-list');
+
+      // 1. Render Semua Penghuni Pellerbook
+      let residentsHtml = '';
+      for (const [uid, u] of Object.entries(allUsersCache)) {
+        if (uid === currentUserData.uid) continue;
+        const isAlreadyFriend = (currentUserData.friends || []).includes(uid);
+        let actionBtn = isAlreadyFriend ? '<span style="font-size:11px; color:gray; font-weight:bold;">Teman</span>' : `<button class="small-btn success" onclick="addFriend('${uid}')">+ Teman</button>`;
+        residentsHtml += `
+          <div style="display:flex; justify-content:space-between; align-items:center; padding:6px 0; border-bottom:1px solid #e5e7eb;">
+            <div style="display:flex; align-items:center; gap:8px; cursor:pointer;" onclick="openPublicProfile('${uid}')">
+              <img src="${resolveUserAvatar(u)}" style="width:30px; height:30px; border-radius:8px; border:2px solid var(--border-color); object-fit:cover;">
+              <b>@${u.name}</b>
+            </div>
+            ${actionBtn}
+          </div>`;
+      }
+      residentDiv.innerHTML = residentsHtml || '<p style="font-size:13px; color:gray; margin:0;">Belum ada penghuni lain.</p>';
+
+      // 2. Render Permintaan Pertemanan
       const reqs = currentUserData.friendRequests || [];
       if(reqs.length === 0) reqDiv.innerHTML = '<p style="font-size:13px; color:gray; margin:0;">Belum ada yang ngajak temenan :(</p>';
       else reqDiv.innerHTML = reqs.map(uid => { const u = allUsersCache[uid]; if(!u) return ''; return `<div style="display:flex; justify-content:space-between; align-items:center; padding:10px; border-bottom:1px solid #e5e7eb;"><b>@${u.name}</b> <button class="small-btn success" onclick="acceptFriend('${uid}')">Terima</button></div>`; }).join('');
+      
+      // 3. Render Teman Kamu
       const friends = currentUserData.friends || [];
       if(friends.length === 0) friendDiv.innerHTML = '<p style="font-size:13px; color:gray; margin:0;">Buku pertemananmu masih kosong.</p>';
       else friendDiv.innerHTML = friends.map(uid => { const u = allUsersCache[uid]; return u ? `<div style="padding: 8px 0; border-bottom: 1px dashed #e5e7eb; cursor:pointer;" onclick="openPublicProfile('${uid}')">👥 @${u.name}</div>` : ''; }).join('');
     }
 
-    // --- UPLOAD GAMBAR & LIGHTBOX ---
+    // --- UPLOAD GAMBAR POSTINGAN & LIGHTBOX ---
     document.getElementById('image-upload').addEventListener('change', function(e) {
       const file = e.target.files[0]; if (!file) return;
       const statusText = document.getElementById('upload-status');
@@ -609,7 +722,7 @@
         img.onload = function() {
           const canvas = document.createElement('canvas');
           let width = img.width; let height = img.height;
-          const MAX_SIZE = 800; // Sedikit dinaikkan kualitasnya
+          const MAX_SIZE = 800;
           if (width > height) { if (width > MAX_SIZE) { height *= MAX_SIZE / width; width = MAX_SIZE; } } else { if (height > MAX_SIZE) { width *= MAX_SIZE / height; height = MAX_SIZE; } }
 
           canvas.width = width; canvas.height = height; const ctx = canvas.getContext('2d'); ctx.drawImage(img, 0, 0, width, height);
@@ -638,7 +751,7 @@
       document.getElementById('lightbox').classList.remove('hidden');
     }
 
-    // --- POSTING & EDIT POSTINGAN ---
+    // --- POSTING, EDIT & HAPUS ---
     document.getElementById('btn-post').addEventListener('click', async () => {
       const input = document.getElementById('post-input'); const text = input.value.trim();
       const imgInput = document.getElementById('post-image-url'); const imgUrl = imgInput.value.trim();
@@ -665,7 +778,6 @@
       const postId = document.getElementById('edit-post-id').value;
       const newContent = document.getElementById('edit-post-content').value.trim();
       try {
-        // Aturan firestore mengizinkan edit jika resource.data.authorUid == request.auth.uid
         await updateDoc(doc(db, "posts", postId), { content: newContent });
         document.getElementById('edit-post-modal').classList.add('hidden');
       } catch (e) { alert("Gagal mengedit: " + e.message); }
@@ -676,7 +788,7 @@
       try { await deleteDoc(doc(db, "posts", postId)); } catch(e) { alert("Gagal menghapus postingan: " + e.message); }
     };
 
-    // --- REAKSI & SHARE (Modifikasi Share ke Canvas) ---
+    // --- REAKSI & SHARE ---
     window.toggleReaction = async function(postId, type) {
       const userId = currentUserData.uid; const post = window.postsCache[postId]; if (!post) return;
       let reactions = { ...post.reactions }; ['like', 'meh', 'wuttafak'].forEach(t => { if(!reactions[t]) reactions[t] = []; });
@@ -687,56 +799,46 @@
     };
 
     window.sharePost = function(postId) {
-      // Tangkap elemen kartu postingan secara spesifik berdasarkan ID
       const postElement = document.getElementById(`post-${postId}`);
       if (!postElement) return;
 
-      // Ubah tombol share menjadi status "Loading" sementara
       const shareBtn = postElement.querySelector('.btn-share');
       const originalBtnHtml = shareBtn.innerHTML;
       shareBtn.innerHTML = '⏳';
 
-      // Siapkan dan pasang Watermark "Pellerbook" di pojok kanan atas
       const watermark = document.createElement('div');
       watermark.innerText = 'Pellerbook';
       watermark.style.position = 'absolute';
       watermark.style.top = '12px';
       watermark.style.right = '16px';
       watermark.style.fontWeight = '800';
-      watermark.style.color = '#38BDF8'; // Menggunakan warna tema utama aplikasi
+      watermark.style.color = '#38BDF8';
       watermark.style.fontSize = '14px';
       watermark.style.textShadow = '1px 1px 0px #1e1e1e';
       watermark.style.opacity = '0.8';
       watermark.style.fontFamily = "'Fredoka', sans-serif";
       watermark.style.zIndex = '10';
       
-      // Amankan posisi relatif pembungkus agar watermark absolut presisi
       const originalPosition = postElement.style.position;
       postElement.style.position = 'relative';
       postElement.appendChild(watermark);
 
-      // Proses konversi elemen HTML menjadi Canvas
       html2canvas(postElement, {
-        useCORS: true,        // Penting agar gambar eksternal/URL tidak error (blank)
-        scale: 2,             // Kualitas 2x lipat agar gambar tidak pecah
+        useCORS: true,
+        scale: 2,
         backgroundColor: '#ffffff' 
       }).then(canvas => {
-        // Bersihkan kembali watermark dan style aslinya agar UI web tidak berubah
         postElement.removeChild(watermark);
         postElement.style.position = originalPosition;
         shareBtn.innerHTML = originalBtnHtml;
 
-        // Konversi Canvas ke Data URL format JPEG (kualitas 90%)
         const imageData = canvas.toDataURL('image/jpeg', 0.9);
-
-        // Buat tautan tak terlihat untuk memicu unduhan otomatis
         const downloadLink = document.createElement('a');
         downloadLink.href = imageData;
         downloadLink.download = `Pellerbook_Post_${postId}.jpg`;
         document.body.appendChild(downloadLink);
         downloadLink.click();
         document.body.removeChild(downloadLink);
-        
       }).catch(err => {
         console.error("Gagal membuat gambar postingan:", err);
         alert("Oops! Gagal membuat gambar postingan.");
@@ -771,6 +873,12 @@
       } catch(e) { alert("Gagal: " + e.message); }
     };
 
+    // --- PENGATURAN FILTER FEED ---
+    window.handleFeedFilterChange = function() {
+      currentFeedFilter = document.getElementById('feed-filter-select').value;
+      loadFeed();
+    }
+
     // --- RENDER FEED UTAMA ---
     function loadFeed() {
       onSnapshot(query(collection(db, "posts")), (snapshot) => {
@@ -780,11 +888,33 @@
         let postsArray = [];
         snapshot.forEach(docSnap => { const data = docSnap.data(); window.postsCache[docSnap.id] = data; postsArray.push({ id: docSnap.id, ...data }); });
 
-        // Sorting: Postingan baru & likes terbanyak
+        // Filter berdasarkan pengaturan
+        if (currentFeedFilter === 'friends') {
+          const myFriends = currentUserData?.friends || [];
+          postsArray = postsArray.filter(p => p.authorUid === currentUserData.uid || myFriends.includes(p.authorUid));
+        } else if (currentFeedFilter === 'public') {
+          postsArray = postsArray.filter(p => p.authorUid !== currentUserData.uid);
+        }
+
+        // Sorting berdasarkan pilihan user
         postsArray.sort((a, b) => {
           const aTime = a.createdAt?.toMillis() || 0; const bTime = b.createdAt?.toMillis() || 0;
-          return bTime - aTime; // Sort by newest
+          const aLikes = a.reactions?.like?.length || 0; const bLikes = b.reactions?.like?.length || 0;
+          const aMehs = a.reactions?.meh?.length || 0; const bMehs = b.reactions?.meh?.length || 0;
+          const aWuttafaks = a.reactions?.wuttafak?.length || 0; const bWuttafaks = b.reactions?.wuttafak?.length || 0;
+
+          if (currentFeedFilter === 'newest') return bTime - aTime;
+          if (currentFeedFilter === 'oldest') return aTime - bTime;
+          if (currentFeedFilter === 'most_like') return bLikes - aLikes;
+          if (currentFeedFilter === 'most_meh') return bMehs - aMehs;
+          if (currentFeedFilter === 'most_wuttafak') return bWuttafaks - aWuttafaks;
+          return bTime - aTime;
         });
+
+        if (postsArray.length === 0) {
+          feedDiv.innerHTML = '<p style="text-align: center; color: gray;">Tidak ada postingan dalam filter ini.</p>';
+          return;
+        }
 
         feedDiv.innerHTML = '';
         postsArray.forEach(post => {
@@ -792,8 +922,7 @@
           const timeStr = timeAgo(post.createdAt);
           const currentAuthorData = allUsersCache[post.authorUid];
           const displayNama = currentAuthorData ? currentAuthorData.name : post.authorName;
-          const displayGender = currentAuthorData ? currentAuthorData.gender : post.authorGender;
-          const avatarSrc = getAvatarUrl(displayNama, displayGender);
+          const avatarSrc = resolveUserAvatar(currentAuthorData || { name: post.authorName, gender: post.authorGender });
           const rx = post.reactions || { like: [], meh: [], wuttafak: [] };
           const uid = currentUserData.uid;
           const isMyPost = post.authorUid === uid;
@@ -874,9 +1003,15 @@
                 
                 <div class="action-bar">
                   <div class="reaction-group">
-                    <button class="reaction-btn ${rx.like?.includes(uid) ? 'active' : ''}" onclick="toggleReaction('${postId}', 'like')">${SVGs.like} ${rx.like?.length || 0}</button>
-                    <button class="reaction-btn ${rx.meh?.includes(uid) ? 'active' : ''}" onclick="toggleReaction('${postId}', 'meh')">${SVGs.meh} ${rx.meh?.length || 0}</button>
-                    <button class="reaction-btn ${rx.wuttafak?.includes(uid) ? 'active' : ''}" onclick="toggleReaction('${postId}', 'wuttafak')">${SVGs.wuttafak} ${rx.wuttafak?.length || 0}</button>
+                    <button class="reaction-btn btn-react-like ${rx.like?.includes(uid) ? 'active' : ''}" onclick="toggleReaction('${postId}', 'like')">
+                      <img src="like.png" class="reaction-icon-img" alt="Like"> ${rx.like?.length || 0}
+                    </button>
+                    <button class="reaction-btn btn-react-meh ${rx.meh?.includes(uid) ? 'active' : ''}" onclick="toggleReaction('${postId}', 'meh')">
+                      <img src="meh.png" class="reaction-icon-img" alt="Meh"> ${rx.meh?.length || 0}
+                    </button>
+                    <button class="reaction-btn btn-react-wuttafak ${rx.wuttafak?.includes(uid) ? 'active' : ''}" onclick="toggleReaction('${postId}', 'wuttafak')">
+                      <img src="wuttafak.png" class="reaction-icon-img" alt="Wuttafak"> ${rx.wuttafak?.length || 0}
+                    </button>
                   </div>
                   <button class="reaction-btn btn-share" onclick="sharePost('${postId}')">${SVGs.share}</button>
                 </div>
