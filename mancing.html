@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Fishing Cuy - Multiplayer Pool</title>
+    <style>
+        body { margin: 0; overflow: hidden; background-color: #4FB0C6; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        .panel { 
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            width: 90%; max-width: 400px; background: #ffffff; border-radius: 15px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2); padding: 20px; text-align: center; z-index: 10;
+        }
+        .hidden { display: none !important; }
+        .input-group { margin-bottom: 15px; text-align: left; }
+        .input-group label { display: block; font-weight: bold; margin-bottom: 5px; }
+        .input-group input, .input-group select { width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #ccc; box-sizing: border-box; }
+        .btn {
+            background: #3498db; color: white; border: none; border-radius: 25px; padding: 12px 25px;
+            font-size: 16px; font-weight: bold; width: 100%; cursor: pointer; transition: transform 0.1s; margin-top: 10px;
+        }
+        .btn:active { transform: scale(0.95); }
+        .btn:disabled { background: #95a5a6; cursor: not-allowed; }
+        #game-ui { display: none; }
+        #player-avatar {
+            position: absolute; top: 15px; right: 15px; background: #fff; padding: 5px;
+            border-radius: 10px; z-index: 5; font-weight: bold; text-align: center; box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+        }
+        /* Style Game Memancing */
+        #game-canvas { width: 100vw; height: 100vh; cursor: pointer; display: block; }
+        #action-btn { position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%); width: 80%; max-width: 400px; height: 70px; border-radius: 35px; font-size: 24px; z-index: 5; background: #2ecc71; }
+    </style>
+</head>
+<body>
+
+    <!-- Panel Login / Daftar -->
+    <div id="auth-panel" class="panel">
+        <h2>Pendaftaran Pemain</h2>
+        <div class="input-group">
+            <label>Nama (Menentukan Avatar)</label>
+            <input type="text" id="reg-name" placeholder="Masukkan nama...">
+        </div>
+        <div class="input-group">
+            <label>Jenis Kelamin</label>
+            <select id="reg-gender">
+                <option value="male">Laki-laki</option>
+                <option value="female">Perempuan</option>
+            </select>
+        </div>
+        <button id="btn-auth" class="btn">Mulai Petualangan</button>
+        <p id="auth-msg" style="color: red; font-size: 12px;"></p>
+    </div>
+
+    <!-- Panel Setor Ikan -->
+    <div id="upload-panel" class="panel hidden">
+        <h2 id="upload-title">Setor Ikan (Wajib)</h2>
+        <p>Pilih 1 hingga 5 gambar untuk dilepas ke lautan!</p>
+        <div class="input-group">
+            <input type="file" id="fish-upload" accept="image/*" multiple>
+        </div>
+        <button id="btn-upload" class="btn">Lepas Ikan & Main!</button>
+        <button id="btn-skip" class="btn hidden" style="background: #e74c3c;">Lewati (Opsional)</button>
+        <p id="upload-msg" style="color: red; font-size: 12px;"></p>
+    </div>
+
+    <!-- Antarmuka Game -->
+    <div id="game-ui">
+        <div id="player-avatar">
+            <canvas id="avatar-canvas" width="64" height="64" style="border-radius: 5px;"></canvas>
+            <div id="avatar-name">@Pemain</div>
+        </div>
+        <button id="action-btn" class="btn">LEMPAR KAIL</button>
+        <canvas id="game-canvas"></canvas>
+    </div>
+
+    <!-- Three.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
+    <!-- Firebase SDK (Modular) -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+        import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
+        import { getFirestore, doc, setDoc, getDoc, collection, getDocs, addDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+        import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-storage.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyBgmuGFRyPeXhpk0Je5PKTdSSL3230prJw",
+            authDomain: "fishingcuy-1eb40.firebaseapp.com",
+            projectId: "fishingcuy-1eb40",
+            storageBucket: "fishingcuy-1eb40.firebasestorage.app",
+            messagingSenderId: "562728361595",
+            appId: "1:562728361595:web:5b4c6e10bfc95044868cde",
+            measurementId: "G-EPE4VLJZKB"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+        const storage = getStorage(app);
+
+        // UI Elements
+        const authPanel = document.getElementById('auth-panel');
+        const uploadPanel = document.getElementById('upload-panel');
+        const gameUI = document.getElementById('game-ui');
+        let currentUserData = null;
+
+        // --- 1. ALUR AUTENTIKASI ---
+        document.getElementById('btn-auth').addEventListener('click', async () => {
+            const name = document.getElementById('reg-name').value.trim();
+            const gender = document.getElementById('reg-gender').value;
+            const msg = document.getElementById('auth-msg');
+            
+            if (!name) { msg.innerText = "Nama harus diisi!"; return; }
+            msg.innerText = "Memproses...";
+
+            const uniqueId = Math.floor(Math.random() * 9000) + 1000;
+            const safeName = name.replace(/[^a-zA-Z0-9]/g, '').toLowerCase();
+            const email = `${safeName}${uniqueId}@fail.com`;
+            const defaultPassword = `fishing123!`;
+
+            try {
+                // Cek apakah user dengan nama tersebut sudah ada (simulasi sederhana login vs register)
+                // Dalam skenario produksi, kita perlu mekanisme cek email eksisting
+                const userCredential = await createUserWithEmailAndPassword(auth, email, defaultPassword);
+                const user = userCredential.user;
+
+                currentUserData = { uid: user.uid, nama: name, gender: gender, first_login: true, avatarId: name };
+                
+                await setDoc(doc(db, "users", user.uid), currentUserData);
+                showUploadPanel(true);
+            } catch (error) {
+                if (error.code === 'auth/email-already-in-use') {
+                    // Jika gagal daftar, anggap ini login (harus tahu email persisnya, ini hanya penyederhanaan)
+                    msg.innerText = "Sistem email pseudo ini mengharuskan nama unik. Coba tambahkan angka di namamu.";
+                } else {
+                    msg.innerText = error.message;
+                }
+            }
+        });
+
+        function showUploadPanel(isFirstLogin) {
+            authPanel.classList.add('hidden');
+            uploadPanel.classList.remove('hidden');
+            if (!isFirstLogin) {
+                document.getElementById('upload-title').innerText = "Setor Ikan (Opsional)";
+                document.getElementById('btn-skip').classList.remove('hidden');
+            }
+        }
+
+        // --- 2. ALUR SETOR GAMBAR IKAN ---
+        document.getElementById('btn-upload').addEventListener('click', async () => {
+            const files = document.getElementById('fish-upload').files;
+            const msg = document.getElementById('upload-msg');
+            const btn = document.getElementById('btn-upload');
+
+            if (files.length < 1 || files.length > 5) {
+                msg.innerText = "Harap pilih minimal 1 dan maksimal 5 gambar!"; return;
+            }
+
+            btn.disabled = true;
+            btn.innerText = "Mengunggah...";
+
+            try {
+                for (let i = 0; i < files.length; i++) {
+                    const file = files[i];
+                    const storageRef = ref(storage, `fishes/${currentUserData.uid}_${Date.now()}_${i}`);
+                    await uploadBytes(storageRef, file);
+                    const downloadURL = await getDownloadURL(storageRef);
+                    
+                    // Simpan URL ke lautan publik (Firestore)
+                    await addDoc(collection(db, "lautan"), { url: downloadURL, uploader: currentUserData.nama, timestamp: Date.now() });
+                }
+
+                // Update status first_login
+                if (currentUserData.first_login) {
+                    await setDoc(doc(db, "users", auth.currentUser.uid), { first_login: false }, { merge: true });
+                }
+                
+                startGame();
+            } catch (error) {
+                msg.innerText = "Gagal mengunggah: " + error.message;
+                btn.disabled = false;
+                btn.innerText = "Lepas Ikan & Main!";
+            }
+        });
+
+        document.getElementById('btn-skip').addEventListener('click', () => { startGame(); });
+
+        // --- 3. INISIALISASI GAME ---
+        async function startGame() {
+            uploadPanel.classList.add('hidden');
+            gameUI.style.display = 'block';
+
+            // Tarik ID dari database untuk merender avatar pemain secara lokal
+            renderAvatar(currentUserData.avatarId);
+
+            // Tarik gambar ikan dari Firestore (lautan)
+            const querySnapshot = await getDocs(collection(db, "lautan"));
+            const fishURLs = [];
+            querySnapshot.forEach((doc) => { fishURLs.push(doc.data().url); });
+
+            // Jika lautan kosong, berikan tekstur *fallback*
+            if (fishURLs.length === 0) fishURLs.push('https://via.placeholder.com/256x256/3498db/ffffff?text=Ikan+Default');
+
+            initFishingGame(fishURLs);
+        }
+
+        // --- 4. GENERATOR AVATAR (Modifikasi dari Pabrik Kartun) ---
+        function renderAvatar(seedName) {
+            document.getElementById('avatar-name').innerText = `@${seedName}`;
+            const avCanvas = document.getElementById('avatar-canvas');
+            const ctx = avCanvas.getContext('2d');
+            
+            // Gambar avatar tidak perlu disimpan ke server[span_2](start_span)[span_2](end_span). 
+            // Kita gunakan seed deterministik untuk menggambar elemen acak yang konsisten
+            let hash = 0;
+            for (let i = 0; i < seedName.length; i++) { hash = seedName.charCodeAt(i) + ((hash << 5) - hash); }
+            const hue = Math.abs(hash % 360);
+            
+            // Logika render sederhana (Bisa dihubungkan dengan aset Pabrik Kartun asli)
+            ctx.fillStyle = `hsl(${hue}, 70%, 50%)`;
+            ctx.fillRect(0, 0, 64, 64);
+            ctx.fillStyle = '#fff';
+            ctx.font = '24px Arial';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(seedName.charAt(0).toUpperCase(), 32, 32);
+        }
+
+        // --- 5. LOGIKA GAME MEMANCING 3D ---
+        let fishTextures = [];
+        function initFishingGame(urls) {
+            const textureLoader = new THREE.TextureLoader();
+            // Menyiapkan tekstur yang diambil dari Firebase untuk digunakan pada ikan[span_3](start_span)[span_3](end_span)
+            urls.forEach(url => {
+                textureLoader.load(url, (texture) => { fishTextures.push(texture); });
+            });
+
+            // (Tempatkan logika inisialisasi scene, camera, renderer, air, joran dari aplikasi 3D Mobile Fishing Game Anda di sini)
+            console.log("Game siap! Menunggu tekstur selesai dimuat...");
+        }
+
+    </script>
+</body>
+</html>
