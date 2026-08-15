@@ -190,7 +190,8 @@
             apiKey: "AIzaSyBgmuGFRyPeXhpk0Je5PKTdSSL3230prJw",
             authDomain: "fishingcuy-1eb40.firebaseapp.com",
             projectId: "fishingcuy-1eb40",
-            storageBucket: "fishingcuy-1eb40.firebasestorage.app",
+            // PERBAIKAN 1: Mengubah domain storageBucket agar sesuai standar
+            storageBucket: "fishingcuy-1eb40.appspot.com", 
             messagingSenderId: "562728361595",
             appId: "1:562728361595:web:5b4c6e10bfc95044868cde",
             measurementId: "G-EPE4VLJZKB"
@@ -246,7 +247,8 @@
             loginBtn.innerText = "Mendaftarkan...";
             const cleanName = nama.replace(/\s+/g, '').toLowerCase();
             const randomNum = Math.floor(Math.random() * 9000) + 1000;
-            const generatedEmail = `${cleanName}${randomNum}@fail.com`;
+            // PERBAIKAN 2: Menggunakan example.com untuk menghindari pemblokiran sistem
+            const generatedEmail = `${cleanName}${randomNum}@example.com`;
 
             try {
                 await createUserWithEmailAndPassword(auth, generatedEmail, dummyPassword);
