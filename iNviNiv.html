@@ -5,6 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>iNviNiv</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
   <style>
     @font-face {
       font-family: 'FontSatu';
@@ -44,6 +46,18 @@
       color: var(--text-primary);
       min-height: 100vh;
       padding-bottom: 80px;
+      -webkit-touch-callout: none;
+      -webkit-user-select: none;
+      -moz-user-select: none;
+      -ms-user-select: none;
+      user-select: none;
+    }
+
+    input, textarea {
+      -webkit-user-select: text;
+      -moz-user-select: text;
+      -ms-user-select: text;
+      user-select: text;
     }
 
     h1, h2, .post-name, button, .app-header h1 {
@@ -287,6 +301,18 @@
       position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(56, 189, 248, 0.98);
       z-index: 3000; display: flex; flex-direction: column; justify-content: center; align-items: center;
     }
+
+    .flatpickr-calendar {
+      font-family: 'FontSatu', sans-serif !important;
+      border: var(--border-thick) !important;
+      border-radius: var(--radius-lg) !important;
+      box-shadow: var(--shadow-chunky) !important;
+      background: var(--card-bg) !important;
+    }
+    .flatpickr-day.selected {
+      background: var(--btn-primary) !important;
+      border-color: var(--border-color) !important;
+    }
   </style>
 </head>
 <body>
@@ -297,6 +323,16 @@
     <h2 style="color: white; text-shadow: 2px 2px 0px #000; font-size: 24px;">Menyiapkan iNviNiv...</h2>
   </div>
   <canvas id="hiddenCanvas" width="256" height="256" style="display: none;"></canvas>
+
+  <div id="custom-confirm-modal" class="modal-overlay hidden">
+    <div class="card modal-card" style="text-align: center;">
+      <h2 id="custom-confirm-text" style="margin-bottom: 20px;">Apakah kamu yakin?</h2>
+      <div style="display: flex; gap: 10px;">
+        <button class="primary" id="btn-confirm-yes">Ya, Lanjutkan</button>
+        <button id="btn-confirm-no" style="background: #e5e7eb; color: #374151;">Batal</button>
+      </div>
+    </div>
+  </div>
 
   <div id="auth-modal" class="modal-overlay hidden">
     <div class="card modal-card">
@@ -334,7 +370,7 @@
       <div class="input-group" style="align-items: center; text-align: center;">
         <label class="input-label">Foto Profil Pribadi</label>
         <img id="profile-modal-preview" src="" style="width: 80px; height: 80px; border-radius: 16px; border: var(--border-thick); object-fit: cover; margin-bottom: 8px;">
-        <label for="profile-pic-upload" class="image-upload-btn" style="margin-bottom: 0; width: auto; padding: 6px 12px; font-size: 12px;">  Unggah Foto Sendiri</label>
+        <label for="profile-pic-upload" class="image-upload-btn" style="margin-bottom: 0; width: auto; padding: 6px 12px; font-size: 12px;"> Unggah Foto Sendiri</label>
         <input type="file" id="profile-pic-upload" accept="image/*" class="hidden">
         <input type="hidden" id="profile-custom-avatar-url">
         <button type="button" class="small-btn" id="btn-reset-avatar" style="background:#e5e7eb; margin-top: 6px;">Reset ke Avatar Generator</button>
@@ -350,7 +386,7 @@
       </div>
       <div class="input-group">
         <label class="input-label">Tanggal Lahir</label>
-        <input type="date" id="edit-dob">
+        <input type="text" id="edit-dob" placeholder="Pilih Tanggal Lahir">
       </div>
       <div class="input-group">
         <label class="input-label">Tempat Tinggal</label>
@@ -451,7 +487,7 @@
     </div>
 
     <div class="feed-controls">
-      <span style="font-size: 13px; font-weight: 700; white-space: nowrap;">  Filter Feed:</span>
+      <span style="font-size: 13px; font-weight: 700; white-space: nowrap;"> Filter Feed:</span>
       <select id="feed-filter-select" class="custom-dropdown" onchange="window.handleFeedFilterChange()">
         <option value="newest">Terbaru</option>
         <option value="oldest">Terlama</option>
@@ -472,7 +508,7 @@
       Beranda
     </a>
     <div class="nav-item" onclick="document.getElementById('friends-modal').classList.remove('hidden')">
-      <svg class="svg-icon svg-icon-lg" viewBox="0 0 24 24"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg>
+      <svg class="svg-icon svg-icon-lg" viewBox="0 0 24 24"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg>
       Penghuni & Teman
       <span id="nav-badge-teman" class="nav-badge hidden">0</span>
     </div>
@@ -522,6 +558,37 @@
         toast.classList.remove('show');
         setTimeout(() => toast.remove(), 300);
       }, 3000);
+    };
+
+    window.customConfirm = function(message) {
+      return new Promise((resolve) => {
+        const modal = document.getElementById('custom-confirm-modal');
+        const textEl = document.getElementById('custom-confirm-text');
+        const btnYes = document.getElementById('btn-confirm-yes');
+        const btnNo = document.getElementById('btn-confirm-no');
+
+        textEl.innerText = message;
+        modal.classList.remove('hidden');
+
+        const handleYes = () => {
+          cleanup();
+          resolve(true);
+        };
+
+        const handleNo = () => {
+          cleanup();
+          resolve(false);
+        };
+
+        const cleanup = () => {
+          modal.classList.add('hidden');
+          btnYes.removeEventListener('click', handleYes);
+          btnNo.removeEventListener('click', handleNo);
+        };
+
+        btnYes.addEventListener('click', handleYes);
+        btnNo.addEventListener('click', handleNo);
+      });
     };
 
     function initCustomDropdowns() {
@@ -603,6 +670,12 @@
       for(const cat in assetList) loadedParts[cat] = await partPromises[cat];
       
       initCustomDropdowns();
+      flatpickr("#edit-dob", {
+        dateFormat: "Y-m-d",
+        disableMobile: "true",
+        allowInput: true
+      });
+
       document.getElementById("loadingOverlay").classList.add("hidden");
     }
 
@@ -748,7 +821,7 @@
       const u = allUsersCache[uid]; if(!u) return;
       document.getElementById('pub-avatar').src = resolveUserAvatar(u);
       document.getElementById('pub-name').innerText = "@" + u.name;
-      document.getElementById('pub-location').innerText = u.location ? `  ${u.location}` : "Lokasi Misterius";
+      document.getElementById('pub-location').innerText = u.location ? ` ${u.location}` : "Lokasi Misterius";
       document.getElementById('pub-bio').innerText = u.bio ? `"${u.bio}"` : '"Pengguna ini terlalu malas menulis bio."';
       document.getElementById('public-profile-modal').classList.remove('hidden');
     }
@@ -812,13 +885,13 @@
       
       const friends = currentUserData.friends || [];
       if(friends.length === 0) friendDiv.innerHTML = '<p style="font-size:13px; color:gray; margin:0;">Buku pertemananmu masih kosong.</p>';
-      else friendDiv.innerHTML = friends.map(uid => { const u = allUsersCache[uid]; return u ? `<div style="padding: 8px 0; border-bottom: 1px dashed #e5e7eb; cursor:pointer;" onclick="openPublicProfile('${uid}')">  @${u.name}</div>` : ''; }).join('');
+      else friendDiv.innerHTML = friends.map(uid => { const u = allUsersCache[uid]; return u ? `<div style="padding: 8px 0; border-bottom: 1px dashed #e5e7eb; cursor:pointer;" onclick="openPublicProfile('${uid}')"> @${u.name}</div>` : ''; }).join('');
     }
 
     document.getElementById('image-upload').addEventListener('change', function(e) {
       const file = e.target.files[0]; if (!file) return;
       const statusText = document.getElementById('upload-status');
-      statusText.style.display = 'block'; statusText.innerText = 'Memproses gambar...  '; statusText.style.color = 'var(--text-secondary)';
+      statusText.style.display = 'block'; statusText.innerText = 'Memproses gambar... '; statusText.style.color = 'var(--text-secondary)';
 
       const reader = new FileReader();
       reader.onload = function(event) {
@@ -836,7 +909,7 @@
           document.getElementById('compose-preview-img').src = dataUrl;
           document.getElementById('compose-preview-area').style.display = 'block';
           
-          statusText.innerText = 'Gambar siap!  '; statusText.style.color = '#10b981';
+          statusText.innerText = 'Gambar siap! '; statusText.style.color = '#10b981';
           setTimeout(() => { statusText.style.display = 'none'; }, 2000);
         };
         img.src = event.target.result;
@@ -887,7 +960,8 @@
     });
 
     window.deletePost = async function(postId) {
-      if (!confirm('Yakin ingin menghapus jejak digital ini selamanya?')) return;
+      const isConfirmed = await window.customConfirm('Yakin ingin menghapus jejak digital ini selamanya?');
+      if (!isConfirmed) return;
       try { await deleteDoc(doc(db, "posts", postId)); } catch(e) { customAlert("Gagal menghapus postingan: " + e.message); }
     };
 
@@ -964,7 +1038,8 @@
     };
 
     window.deleteComment = async function(postId, commentId) {
-      if (!confirm('Hapus komentar ini?')) return;
+      const isConfirmed = await window.customConfirm('Hapus komentar ini?');
+      if (!isConfirmed) return;
       try {
         const postRef = doc(db, "posts", postId); const postSnap = await getDoc(postRef);
         if (postSnap.exists()) {
@@ -1030,8 +1105,8 @@
           if (isMyPost) {
             postMenuHtml = `
               <div class="post-menu">
-                <button class="post-menu-btn" onclick="promptEditPost('${postId}')">   Edit</button>
-                <button class="post-menu-btn btn-delete-post" onclick="deletePost('${postId}')">   Hapus</button>
+                <button class="post-menu-btn" onclick="promptEditPost('${postId}')"> Edit</button>
+                <button class="post-menu-btn btn-delete-post" onclick="deletePost('${postId}')"> Hapus</button>
               </div>`;
           }
 
