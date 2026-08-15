@@ -3,11 +3,18 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Pellerbook</title>
-  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <!-- Library html2canvas untuk fitur unduh postingan -->
+  <title>NIVI</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
   <style>
+    @font-face {
+      font-family: 'FontSatu';
+      src: url('font_1.otf') format('opentype');
+    }
+    @font-face {
+      font-family: 'FontDua';
+      src: url('font_2.otf') format('opentype');
+    }
+
     :root {
       --bg-main: #38BDF8;
       --card-bg: #FFFFFF;
@@ -28,7 +35,7 @@
     
     body {
       box-sizing: border-box; 
-      font-family: 'Fredoka', 'Comic Sans MS', cursive, sans-serif; 
+      font-family: 'FontSatu', sans-serif; 
       margin: 0; padding: 0;
       background-color: var(--bg-main);
       background-image: radial-gradient(#ffffff 15%, transparent 16%), radial-gradient(#ffffff 15%, transparent 16%);
@@ -37,6 +44,10 @@
       color: var(--text-primary);
       min-height: 100vh;
       padding-bottom: 80px;
+    }
+
+    h1, h2, .post-name, button, .app-header h1 {
+      font-family: 'FontDua', sans-serif;
     }
 
     .container { max-width: 600px; margin: 0 auto; padding: 12px; }
@@ -49,11 +60,10 @@
 
     h2 { text-align: center; margin-top: 0; font-size: 20px; text-transform: uppercase; letter-spacing: 1px; }
 
-    /* Form Inputs */
     .input-group { margin-bottom: 12px; display: flex; flex-direction: column; gap: 6px; }
     .input-label { font-size: 13px; font-weight: 700; text-transform: uppercase; color: var(--text-secondary); }
     
-    input, select, textarea {
+    input, textarea {
       width: 100%; padding: 12px 14px; background: #FFF;
       border: var(--border-thick); border-radius: var(--radius-md); font-size: 15px;
       font-weight: 500; font-family: inherit; box-sizing: border-box; outline: none;
@@ -63,7 +73,28 @@
     input[readonly] { background: #e5e7eb; color: #6b7280; cursor: not-allowed; }
     textarea { resize: vertical; min-height: 80px; }
 
-    /* Buttons */
+    .custom-select { position: relative; width: 100%; user-select: none; }
+    .custom-select-trigger {
+      width: 100%; padding: 12px 14px; background: #FFF;
+      border: var(--border-thick); border-radius: var(--radius-md); font-size: 15px;
+      font-weight: 600; cursor: pointer; display: flex; justify-content: space-between;
+      align-items: center; box-sizing: border-box; transition: all 0.2s ease;
+    }
+    .custom-select-trigger:hover { background: var(--accent); box-shadow: inset 2px 2px 0px rgba(0,0,0,0.05); }
+    .custom-select-options {
+      position: absolute; top: 100%; left: 0; right: 0; background: #FFF;
+      border: var(--border-thick); border-radius: var(--radius-md); box-shadow: var(--shadow-chunky);
+      margin-top: 6px; z-index: 100; display: none; max-height: 200px; overflow-y: auto;
+    }
+    .custom-select.open .custom-select-options { display: block; animation: popIn 0.2s ease-out; }
+    .custom-option {
+      padding: 12px 14px; font-size: 14px; font-weight: 600; cursor: pointer; border-bottom: 2px solid #f3f4f6;
+    }
+    .custom-option:last-child { border-bottom: none; }
+    .custom-option:hover { background: var(--accent); color: var(--text-primary); }
+    
+    .feed-controls .custom-select-trigger { padding: 8px 12px; font-size: 13px; font-weight: 700; background: #f9fafb; }
+
     button {
       width: 100%; padding: 12px; background: var(--accent); color: var(--text-primary);
       border: var(--border-thick); border-radius: var(--radius-md); font-size: 15px;
@@ -82,7 +113,15 @@
     
     .hidden { display: none !important; }
 
-    /* Modal / Lightbox */
+    .toast-container { position: fixed; top: 20px; right: 20px; z-index: 9999; display: flex; flex-direction: column; gap: 10px; pointer-events: none; }
+    .toast-msg {
+      background: var(--card-bg); border: var(--border-thick); border-radius: var(--radius-md);
+      box-shadow: var(--shadow-chunky); padding: 12px 16px; font-size: 14px; font-weight: 700;
+      color: var(--text-primary); transform: translateX(120%); transition: transform 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+      pointer-events: auto; display: flex; align-items: center; gap: 8px;
+    }
+    .toast-msg.show { transform: translateX(0); }
+
     .modal-overlay {
       position: fixed; top: 0; left: 0; right: 0; bottom: 0;
       background: rgba(0, 0, 0, 0.75); backdrop-filter: blur(4px); z-index: 2000;
@@ -94,7 +133,6 @@
 
     #lightbox-img { max-width: 100%; max-height: 80vh; border: var(--border-thick); border-radius: var(--radius-md); box-shadow: var(--shadow-chunky); }
 
-    /* App Header */
     .app-header-wrapper { position: sticky; top: 12px; z-index: 1000; margin-bottom: 20px; }
     .app-header {
       display: flex; justify-content: space-between; align-items: center;
@@ -103,18 +141,15 @@
     }
     .app-header h1 { margin: 0; font-size: 22px; color: var(--btn-primary); text-transform: uppercase; display: flex; align-items: center; gap: 8px; letter-spacing: -0.5px; text-shadow: 1px 1px 0px var(--border-color); }
     
+    .header-logo { width: 28px; height: 28px; object-fit: contain; border: 2px solid var(--border-color); border-radius: 6px; box-shadow: 2px 2px 0px var(--border-color); background: #fff; }
+
     .header-actions { display: flex; gap: 10px; align-items: center; }
 
-    /* Feed Controls / Filter Panel */
     .feed-controls {
       display: flex; gap: 8px; align-items: center; margin-bottom: 16px; background: var(--card-bg);
       border: var(--border-thick); border-radius: var(--radius-lg); padding: 10px 14px; box-shadow: var(--shadow-chunky);
     }
-    .feed-controls select {
-      padding: 8px 10px; font-size: 13px; font-weight: 700; margin: 0; background: #f9fafb; cursor: pointer;
-    }
 
-    /* Compose Area */
     .upload-wrapper { display: flex; flex-direction: column; gap: 8px; }
     .image-upload-btn {
       background: #e0e7ff; color: #4338ca; border: 2px dashed #4338ca; border-radius: var(--radius-md);
@@ -125,7 +160,6 @@
     .image-upload-btn:hover { background: #c7d2fe; }
     #upload-status { font-size: 12px; font-weight: 700; margin-top: -6px; margin-bottom: 10px; display: none; text-align: center; }
 
-    /* Compose Preview */
     .compose-preview-area { position: relative; display: none; margin-bottom: 12px; width: fit-content; }
     .compose-preview-img { max-height: 120px; border-radius: 8px; border: 2px solid var(--border-color); box-shadow: 2px 2px 0px var(--border-color); object-fit: cover; }
     .btn-remove-img {
@@ -135,7 +169,6 @@
       justify-content: center; padding: 0; box-shadow: 2px 2px 0px var(--border-color); margin: 0;
     }
 
-    /* Post Card */
     .post-card {
       background: var(--card-bg); border: var(--border-thick); border-radius: var(--radius-lg);
       box-shadow: 3px 3px 0px var(--border-color); padding: 16px; margin-bottom: 24px;
@@ -155,7 +188,6 @@
     .post-name:hover { text-decoration: underline; }
     .post-time { font-size: 12px; color: #6b7280; font-weight: 500; margin-top: 2px; }
     
-    /* Post Menu / Actions */
     .post-menu { display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end; }
     .post-menu-btn {
       background: transparent; color: var(--text-secondary); border: 2px solid transparent; border-radius: 6px;
@@ -179,7 +211,6 @@
       border: 2px solid var(--border-color); margin-bottom: 12px; background: #f3f4f6; cursor: pointer;
     }
 
-    /* Action Bar (Reactions Lucu & Custom Warna) */
     .action-bar { display: flex; gap: 8px; flex-wrap: wrap; border-top: 2px solid #f3f4f6; border-bottom: 2px solid #f3f4f6; padding: 12px 0; margin-bottom: 12px; justify-content: space-between; align-items: center; }
     .reaction-group { display: flex; gap: 6px; }
     
@@ -191,20 +222,18 @@
     }
     .reaction-btn:hover { transform: translateY(-2px); }
     
-    /* Tombol React Custom Warna */
-    .btn-react-like { background: #fef08a; } /* Kuning ceria */
+    .btn-react-like { background: #fef08a; } 
     .btn-react-like.active { background: #eab308; color: #fff; }
 
-    .btn-react-meh { background: #bae6fd; } /* Biru santai */
+    .btn-react-meh { background: #bae6fd; } 
     .btn-react-meh.active { background: #0284c7; color: #fff; }
 
-    .btn-react-wuttafak { background: #fecaca; } /* Merah kaget */
+    .btn-react-wuttafak { background: #fecaca; } 
     .btn-react-wuttafak.active { background: #dc2626; color: #fff; }
 
     .reaction-icon-img { width: 18px; height: 18px; object-fit: contain; }
     .btn-share { background: #fff; box-shadow: none; border-color: #d1d5db; font-size: 12px; }
 
-    /* Komentar Section */
     .comments-section { margin-top: 8px; }
     .comments-list-wrapper { max-height: 300px; overflow-y: auto; padding-right: 4px; margin-bottom: 12px; }
     .comments-list-wrapper::-webkit-scrollbar { width: 4px; }
@@ -233,17 +262,23 @@
     .comment-input-box input { padding: 10px 14px; font-size: 13px; border-width: 2px; border-radius: 20px; margin: 0; flex: 1; }
     .comment-input-box button { padding: 10px 14px; font-size: 13px; border-radius: 20px; width: auto; margin: 0; }
 
-    /* Bottom Navigation */
     .bottom-nav {
       position: fixed; bottom: 0; left: 0; right: 0; background: var(--card-bg);
       border-top: var(--border-thick); display: flex; justify-content: space-around;
       padding: 12px 0; z-index: 1000;
     }
     .nav-item {
-      display: flex; flex-direction: column; align-items: center; gap: 4px;
+      display: flex; flex-direction: column; align-items: center; gap: 4px; position: relative;
       font-size: 12px; font-weight: 700; color: var(--text-secondary); cursor: pointer; text-decoration: none;
     }
     .nav-item:hover, .nav-item.active { color: var(--btn-primary); }
+    
+    .nav-badge {
+      position: absolute; top: -6px; right: 8px; background: #ef4444; color: white;
+      border: 2px solid var(--border-color); border-radius: 50%; font-size: 10px;
+      font-weight: 800; width: 16px; height: 16px; display: flex; align-items: center;
+      justify-content: center; box-shadow: 2px 2px 0px var(--border-color);
+    }
 
     .svg-icon { width: 18px; height: 18px; fill: currentColor; display: inline-block; vertical-align: middle; }
     .svg-icon-lg { width: 24px; height: 24px; }
@@ -256,17 +291,17 @@
 </head>
 <body>
 
+  <div id="toast-container" class="toast-container"></div>
+
   <div id="loadingOverlay">
-    <h2 style="color: white; text-shadow: 2px 2px 0px #000; font-size: 24px;">Menyiapkan Pellerbook...</h2>
+    <h2 style="color: white; text-shadow: 2px 2px 0px #000; font-size: 24px;">Menyiapkan NIVI...</h2>
   </div>
   <canvas id="hiddenCanvas" width="256" height="256" style="display: none;"></canvas>
 
-  <!-- MODALS -->
-  <!-- Auth Modal -->
   <div id="auth-modal" class="modal-overlay hidden">
     <div class="card modal-card">
       <div id="login-box">
-        <h2>Masuk Pellerbook</h2>
+        <h2>Masuk NIVI</h2>
         <p id="login-status" style="color: red; text-align: center; font-weight: bold; font-size: 13px;"></p>
         <div class="input-group">
           <input type="email" id="login-email" placeholder="Email">
@@ -280,7 +315,7 @@
         <h2>Daftar Akun Baru</h2>
         <p id="reg-status" style="color: red; text-align: center; font-weight: bold; font-size: 13px;"></p>
         <div class="input-group">
-          <select id="reg-gender"><option value="Laki-laki">Cowok</option><option value="Perempuan">Cewek</option></select>
+          <select id="reg-gender" class="custom-dropdown"><option value="Laki-laki">Cowok</option><option value="Perempuan">Cewek</option></select>
           <input type="text" id="reg-name" maxlength="20" placeholder="Username (Maks 20 Huruf)" autocomplete="off">
           <input type="email" id="reg-email" readonly placeholder="Email Otomatis (Anti-Ribet)">
           <input type="password" id="reg-password" placeholder="Password (Min 6 Karakter)">
@@ -291,17 +326,15 @@
     </div>
   </div>
 
-  <!-- Profil Pribadi & Edit Modal (Dilengkapi Opsi Upload Foto Pribadi / Kompresi 100x100) -->
   <div id="profile-modal" class="modal-overlay hidden">
     <div class="card modal-card">
       <h2>Edit Profil Konyolmu</h2>
       <p style="font-size: 12px; text-align:center; color: #6b7280; margin-top:-10px; margin-bottom: 16px;">(Nama batas maks 2x/bulan)</p>
       
-      <!-- Opsi Foto Profil Pribadi -->
       <div class="input-group" style="align-items: center; text-align: center;">
         <label class="input-label">Foto Profil Pribadi (Kompres Otomatis 100x100)</label>
         <img id="profile-modal-preview" src="" style="width: 80px; height: 80px; border-radius: 16px; border: var(--border-thick); object-fit: cover; margin-bottom: 8px;">
-        <label for="profile-pic-upload" class="image-upload-btn" style="margin-bottom: 0; width: auto; padding: 6px 12px; font-size: 12px;">📁 Unggah Foto Sendiri</label>
+        <label for="profile-pic-upload" class="image-upload-btn" style="margin-bottom: 0; width: auto; padding: 6px 12px; font-size: 12px;">  Unggah Foto Sendiri</label>
         <input type="file" id="profile-pic-upload" accept="image/*" class="hidden">
         <input type="hidden" id="profile-custom-avatar-url">
         <button type="button" class="small-btn" id="btn-reset-avatar" style="background:#e5e7eb; margin-top: 6px;">Reset ke Avatar Generator</button>
@@ -313,7 +346,7 @@
       </div>
       <div class="input-group">
         <label class="input-label">Jenis Kelamin</label>
-        <select id="edit-gender"><option value="Laki-laki">Cowok</option><option value="Perempuan">Cewek</option></select>
+        <select id="edit-gender" class="custom-dropdown"><option value="Laki-laki">Cowok</option><option value="Perempuan">Cewek</option></select>
       </div>
       <div class="input-group">
         <label class="input-label">Tanggal Lahir</label>
@@ -332,7 +365,6 @@
     </div>
   </div>
 
-  <!-- Profil Publik Modal -->
   <div id="public-profile-modal" class="modal-overlay hidden">
     <div class="card modal-card" style="text-align: center;">
       <img id="pub-avatar" src="" style="width: 100px; height: 100px; border-radius: 24px; border: var(--border-thick); margin-bottom: 10px; object-fit: cover;">
@@ -346,7 +378,6 @@
     </div>
   </div>
 
-  <!-- Edit Post Modal -->
   <div id="edit-post-modal" class="modal-overlay hidden">
     <div class="card modal-card">
       <h2>Edit Postingan</h2>
@@ -359,10 +390,9 @@
     </div>
   </div>
 
-  <!-- Friends & Penghuni Pellerbook Modal -->
   <div id="friends-modal" class="modal-overlay hidden">
     <div class="card modal-card">
-      <h2>Daftar Penghuni Pellerbook</h2>
+      <h2>Daftar Penghuni NIVI</h2>
       <div id="all-residents-list" style="margin-bottom: 20px; max-height: 150px; overflow-y:auto; background: #f9fafb; border-radius: 8px; border: 2px solid #e5e7eb; padding: 8px;"></div>
       
       <h2>Permintaan Pertemanan</h2>
@@ -375,19 +405,17 @@
     </div>
   </div>
 
-  <!-- Lightbox -->
   <div id="lightbox" class="modal-overlay hidden" onclick="this.classList.add('hidden')">
     <img id="lightbox-img" src="" alt="Full size view" onclick="event.stopPropagation()">
     <span style="position: absolute; top: 20px; right: 20px; color: white; font-size: 30px; cursor: pointer; font-weight: bold;">&times;</span>
   </div>
 
   <div class="container">
-    <!-- Header -->
     <div class="app-header-wrapper">
       <div class="app-header">
         <h1>
-          <svg class="svg-icon svg-icon-lg" viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/></svg>
-          Pellerbook
+          <img src="logo.png" class="header-logo" alt="NIVI Logo">
+          NIVI
         </h1>
         <div class="header-actions">
           <img id="current-user-avatar" src="" alt="Avatar" style="width:40px; height:40px; border-radius:12px; border:2px solid var(--border-color); cursor:pointer; background:#fff; box-shadow: 2px 2px 0 var(--border-color); object-fit: cover;" onclick="document.getElementById('profile-modal').classList.remove('hidden')">
@@ -395,7 +423,6 @@
       </div>
     </div>
 
-    <!-- Area Tulis Postingan -->
     <div class="card">
       <div class="input-group">
         <textarea id="post-input" placeholder="Lagi mikirin hal aneh apa hari ini?"></textarea>
@@ -423,10 +450,9 @@
       </button>
     </div>
 
-    <!-- Fitur Pengaturan Feed (Filter Berdasarkan Kategori) -->
     <div class="feed-controls">
-      <span style="font-size: 13px; font-weight: 700; white-space: nowrap;">📌 Filter Feed:</span>
-      <select id="feed-filter-select" onchange="window.handleFeedFilterChange()">
+      <span style="font-size: 13px; font-weight: 700; white-space: nowrap;">  Filter Feed:</span>
+      <select id="feed-filter-select" class="custom-dropdown" onchange="window.handleFeedFilterChange()">
         <option value="newest">Terbaru</option>
         <option value="oldest">Terlama</option>
         <option value="most_like">Like Terbanyak</option>
@@ -437,11 +463,9 @@
       </select>
     </div>
 
-    <!-- Feed Container -->
     <div id="feed-container"></div>
   </div>
 
-  <!-- Bottom Navigation Menu -->
   <div class="bottom-nav">
     <a href="#" class="nav-item active" onclick="window.scrollTo(0,0)">
       <svg class="svg-icon svg-icon-lg" viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
@@ -450,6 +474,7 @@
     <div class="nav-item" onclick="document.getElementById('friends-modal').classList.remove('hidden')">
       <svg class="svg-icon svg-icon-lg" viewBox="0 0 24 24"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg>
       Penghuni & Teman
+      <span id="nav-badge-teman" class="nav-badge hidden">0</span>
     </div>
     <div class="nav-item" onclick="document.getElementById('profile-modal').classList.remove('hidden')">
       <svg class="svg-icon svg-icon-lg" viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
@@ -484,6 +509,69 @@
       share: `<svg class="svg-icon" viewBox="0 0 24 24"><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92s2.92-1.31 2.92-2.92-1.31-2.92-2.92-2.92z"/></svg>`
     };
 
+    window.customAlert = function(message) {
+      const container = document.getElementById('toast-container');
+      if (!container) return;
+      const toast = document.createElement('div');
+      toast.className = 'toast-msg';
+      toast.innerHTML = `<svg class="svg-icon" viewBox="0 0 24 24" style="color:var(--btn-primary);"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg> ${message}`;
+      container.appendChild(toast);
+      
+      setTimeout(() => toast.classList.add('show'), 10);
+      setTimeout(() => {
+        toast.classList.remove('show');
+        setTimeout(() => toast.remove(), 300);
+      }, 3000);
+    };
+
+    function initCustomDropdowns() {
+      document.querySelectorAll('select.custom-dropdown').forEach(select => {
+        if (select.dataset.initialized) return;
+        select.dataset.initialized = "true";
+
+        const wrapper = document.createElement('div');
+        wrapper.className = 'custom-select';
+        
+        const trigger = document.createElement('div');
+        trigger.className = 'custom-select-trigger';
+        trigger.innerHTML = `<span>${select.options[select.selectedIndex].text}</span> <span>▼</span>`;
+        
+        const optionsContainer = document.createElement('div');
+        optionsContainer.className = 'custom-select-options';
+        
+        Array.from(select.options).forEach(opt => {
+          const optionDiv = document.createElement('div');
+          optionDiv.className = 'custom-option';
+          optionDiv.innerText = opt.text;
+          optionDiv.addEventListener('click', (e) => {
+            select.value = opt.value;
+            trigger.querySelector('span').innerText = opt.text;
+            wrapper.classList.remove('open');
+            select.dispatchEvent(new Event('change'));
+          });
+          optionsContainer.appendChild(optionDiv);
+        });
+        
+        wrapper.appendChild(trigger);
+        wrapper.appendChild(optionsContainer);
+        
+        trigger.addEventListener('click', (e) => {
+          e.stopPropagation();
+          document.querySelectorAll('.custom-select').forEach(c => {
+            if(c !== wrapper) c.classList.remove('open');
+          });
+          wrapper.classList.toggle('open');
+        });
+        
+        select.parentNode.insertBefore(wrapper, select);
+        select.style.display = 'none';
+      });
+      
+      document.addEventListener('click', () => {
+        document.querySelectorAll('.custom-select').forEach(c => c.classList.remove('open'));
+      });
+    }
+
     function timeAgo(timestamp) {
       if (!timestamp) return "Baru saja";
       const seconds = Math.floor((new Date() - timestamp.toDate()) / 1000);
@@ -500,7 +588,6 @@
       return "Baru saja";
     }
 
-    // --- AVATAR ENGINE ---
     const canvas = document.getElementById("hiddenCanvas");
     const ctx = canvas.getContext("2d");
     const offCanvas = document.createElement("canvas"); offCanvas.width = 256; offCanvas.height = 256; const offCtx = offCanvas.getContext("2d");
@@ -514,6 +601,8 @@
       const partPromises = {}; for(const cat in assetList) partPromises[cat] = Promise.all(assetList[cat].map(loadImg));
       loadedTextures = (await Promise.all(texPromises)).map(img => ctx.createPattern(img, "repeat"));
       for(const cat in assetList) loadedParts[cat] = await partPromises[cat];
+      
+      initCustomDropdowns();
       document.getElementById("loadingOverlay").classList.add("hidden");
     }
 
@@ -541,14 +630,12 @@
       return canvas.toDataURL("image/png");
     }
 
-    // Helper mendapatkan sumber avatar user (custom / generator)
     function resolveUserAvatar(userData) {
       if (!userData) return '';
       if (userData.customAvatar) return userData.customAvatar;
       return getAvatarUrl(userData.name, userData.gender);
     }
 
-    // --- UPLOAD & KOMPRESI FOTO PROFIL (100x100) ---
     document.getElementById('profile-pic-upload').addEventListener('change', function(e) {
       const file = e.target.files[0]; if (!file) return;
       const reader = new FileReader();
@@ -559,7 +646,6 @@
           compCanvas.width = 100; compCanvas.height = 100;
           const compCtx = compCanvas.getContext('2d');
           
-          // Potong & Kompres menjadi kotak 100x100 agar ringan
           let sWidth = img.width; let sHeight = img.height;
           let sX = 0; let sY = 0;
           if (sWidth > sHeight) { sX = (sWidth - sHeight) / 2; sWidth = sHeight; } 
@@ -583,7 +669,6 @@
       }
     });
 
-    // --- AUTH & PROFILE ---
     document.getElementById('toggle-to-register').onclick = () => { document.getElementById('login-box').classList.add('hidden'); document.getElementById('register-box').classList.remove('hidden'); };
     document.getElementById('toggle-to-login').onclick = () => { document.getElementById('register-box').classList.add('hidden'); document.getElementById('login-box').classList.remove('hidden'); };
     
@@ -619,10 +704,14 @@
       if (newName !== currentUserData.name) {
         let count = currentUserData.nameChangeCount || 0; let lastMonth = currentUserData.lastChangeMonth !== undefined ? currentUserData.lastChangeMonth : -1;
         if (lastMonth !== currentMonth) { updates.nameChangeCount = 1; updates.lastChangeMonth = currentMonth; updates.name = newName; }
-        else { if (count >= 2) { alert("Batas ganti nama bulan ini habis (Maks 2x)!"); return; } updates.nameChangeCount = count + 1; updates.name = newName; }
+        else { if (count >= 2) { customAlert("Batas ganti nama bulan ini habis (Maks 2x)!"); return; } updates.nameChangeCount = count + 1; updates.name = newName; }
       }
-      try { await updateDoc(doc(db, "users", currentUserData.uid), updates); alert("Profil tersimpan!"); document.getElementById('profile-modal').classList.add('hidden'); }
-      catch (e) { alert(e.message); }
+      try { 
+        await updateDoc(doc(db, "users", currentUserData.uid), updates); 
+        customAlert("Profil tersimpan!"); 
+        document.getElementById('profile-modal').classList.add('hidden'); 
+      }
+      catch (e) { customAlert(e.message); }
     });
 
     onAuthStateChanged(auth, (user) => {
@@ -633,7 +722,13 @@
             document.getElementById('current-user-avatar').src = resolveUserAvatar(currentUserData); 
             document.getElementById('profile-modal-preview').src = resolveUserAvatar(currentUserData);
             
-            document.getElementById('edit-name').value = currentUserData.name; document.getElementById('edit-gender').value = currentUserData.gender;
+            document.getElementById('edit-name').value = currentUserData.name; 
+            
+            const editGenderSelect = document.getElementById('edit-gender');
+            editGenderSelect.value = currentUserData.gender;
+            const genderTriggerSpan = editGenderSelect.previousSibling.querySelector('span');
+            if(genderTriggerSpan) genderTriggerSpan.innerText = editGenderSelect.options[editGenderSelect.selectedIndex].text;
+            
             document.getElementById('edit-dob').value = currentUserData.dob || ''; document.getElementById('edit-location').value = currentUserData.location || '';
             document.getElementById('edit-bio').value = currentUserData.bio || '';
             document.getElementById('profile-custom-avatar-url').value = currentUserData.customAvatar || '';
@@ -646,7 +741,6 @@
       } else { currentUserData = null; document.getElementById('auth-modal').classList.remove('hidden'); }
     });
 
-    // --- PUBLIK PROFIL & PENGHUNI ---
     window.openPublicProfile = function(uid) {
       if(uid === currentUserData.uid) {
         document.getElementById('profile-modal').classList.remove('hidden'); return;
@@ -654,7 +748,7 @@
       const u = allUsersCache[uid]; if(!u) return;
       document.getElementById('pub-avatar').src = resolveUserAvatar(u);
       document.getElementById('pub-name').innerText = "@" + u.name;
-      document.getElementById('pub-location').innerText = u.location ? `📍 ${u.location}` : "Lokasi Misterius";
+      document.getElementById('pub-location').innerText = u.location ? `  ${u.location}` : "Lokasi Misterius";
       document.getElementById('pub-bio').innerText = u.bio ? `"${u.bio}"` : '"Pengguna ini terlalu malas menulis bio."';
       document.getElementById('public-profile-modal').classList.remove('hidden');
     }
@@ -663,17 +757,23 @@
       allUsersCache = {};
       snapshot.forEach(doc => { allUsersCache[doc.id] = doc.data(); }); 
       renderResidentsAndFriendsUI(); 
-      loadFeed(); // Refresh feed ketika data user berubah
+      loadFeed(); 
     });
     
-    window.addFriend = async function(targetUid) { if(!targetUid || targetUid === currentUserData.uid) return; try { await updateDoc(doc(db, "users", targetUid), { friendRequests: arrayUnion(currentUserData.uid) }); alert("Permintaan pertemanan sukses meluncur!"); } catch(e) { alert("Gagal: " + e.message); } };
+    window.addFriend = async function(targetUid) { 
+      if(!targetUid || targetUid === currentUserData.uid) return; 
+      try { 
+        await updateDoc(doc(db, "users", targetUid), { friendRequests: arrayUnion(currentUserData.uid) }); 
+        customAlert("Permintaan pertemanan sukses meluncur!"); 
+      } catch(e) { customAlert("Gagal: " + e.message); } 
+    };
     
     window.acceptFriend = async function(targetUid) {
       try {
         const newRequests = (currentUserData.friendRequests || []).filter(uid => uid !== targetUid); const newFriends = [...(currentUserData.friends || []), targetUid];
         await updateDoc(doc(db, "users", currentUserData.uid), { friendRequests: newRequests, friends: newFriends });
         const targetData = allUsersCache[targetUid]; if(targetData) { const targetNewFriends = [...(targetData.friends || []), currentUserData.uid]; await updateDoc(doc(db, "users", targetUid), { friends: targetNewFriends }); }
-      } catch(e) { alert(e.message); }
+      } catch(e) { customAlert(e.message); }
     };
     
     function renderResidentsAndFriendsUI() {
@@ -681,8 +781,8 @@
       const residentDiv = document.getElementById('all-residents-list');
       const reqDiv = document.getElementById('friend-requests-list'); 
       const friendDiv = document.getElementById('friends-list');
+      const navBadge = document.getElementById('nav-badge-teman');
 
-      // 1. Render Semua Penghuni Pellerbook
       let residentsHtml = '';
       for (const [uid, u] of Object.entries(allUsersCache)) {
         if (uid === currentUserData.uid) continue;
@@ -699,22 +799,26 @@
       }
       residentDiv.innerHTML = residentsHtml || '<p style="font-size:13px; color:gray; margin:0;">Belum ada penghuni lain.</p>';
 
-      // 2. Render Permintaan Pertemanan
       const reqs = currentUserData.friendRequests || [];
+      if(reqs.length > 0) {
+        navBadge.innerText = reqs.length;
+        navBadge.classList.remove('hidden');
+      } else {
+        navBadge.classList.add('hidden');
+      }
+
       if(reqs.length === 0) reqDiv.innerHTML = '<p style="font-size:13px; color:gray; margin:0;">Belum ada yang ngajak temenan :(</p>';
       else reqDiv.innerHTML = reqs.map(uid => { const u = allUsersCache[uid]; if(!u) return ''; return `<div style="display:flex; justify-content:space-between; align-items:center; padding:10px; border-bottom:1px solid #e5e7eb;"><b>@${u.name}</b> <button class="small-btn success" onclick="acceptFriend('${uid}')">Terima</button></div>`; }).join('');
       
-      // 3. Render Teman Kamu
       const friends = currentUserData.friends || [];
       if(friends.length === 0) friendDiv.innerHTML = '<p style="font-size:13px; color:gray; margin:0;">Buku pertemananmu masih kosong.</p>';
-      else friendDiv.innerHTML = friends.map(uid => { const u = allUsersCache[uid]; return u ? `<div style="padding: 8px 0; border-bottom: 1px dashed #e5e7eb; cursor:pointer;" onclick="openPublicProfile('${uid}')">👥 @${u.name}</div>` : ''; }).join('');
+      else friendDiv.innerHTML = friends.map(uid => { const u = allUsersCache[uid]; return u ? `<div style="padding: 8px 0; border-bottom: 1px dashed #e5e7eb; cursor:pointer;" onclick="openPublicProfile('${uid}')">  @${u.name}</div>` : ''; }).join('');
     }
 
-    // --- UPLOAD GAMBAR POSTINGAN & LIGHTBOX ---
     document.getElementById('image-upload').addEventListener('change', function(e) {
       const file = e.target.files[0]; if (!file) return;
       const statusText = document.getElementById('upload-status');
-      statusText.style.display = 'block'; statusText.innerText = 'Memproses gambar... ⏳'; statusText.style.color = 'var(--text-secondary)';
+      statusText.style.display = 'block'; statusText.innerText = 'Memproses gambar...  '; statusText.style.color = 'var(--text-secondary)';
 
       const reader = new FileReader();
       reader.onload = function(event) {
@@ -732,7 +836,7 @@
           document.getElementById('compose-preview-img').src = dataUrl;
           document.getElementById('compose-preview-area').style.display = 'block';
           
-          statusText.innerText = 'Gambar siap! ✅'; statusText.style.color = '#10b981';
+          statusText.innerText = 'Gambar siap!  '; statusText.style.color = '#10b981';
           setTimeout(() => { statusText.style.display = 'none'; }, 2000);
         };
         img.src = event.target.result;
@@ -751,7 +855,6 @@
       document.getElementById('lightbox').classList.remove('hidden');
     }
 
-    // --- POSTING, EDIT & HAPUS ---
     document.getElementById('btn-post').addEventListener('click', async () => {
       const input = document.getElementById('post-input'); const text = input.value.trim();
       const imgInput = document.getElementById('post-image-url'); const imgUrl = imgInput.value.trim();
@@ -764,7 +867,7 @@
           authorGender: currentUserData.gender, reactions: { like: [], meh: [], wuttafak: [] }, comments: [], createdAt: serverTimestamp()
         });
         input.value = ''; imgInput.value = ''; document.getElementById('compose-preview-img').src = ''; document.getElementById('compose-preview-area').style.display = 'none';
-      } catch (e) { alert(e.message); } finally { btn.disabled = false; btn.innerHTML = `<svg class="svg-icon" viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg> Posting Sekarang`; }
+      } catch (e) { customAlert(e.message); } finally { btn.disabled = false; btn.innerHTML = `<svg class="svg-icon" viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg> Posting Sekarang`; }
     });
 
     window.promptEditPost = function(postId) {
@@ -780,15 +883,14 @@
       try {
         await updateDoc(doc(db, "posts", postId), { content: newContent });
         document.getElementById('edit-post-modal').classList.add('hidden');
-      } catch (e) { alert("Gagal mengedit: " + e.message); }
+      } catch (e) { customAlert("Gagal mengedit: " + e.message); }
     });
 
     window.deletePost = async function(postId) {
       if (!confirm('Yakin ingin menghapus jejak digital ini selamanya?')) return;
-      try { await deleteDoc(doc(db, "posts", postId)); } catch(e) { alert("Gagal menghapus postingan: " + e.message); }
+      try { await deleteDoc(doc(db, "posts", postId)); } catch(e) { customAlert("Gagal menghapus postingan: " + e.message); }
     };
 
-    // --- REAKSI & SHARE ---
     window.toggleReaction = async function(postId, type) {
       const userId = currentUserData.uid; const post = window.postsCache[postId]; if (!post) return;
       let reactions = { ...post.reactions }; ['like', 'meh', 'wuttafak'].forEach(t => { if(!reactions[t]) reactions[t] = []; });
@@ -804,10 +906,10 @@
 
       const shareBtn = postElement.querySelector('.btn-share');
       const originalBtnHtml = shareBtn.innerHTML;
-      shareBtn.innerHTML = '⏳';
+      shareBtn.innerHTML = ' ';
 
       const watermark = document.createElement('div');
-      watermark.innerText = 'Pellerbook';
+      watermark.innerText = 'NIVI';
       watermark.style.position = 'absolute';
       watermark.style.top = '12px';
       watermark.style.right = '16px';
@@ -816,7 +918,7 @@
       watermark.style.fontSize = '14px';
       watermark.style.textShadow = '1px 1px 0px #1e1e1e';
       watermark.style.opacity = '0.8';
-      watermark.style.fontFamily = "'Fredoka', sans-serif";
+      watermark.style.fontFamily = "'FontUtama', sans-serif";
       watermark.style.zIndex = '10';
       
       const originalPosition = postElement.style.position;
@@ -835,20 +937,19 @@
         const imageData = canvas.toDataURL('image/jpeg', 0.9);
         const downloadLink = document.createElement('a');
         downloadLink.href = imageData;
-        downloadLink.download = `Pellerbook_Post_${postId}.jpg`;
+        downloadLink.download = `NIVI_Post_${postId}.jpg`;
         document.body.appendChild(downloadLink);
         downloadLink.click();
         document.body.removeChild(downloadLink);
       }).catch(err => {
         console.error("Gagal membuat gambar postingan:", err);
-        alert("Oops! Gagal membuat gambar postingan.");
+        customAlert("Oops! Gagal membuat gambar postingan.");
         postElement.removeChild(watermark);
         postElement.style.position = originalPosition;
         shareBtn.innerHTML = originalBtnHtml;
       });
     };
 
-    // --- KOMENTAR ---
     window.prepareReply = function(postId, commentId, authorName) {
       const inputEl = document.getElementById(`comment-input-${postId}`);
       inputEl.dataset.replyTo = commentId; inputEl.placeholder = `Membalas @${authorName}...`; inputEl.focus();
@@ -870,16 +971,14 @@
           const postData = postSnap.data(); const updatedComments = postData.comments.filter(c => c.id !== commentId && c.replyTo !== commentId);
           await updateDoc(postRef, { comments: updatedComments });
         }
-      } catch(e) { alert("Gagal: " + e.message); }
+      } catch(e) { customAlert("Gagal: " + e.message); }
     };
 
-    // --- PENGATURAN FILTER FEED ---
     window.handleFeedFilterChange = function() {
       currentFeedFilter = document.getElementById('feed-filter-select').value;
       loadFeed();
     }
 
-    // --- RENDER FEED UTAMA ---
     function loadFeed() {
       onSnapshot(query(collection(db, "posts")), (snapshot) => {
         const feedDiv = document.getElementById('feed-container');
@@ -888,7 +987,6 @@
         let postsArray = [];
         snapshot.forEach(docSnap => { const data = docSnap.data(); window.postsCache[docSnap.id] = data; postsArray.push({ id: docSnap.id, ...data }); });
 
-        // Filter berdasarkan pengaturan
         if (currentFeedFilter === 'friends') {
           const myFriends = currentUserData?.friends || [];
           postsArray = postsArray.filter(p => p.authorUid === currentUserData.uid || myFriends.includes(p.authorUid));
@@ -896,7 +994,6 @@
           postsArray = postsArray.filter(p => p.authorUid !== currentUserData.uid);
         }
 
-        // Sorting berdasarkan pilihan user
         postsArray.sort((a, b) => {
           const aTime = a.createdAt?.toMillis() || 0; const bTime = b.createdAt?.toMillis() || 0;
           const aLikes = a.reactions?.like?.length || 0; const bLikes = b.reactions?.like?.length || 0;
@@ -933,8 +1030,8 @@
           if (isMyPost) {
             postMenuHtml = `
               <div class="post-menu">
-                <button class="post-menu-btn" onclick="promptEditPost('${postId}')">✏️ Edit</button>
-                <button class="post-menu-btn btn-delete-post" onclick="deletePost('${postId}')">🗑️ Hapus</button>
+                <button class="post-menu-btn" onclick="promptEditPost('${postId}')">   Edit</button>
+                <button class="post-menu-btn btn-delete-post" onclick="deletePost('${postId}')">   Hapus</button>
               </div>`;
           }
 
