@@ -145,7 +145,7 @@
       opacity: 0.7;
     }
     .input-area {
-      display: flex; gap: 10px; padding: 12px 16px;
+      display: flex; gap: 8px; padding: 12px;
       border-top: var(--border-thick); 
       background: #fff;
       align-items: center;
@@ -153,12 +153,12 @@
       width: 100%;
       flex-shrink: 0;
     }
-    input {
+    input[type="text"].chat-input {
       flex: 1; padding: 10px 14px; font-size: 15px; font-weight: 700;
       border: 3px solid #1e1e1e; border-radius: 24px; outline: none;
       font-family: inherit; box-sizing: border-box; min-width: 0;
     }
-    input:focus { background: #FFFBEB; box-shadow: inset 3px 3px 0px rgba(0,0,0,0.05); }
+    input[type="text"].chat-input:focus { background: #FFFBEB; box-shadow: inset 3px 3px 0px rgba(0,0,0,0.05); }
     button.btn-send {
       padding: 10px 16px; background: var(--danger-color); color: #fff;
       border: 3px solid #1e1e1e; border-radius: 24px; font-weight: 900;
@@ -167,24 +167,45 @@
       transition: all 0.1s; flex-shrink: 0;
       white-space: nowrap;
     }
+    button.btn-img {
+      padding: 10px; background: var(--primary-color);
+    }
     button.btn-send:active { transform: translate(3px, 3px); box-shadow: 0px 0px 0px #1e1e1e; }
     #loading-state { text-align: center; color: #6b7280; font-weight: 700; margin-top: 20px; font-size: 15px; }
     .search-box-wrap { padding: 12px; background: #fff; border-bottom: 2px solid #eee; }
     .search-input { width: 100%; padding: 8px 12px; border: 3px solid #1e1e1e; border-radius: 12px; font-weight: 700; font-size: 14px; outline: none; box-sizing: border-box; }
     .typing-indicator { font-size: 12px; font-weight: 900; color: #6b7280; font-style: italic; margin-left: 8px; }
+    
+    #img-preview-area {
+      display: none; padding: 12px; background: #fff; border-top: var(--border-thick);
+      position: relative;
+    }
+    #img-preview { max-height: 80px; border-radius: 8px; border: 2px solid #1e1e1e; }
+    .btn-close-preview {
+      position: absolute; top: 4px; left: 80px;
+      background: var(--danger-color); color: white; border: 2px solid #1e1e1e;
+      border-radius: 50%; width: 24px; height: 24px; cursor: pointer;
+      font-weight: bold; display: flex; align-items: center; justify-content: center;
+    }
   </style>
 </head>
 <body>
+  <!-- Canvas Tersembunyi untuk Generator Avatar & Image Compression -->
+  <canvas id="hiddenCanvas" width="256" height="256" style="display:none;"></canvas>
+  
   <div id="mobile-wrapper">
+    <!-- View: Daftar Kontak -->
     <div id="view-contacts">
-      <div class="header-bar">Daftar Teman</div>
+      <div class="header-bar">Pesan Masuk</div>
       <div class="search-box-wrap">
-        <input type="text" id="search-contact-input" class="search-input" placeholder="Cari teman...">
+        <input type="text" id="search-contact-input" class="search-input" placeholder="Cari percakapan...">
       </div>
       <div id="contact-list" class="contact-list">
-        <div id="loading-state">Mencari teman...</div>
+        <div id="loading-state">Memuat kontak & riwayat...</div>
       </div>
     </div>
+    
+    <!-- View: Chat Room -->
     <div id="view-chat">
       <div class="header-bar" style="background: var(--accent-color);">
         <button class="btn-back" onclick="window.showContacts()">&#8592;</button>
@@ -194,17 +215,29 @@
           <span id="typing-status" class="typing-indicator" style="display:none;">sedang mengetik...</span>
         </div>
       </div>
+      
       <div id="messages-container"></div>
+      
+      <!-- Area Preview Gambar Sebelum Dikirim -->
+      <div id="img-preview-area">
+        <img id="img-preview" src="">
+        <div class="btn-close-preview" onclick="clearImagePreview()">X</div>
+      </div>
+
       <div class="input-area">
-        <input type="text" id="msg-input" placeholder="Ketik pesan seru...">
+        <input type="file" id="image-upload" accept="image/*" style="display:none;">
+        <button id="btn-img" class="btn-send btn-img" onclick="document.getElementById('image-upload').click()">📷</button>
+        <input type="text" id="msg-input" class="chat-input" placeholder="Ketik pesan seru...">
         <button id="btn-send" class="btn-send">Kirim</button>
       </div>
     </div>
   </div>
+
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
     import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
-    import { getFirestore, doc, getDoc, collection, addDoc, query, onSnapshot, serverTimestamp, orderBy, setDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+    import { getFirestore, doc, getDoc, collection, addDoc, query, onSnapshot, serverTimestamp, orderBy, setDoc, deleteDoc, updateDoc, arrayUnion } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+    
     const firebaseConfig = {
       apiKey: "AIzaSyBgmuGFRyPeXhpk0Je5PKTdSSL3230prJw",
       authDomain: "fishingcuy-1eb40.firebaseapp.com",
@@ -216,6 +249,7 @@
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
     const db = getFirestore(app);
+    
     const urlParams = new URLSearchParams(window.location.search);
     let targetUid = urlParams.get('target');
     let currentUserUid = null;
@@ -224,7 +258,85 @@
     let typingUnsubscribe = null;
     let typingTimeout = null;
     let allFriendsData = [];
-    const defaultAvatar = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%23cbd5e1"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>';
+    let currentSelectedImage = "";
+
+    // ==========================================
+    // SISTEM AVATAR iNviNiv.js
+    // ==========================================
+    const canvas = document.getElementById("hiddenCanvas"); 
+    const ctx = canvas.getContext("2d"); 
+    const offCanvas = document.createElement("canvas"); 
+    offCanvas.width = 256; offCanvas.height = 256; 
+    const offCtx = offCanvas.getContext("2d");
+    
+    let loadedTextures = []; 
+    let loadedParts = { body: [], eyes_male: [], eyes_female: [], hair_b: [], hair_f_female: [], hair_f_male: [], head: [], mouth: [] };
+    const assetList = { body: Array.from({length: 12}, (_, i) => `body/body_${String(i+1).padStart(2, '0')}.png`), eyes_male: Array.from({length: 30}, (_, i) => `eyes_male/eyes_${String(i+1).padStart(2, '0')}.png`), eyes_female: Array.from({length: 34}, (_, i) => `eyes_female/eyes_${String(i+1).padStart(2, '0')}.png`), hair_b: Array.from({length: 7}, (_, i) => `hair_b/hrb_${String(i+1).padStart(2, '0')}.png`), hair_f_female: Array.from({length: 20}, (_, i) => `hair_f/female/hrf_${String(i+1).padStart(2, '0')}.png`), hair_f_male: Array.from({length: 18}, (_, i) => `hair_f/male/hrf_${String(i+1).padStart(2, '0')}.png`), head: ['head/head.png'], mouth: Array.from({length: 31}, (_, i) => `mouth/mouth_${String(i+1).padStart(2, '0')}.png`) };
+    
+    const loadImg = (url) => new Promise((res) => { const img = new Image(); img.onload = () => res(img); img.onerror = () => { const c = document.createElement("canvas"); c.width=256; c.height=256; res(c); }; img.src = url; });
+    async function initGenerator() { 
+        const texPromises = []; 
+        for(let i=1; i<=29; i++) texPromises.push(loadImg(`img_${String(i).padStart(2, '0')}.png`)); 
+        const partPromises = {}; 
+        for(const cat in assetList) partPromises[cat] = Promise.all(assetList[cat].map(loadImg)); 
+        loadedTextures = (await Promise.all(texPromises)).map(img => ctx.createPattern(img, "repeat")); 
+        for(const cat in assetList) loadedParts[cat] = await partPromises[cat]; 
+    }
+    const palettes = { skin: [{base:"#ffead1", dark:"#eac09d"},{base:"#fde2cd", dark:"#d9ae87"}], themes: [{main:"#1e293b", sec:"#0f172a", hair:"#111827", hDark:"#030712"}, {main:"#3b82f6", sec:"#1d4ed8", hair:"#3f2814", hDark:"#241408"}] };
+    function invertHexColor(hex) { hex = hex.replace('#', ''); return '#' + (255-parseInt(hex.substring(0,2),16)).toString(16).padStart(2,'0') + (255-parseInt(hex.substring(2,4),16)).toString(16).padStart(2,'0') + (255-parseInt(hex.substring(4,6),16)).toString(16).padStart(2,'0'); }
+    class PRNG { constructor(s) { this.seed = 2166136261; for(let i=0; i<s.length; i++) { this.seed ^= s.charCodeAt(i); this.seed += (this.seed<<1)+(this.seed<<4)+(this.seed<<7)+(this.seed<<8)+(this.seed<<24); } this.seed >>>= 0; } next() { this.seed = (this.seed*1664525 + 1013904223)>>>0; return this.seed/4294967296; } }
+    function drawPart(img, color, tex=null) { if(!img) return; if((!color||color==="#ffffff") && !tex) { ctx.globalCompositeOperation='source-over'; ctx.drawImage(img,0,0,256,256); return; } offCtx.clearRect(0,0,256,256); offCtx.globalCompositeOperation='source-over'; offCtx.drawImage(img,0,0,256,256); if(color&&color!=="#ffffff"){ offCtx.globalCompositeOperation='multiply'; offCtx.fillStyle=color; offCtx.fillRect(0,0,256,256); } if(tex){ offCtx.globalCompositeOperation='multiply'; offCtx.globalAlpha=0.55; offCtx.fillStyle=tex; offCtx.fillRect(0,0,256,256); offCtx.globalAlpha=1.0; } offCtx.globalCompositeOperation='destination-in'; offCtx.drawImage(img,0,0,256,256); ctx.globalCompositeOperation='source-over'; ctx.drawImage(offCanvas,0,0,256,256); }
+    function getAvatarUrl(seedStr, genderStr) { const rng = new PRNG(seedStr || "guest"); const isF = (genderStr === 'Perempuan'); const c = { skin: Math.floor(rng.next()*palettes.skin.length), bg: Math.floor(rng.next()*palettes.themes.length), bodyC: Math.floor(rng.next()*palettes.themes.length), hairC: Math.floor(rng.next()*palettes.themes.length), body: Math.floor(rng.next()*loadedParts.body.length||1), eye: isF?Math.floor(rng.next()*loadedParts.eyes_female.length||1):Math.floor(rng.next()*loadedParts.eyes_male.length||1), mouth: Math.floor(rng.next()*loadedParts.mouth.length||1), hairB: isF?Math.floor(rng.next()*loadedParts.hair_b.length||1):-1, hairF: isF?Math.floor(rng.next()*loadedParts.hair_f_female.length||1):Math.floor(rng.next()*loadedParts.hair_f_male.length||1), texF: Math.floor(rng.next()*29), texH: Math.floor(rng.next()*29) }; ctx.clearRect(0,0,256,256); const sk = palettes.skin[c.skin]; const bT = palettes.themes[c.bg]; const bdT = palettes.themes[c.bodyC]; const hT = palettes.themes[c.hairC]; const grd = ctx.createRadialGradient(128,128,0,128,128,200); grd.addColorStop(0,invertHexColor(bT.main)); grd.addColorStop(1,invertHexColor(bT.sec)); ctx.fillStyle=grd; ctx.fillRect(0,0,256,256); if(c.hairB!==-1) drawPart(loadedParts.hair_b[c.hairB], hT.hDark, loadedTextures[c.texH]); drawPart(loadedParts.head[0], sk.base); drawPart(loadedParts.body[c.body], bdT.main, loadedTextures[c.texF]); if(isF) drawPart(loadedParts.eyes_female[c.eye],"#ffffff"); else drawPart(loadedParts.eyes_male[c.eye],"#ffffff"); drawPart(loadedParts.mouth[c.mouth],"#ffffff"); if(isF) drawPart(loadedParts.hair_f_female[c.hairF], hT.hair, loadedTextures[c.texH]); else drawPart(loadedParts.hair_f_male[c.hairF], hT.hair, loadedTextures[c.texH]); return canvas.toDataURL("image/png"); }
+    function resolveUserAvatar(userData) { if (!userData) return ''; if (userData.customAvatar) return userData.customAvatar; return getAvatarUrl(userData.name, userData.gender); }
+    
+    // Inisialisasi Generator saat dimuat
+    initGenerator();
+
+    // ==========================================
+    // SISTEM IMAGE COMPRESSION (Max 256x256)
+    // ==========================================
+    document.getElementById('image-upload').addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = function(event) {
+            const img = new Image();
+            img.onload = function() {
+                const compCanvas = document.createElement('canvas');
+                let width = img.width;
+                let height = img.height;
+                const MAX_SIZE = 256;
+                
+                if (width > height) {
+                    if (width > MAX_SIZE) { height *= MAX_SIZE / width; width = MAX_SIZE; }
+                } else {
+                    if (height > MAX_SIZE) { width *= MAX_SIZE / height; height = MAX_SIZE; }
+                }
+                
+                compCanvas.width = width;
+                compCanvas.height = height;
+                const compCtx = compCanvas.getContext('2d');
+                compCtx.drawImage(img, 0, 0, width, height);
+                
+                currentSelectedImage = compCanvas.toDataURL('image/jpeg', 0.8);
+                document.getElementById('img-preview').src = currentSelectedImage;
+                document.getElementById('img-preview-area').style.display = 'block';
+            };
+            img.src = event.target.result;
+        };
+        reader.readAsDataURL(file);
+        this.value = '';
+    });
+
+    window.clearImagePreview = function() {
+        currentSelectedImage = "";
+        document.getElementById('img-preview-area').style.display = 'none';
+        document.getElementById('img-preview').src = "";
+    };
+
+    // ==========================================
+    // SISTEM LOGIKA CHAT & UI
+    // ==========================================
     function updateParentTitle(titleText) {
       try {
         if (window.parent && window.parent !== window && window.parent.document) {
@@ -233,6 +345,7 @@
         }
       } catch (e) {}
     }
+
     function parseRichText(text) {
       if (!text) return "";
       let safeText = text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
@@ -240,6 +353,7 @@
       safeText = safeText.replace(/\*(.*?)\*/g, '<em>$1</em>');
       return safeText;
     }
+
     function formatTimestamp(ts) {
       if (!ts || !ts.toDate) return "";
       const date = ts.toDate();
@@ -247,27 +361,32 @@
       const minutes = String(date.getMinutes()).padStart(2, '0');
       return `${hours}:${minutes}`;
     }
+
     window.showContacts = function() {
         document.getElementById('view-chat').classList.remove('active');
         if (currentUnsubscribe) { currentUnsubscribe(); currentUnsubscribe = null; }
         if (typingUnsubscribe) { typingUnsubscribe(); typingUnsubscribe = null; }
         updateTypingStatus(false);
-        updateParentTitle("Daftar Kontak");
+        updateParentTitle("Pesan Masuk");
         window.history.replaceState({}, document.title, window.location.pathname);
         targetUid = null;
     };
-    window.openConversation = function(tId, tName, tAvatar) {
+
+    window.openConversation = function(tId, tName, tAvatarData) {
         targetUid = tId;
         const uids = [currentUserUid, tId].sort();
         chatId = `${uids[0]}_${uids[1]}`;
+        
         document.getElementById('chat-active-name').innerText = "@" + tName;
-        document.getElementById('chat-active-avatar').src = tAvatar || defaultAvatar;
+        document.getElementById('chat-active-avatar').src = tAvatarData;
         document.getElementById('view-chat').classList.add('active');
         updateParentTitle("Chat dgn @" + tName);
         document.getElementById('messages-container').innerHTML = '<div id="loading-state">Memuat pesan...</div>';
+        
         loadMessages();
         loadTypingStatus();
     };
+
     function renderContactsList(friendsToRender) {
         const contactList = document.getElementById('contact-list');
         if(friendsToRender.length === 0) {
@@ -289,18 +408,26 @@
             contactList.appendChild(div);
         });
     }
+
     async function loadContactsList() {
         const userRef = doc(db, "users", currentUserUid);
         const userSnap = await getDoc(userRef);
+        
         if (userSnap.exists()) {
             const userData = userSnap.data();
             const friends = userData.friends || [];
-            if(friends.length === 0) {
-                document.getElementById('contact-list').innerHTML = '<div style="padding:20px; text-align:center; color:#6b7280; font-weight:700;">Daftar kontak kosong. Tambah teman dulu!</div>';
+            const recentChats = userData.recentChats || []; 
+            
+            // Gabungkan teman dan riwayat chat (Hapus duplikat)
+            const allContacts = [...new Set([...friends, ...recentChats])];
+            
+            if(allContacts.length === 0) {
+                document.getElementById('contact-list').innerHTML = '<div style="padding:20px; text-align:center; color:#6b7280; font-weight:700;">Belum ada riwayat obrolan atau teman.</div>';
                 return;
             }
+            
             allFriendsData = [];
-            for(let fUid of friends) {
+            for(let fUid of allContacts) {
                 const fRef = doc(db, "users", fUid);
                 const fSnap = await getDoc(fRef);
                 if(fSnap.exists()) {
@@ -308,57 +435,84 @@
                     allFriendsData.push({
                         uid: fUid,
                         name: fData.name,
-                        avatar: fData.customAvatar || defaultAvatar
+                        avatar: resolveUserAvatar(fData) // Menggunakan logika inviniv.js
                     });
                 }
             }
             renderContactsList(allFriendsData);
         }
     }
+
     document.getElementById('search-contact-input').addEventListener('input', (e) => {
         const keyword = e.target.value.toLowerCase();
         const filtered = allFriendsData.filter(f => f.name.toLowerCase().includes(keyword));
         renderContactsList(filtered);
     });
+
     onAuthStateChanged(auth, async (user) => {
       if (user) {
         currentUserUid = user.uid;
         loadContactsList();
+        
         if (targetUid) {
             const tRef = doc(db, "users", targetUid);
             const tSnap = await getDoc(tRef);
             if (tSnap.exists()) {
                 const tData = tSnap.data();
-                window.openConversation(targetUid, tData.name, tData.customAvatar);
+                window.openConversation(targetUid, tData.name, resolveUserAvatar(tData));
             }
         } else {
-            updateParentTitle("Daftar Kontak");
+            updateParentTitle("Pesan Masuk");
         }
       } else {
         document.getElementById('contact-list').innerHTML = '<div style="text-align:center; color:var(--danger-color); padding:20px; font-weight:900;">Sesi berakhir. Silakan login kembali.</div>';
       }
     });
+
     function loadMessages() {
       const messagesRef = collection(db, "chats", chatId, "messages");
       const q = query(messagesRef, orderBy("timestamp", "asc"));
+      
       currentUnsubscribe = onSnapshot(q, (snapshot) => {
         const container = document.getElementById('messages-container');
+        
+        // Cek perubahan untuk trigger notifikasi ke parent
+        snapshot.docChanges().forEach((change) => {
+            if (change.type === "added") {
+                const msg = change.doc.data();
+                // Jika pesan bukan dari kita, beritahu parent window ada pesan baru
+                if (msg.sender !== currentUserUid && msg.timestamp) {
+                    try {
+                        if (window.parent && window.parent.triggerChatNotif) {
+                            window.parent.triggerChatNotif('1');
+                        }
+                    } catch(e) { console.error("Gagal trigger notif:", e) }
+                }
+            }
+        });
+
         container.innerHTML = '';
         if(snapshot.empty) {
             container.innerHTML = '<div style="text-align:center; color:#6b7280; margin-top:20px; font-weight:700;">Belum ada obrolan. Jangan malu-malu!</div>';
             return;
         }
+        
         snapshot.forEach(docSnap => {
            const msg = docSnap.data();
            const isMe = msg.sender === currentUserUid;
            const div = document.createElement('div');
            div.className = 'chat-bubble ' + (isMe ? 'me' : 'them');
-           div.innerHTML = `${parseRichText(msg.text)}<div class="msg-time">${formatTimestamp(msg.timestamp)}</div>`;
+           
+           let imgHtml = msg.imageUrl ? `<img src="${msg.imageUrl}" style="max-width:100%; border-radius:12px; margin-bottom:8px; display:block; border: 2px solid #1e1e1e;">` : '';
+           let textHtml = msg.text ? parseRichText(msg.text) : '';
+           
+           div.innerHTML = `${imgHtml}${textHtml}<div class="msg-time">${formatTimestamp(msg.timestamp)}</div>`;
            container.appendChild(div);
         });
         container.scrollTop = container.scrollHeight;
       });
     }
+
     function loadTypingStatus() {
       if (typingUnsubscribe) typingUnsubscribe();
       const typingRef = doc(db, "chats", chatId, "typing", targetUid);
@@ -370,45 +524,57 @@
         }
       });
     }
+
     function updateTypingStatus(isTyping) {
         const el = document.getElementById('typing-status');
-        if (isTyping) {
-            el.style.display = 'block';
-        } else {
-            el.style.display = 'none';
-        }
+        if (isTyping) { el.style.display = 'block'; } else { el.style.display = 'none'; }
     }
+
     async function setTypingState(isTyping) {
         if (!chatId || !currentUserUid) return;
         const typingRef = doc(db, "chats", chatId, "typing", currentUserUid);
-        if (isTyping) {
-            await setDoc(typingRef, { isTyping: true });
-        } else {
-            await deleteDoc(typingRef).catch(() => {});
-        }
+        if (isTyping) { await setDoc(typingRef, { isTyping: true }); } 
+        else { await deleteDoc(typingRef).catch(() => {}); }
     }
+
     async function sendMessage() {
        const input = document.getElementById('msg-input');
        const text = input.value.trim();
-       if(!text || !chatId) return;
-       input.value = '';
-       setTypingState(false);
-       const messagesRef = collection(db, "chats", chatId, "messages");
-       await addDoc(messagesRef, {
+       
+       if(!text && !currentSelectedImage) return; // Cegah kirim kosong
+       
+       const msgData = {
           sender: currentUserUid,
-          text: text,
           timestamp: serverTimestamp()
-       });
+       };
+       
+       if (text) msgData.text = text;
+       if (currentSelectedImage) msgData.imageUrl = currentSelectedImage;
+
+       // Reset UI
+       input.value = '';
+       clearImagePreview();
+       setTypingState(false);
+       
+       // Kirim ke database
+       const messagesRef = collection(db, "chats", chatId, "messages");
+       await addDoc(messagesRef, msgData);
+       
+       // Daftarkan riwayat chat ke akun masing-masing (Agar muncul di kontak non-teman)
+       try {
+           await updateDoc(doc(db, "users", currentUserUid), { recentChats: arrayUnion(targetUid) });
+           await updateDoc(doc(db, "users", targetUid), { recentChats: arrayUnion(currentUserUid) });
+       } catch(e) { console.error("Gagal update riwayat chat:", e); }
     }
+
     const msgInput = document.getElementById('msg-input');
     msgInput.addEventListener('input', () => {
         if (!chatId) return;
         setTypingState(true);
         clearTimeout(typingTimeout);
-        typingTimeout = setTimeout(() => {
-            setTypingState(false);
-        }, 2000);
+        typingTimeout = setTimeout(() => { setTypingState(false); }, 2000);
     });
+
     document.getElementById('btn-send').addEventListener('click', sendMessage);
     msgInput.addEventListener('keypress', function (e) {
         if (e.key === 'Enter') sendMessage();
