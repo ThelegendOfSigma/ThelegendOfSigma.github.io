@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>iNviNiv DM - Cartoon Edition</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@700;900&display=swap');
+    :root {
+      --border-thick: 4px solid #1e1e1e;
+      --shadow-chunky: 6px 6px 0px #1e1e1e;
+      --bg-color: #f4f4f5;
+      --primary-color: #38BDF8;
+      --accent-color: #FFDE59;
+      --danger-color: #FF5757;
+    }
+    body {
+      font-family: 'Nunito', sans-serif;
+      margin: 0; 
+      padding: 0;
+      background-color: #e5e7eb;
+      background-image: radial-gradient(#cbd5e1 2px, transparent 2px);
+      background-size: 20px 20px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      overflow: hidden;
+    }
+    #mobile-wrapper {
+      width: 100%;
+      max-width: 420px;
+      height: 100dvh;
+      max-height: 850px;
+      background: white;
+      border: var(--border-thick);
+      border-radius: 24px;
+      box-shadow: var(--shadow-chunky);
+      position: relative;
+      overflow: hidden;
+      display: flex;
+    }
+    #view-contacts {
+      width: 100%; height: 100%; position: absolute; top: 0; left: 0;
+      display: flex; flex-direction: column; background: #fff;
+      z-index: 1;
+    }
+    #view-chat {
+      width: 100%; height: 100%; position: absolute; top: 0; left: 0;
+      display: flex; flex-direction: column; background: #fff;
+      z-index: 2; transform: translateX(100%);
+      transition: transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+    }
+    #view-chat.active { transform: translateX(0); }
+    .header-bar {
+      padding: 16px; 
+      background: var(--primary-color); 
+      border-bottom: var(--border-thick);
+      font-weight: 900; 
+      font-size: 18px; 
+      display: flex; 
+      align-items: center; 
+      gap: 12px;
+      color: #1e1e1e;
+      z-index: 10;
+    }
+    .btn-back {
+      background: #fff; 
+      border: 3px solid #1e1e1e; 
+      font-size: 20px; 
+      cursor: pointer;
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      color: #1e1e1e; 
+      font-weight: 900;
+      box-shadow: 3px 3px 0px #1e1e1e;
+      transition: all 0.1s;
+    }
+    .btn-back:active {
+      transform: translate(3px, 3px);
+      box-shadow: 0px 0px 0px #1e1e1e;
+    }
+    .contact-list { flex: 1; overflow-y: auto; background: var(--bg-color); padding: 12px; }
+    .contact-item {
+      padding: 12px; 
+      border: var(--border-thick);
+      border-radius: 16px;
+      background: #fff;
+      margin-bottom: 12px;
+      display: flex; 
+      align-items: center; 
+      gap: 16px; 
+      cursor: pointer;
+      box-shadow: 4px 4px 0px #1e1e1e;
+      transition: all 0.1s;
+    }
+    .contact-item:active { 
+      transform: translate(4px, 4px);
+      box-shadow: 0px 0px 0px #1e1e1e;
+    }
+    .contact-avatar {
+      width: 50px; height: 50px; border-radius: 12px;
+      border: 3px solid #1e1e1e; object-fit: cover; background: #f3f4f6;
+    }
+    .contact-name { font-weight: 900; font-size: 16px; color: #1e1e1e; }
+    #messages-container {
+      flex: 1; padding: 16px; overflow-y: auto;
+      display: flex; flex-direction: column; gap: 12px;
+      background-color: var(--bg-color);
+    }
+    .chat-bubble { 
+      max-width: 75%; 
+      padding: 12px 16px; 
+      border-radius: 20px; 
+      font-size: 15px; 
+      font-weight: 700;
+      word-break: break-word; 
+      line-height: 1.4;
+      border: 3px solid #1e1e1e;
+      position: relative;
+    }
+    .chat-bubble.me { 
+      background: var(--accent-color); 
+      color: #1e1e1e; 
+      align-self: flex-end; 
+      border-bottom-right-radius: 4px; 
+      box-shadow: -4px 4px 0px rgba(0,0,0,0.1);
+    }
+    .chat-bubble.them { 
+      background: #fff; 
+      color: #1e1e1e; 
+      align-self: flex-start; 
+      border-bottom-left-radius: 4px; 
+      box-shadow: 4px 4px 0px rgba(0,0,0,0.1);
+    }
+    .msg-time {
+      font-size: 10px;
+      font-weight: 700;
+      margin-top: 4px;
+      text-align: right;
+      opacity: 0.7;
+    }
+    .input-area {
+      display: flex; gap: 10px; padding: 12px 16px;
+      border-top: var(--border-thick); 
+      background: #fff;
+      align-items: center;
+      box-sizing: border-box;
+      width: 100%;
+      flex-shrink: 0;
+    }
+    input {
+      flex: 1; padding: 10px 14px; font-size: 15px; font-weight: 700;
+      border: 3px solid #1e1e1e; border-radius: 24px; outline: none;
+      font-family: inherit; box-sizing: border-box; min-width: 0;
+    }
+    input:focus { background: #FFFBEB; box-shadow: inset 3px 3px 0px rgba(0,0,0,0.05); }
+    button.btn-send {
+      padding: 10px 16px; background: var(--danger-color); color: #fff;
+      border: 3px solid #1e1e1e; border-radius: 24px; font-weight: 900;
+      font-size: 15px; font-family: inherit;
+      cursor: pointer; box-shadow: 3px 3px 0px #1e1e1e;
+      transition: all 0.1s; flex-shrink: 0;
+      white-space: nowrap;
+    }
+    button.btn-send:active { transform: translate(3px, 3px); box-shadow: 0px 0px 0px #1e1e1e; }
+    #loading-state { text-align: center; color: #6b7280; font-weight: 700; margin-top: 20px; font-size: 15px; }
+    .search-box-wrap { padding: 12px; background: #fff; border-bottom: 2px solid #eee; }
+    .search-input { width: 100%; padding: 8px 12px; border: 3px solid #1e1e1e; border-radius: 12px; font-weight: 700; font-size: 14px; outline: none; box-sizing: border-box; }
+    .typing-indicator { font-size: 12px; font-weight: 900; color: #6b7280; font-style: italic; margin-left: 8px; }
+  </style>
+</head>
+<body>
+  <div id="mobile-wrapper">
+    <div id="view-contacts">
+      <div class="header-bar">Daftar Teman</div>
+      <div class="search-box-wrap">
+        <input type="text" id="search-contact-input" class="search-input" placeholder="Cari teman...">
+      </div>
+      <div id="contact-list" class="contact-list">
+        <div id="loading-state">Mencari teman...</div>
+      </div>
+    </div>
+    <div id="view-chat">
+      <div class="header-bar" style="background: var(--accent-color);">
+        <button class="btn-back" onclick="window.showContacts()">&#8592;</button>
+        <img id="chat-active-avatar" src="" class="contact-avatar" style="width:40px; height:40px; border-radius: 12px;">
+        <div style="display:flex; flex-direction:column; min-width:0; flex:1;">
+          <span id="chat-active-name" style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">...</span>
+          <span id="typing-status" class="typing-indicator" style="display:none;">sedang mengetik...</span>
+        </div>
+      </div>
+      <div id="messages-container"></div>
+      <div class="input-area">
+        <input type="text" id="msg-input" placeholder="Ketik pesan seru...">
+        <button id="btn-send" class="btn-send">Kirim</button>
+      </div>
+    </div>
+  </div>
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
+    import { getFirestore, doc, getDoc, collection, addDoc, query, onSnapshot, serverTimestamp, orderBy, setDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+    const firebaseConfig = {
+      apiKey: "AIzaSyBgmuGFRyPeXhpk0Je5PKTdSSL3230prJw",
+      authDomain: "fishingcuy-1eb40.firebaseapp.com",
+      projectId: "fishingcuy-1eb40",
+      storageBucket: "fishingcuy-1eb40.firebasestorage.app",
+      messagingSenderId: "562728361595",
+      appId: "1:562728361595:web:5b4c6e10bfc95044868cde"
+    };
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+    const urlParams = new URLSearchParams(window.location.search);
+    let targetUid = urlParams.get('target');
+    let currentUserUid = null;
+    let chatId = null;
+    let currentUnsubscribe = null;
+    let typingUnsubscribe = null;
+    let typingTimeout = null;
+    let allFriendsData = [];
+    const defaultAvatar = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%23cbd5e1"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>';
+    function updateParentTitle(titleText) {
+      try {
+        if (window.parent && window.parent !== window && window.parent.document) {
+          const titleEl = window.parent.document.getElementById('dm-target-name');
+          if (titleEl) titleEl.innerText = titleText;
+        }
+      } catch (e) {}
+    }
+    function parseRichText(text) {
+      if (!text) return "";
+      let safeText = text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+      safeText = safeText.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+      safeText = safeText.replace(/\*(.*?)\*/g, '<em>$1</em>');
+      return safeText;
+    }
+    function formatTimestamp(ts) {
+      if (!ts || !ts.toDate) return "";
+      const date = ts.toDate();
+      const hours = String(date.getHours()).padStart(2, '0');
+      const minutes = String(date.getMinutes()).padStart(2, '0');
+      return `${hours}:${minutes}`;
+    }
+    window.showContacts = function() {
+        document.getElementById('view-chat').classList.remove('active');
+        if (currentUnsubscribe) { currentUnsubscribe(); currentUnsubscribe = null; }
+        if (typingUnsubscribe) { typingUnsubscribe(); typingUnsubscribe = null; }
+        updateTypingStatus(false);
+        updateParentTitle("Daftar Kontak");
+        window.history.replaceState({}, document.title, window.location.pathname);
+        targetUid = null;
+    };
+    window.openConversation = function(tId, tName, tAvatar) {
+        targetUid = tId;
+        const uids = [currentUserUid, tId].sort();
+        chatId = `${uids[0]}_${uids[1]}`;
+        document.getElementById('chat-active-name').innerText = "@" + tName;
+        document.getElementById('chat-active-avatar').src = tAvatar || defaultAvatar;
+        document.getElementById('view-chat').classList.add('active');
+        updateParentTitle("Chat dgn @" + tName);
+        document.getElementById('messages-container').innerHTML = '<div id="loading-state">Memuat pesan...</div>';
+        loadMessages();
+        loadTypingStatus();
+    };
+    function renderContactsList(friendsToRender) {
+        const contactList = document.getElementById('contact-list');
+        if(friendsToRender.length === 0) {
+            contactList.innerHTML = '<div style="padding:20px; text-align:center; color:#6b7280; font-weight:700;">Tidak ada kontak ditemukan.</div>';
+            return;
+        }
+        contactList.innerHTML = '';
+        friendsToRender.forEach(f => {
+            const div = document.createElement('div');
+            div.className = 'contact-item';
+            div.innerHTML = `
+                <img src="${f.avatar}" class="contact-avatar" alt="Avatar">
+                <div style="display:flex; flex-direction:column;">
+                  <span class="contact-name">@${f.name}</span>
+                  <span style="font-size:12px; font-weight:700; color:#6b7280;">Ketuk untuk mulai chat</span>
+                </div>
+            `;
+            div.onclick = () => window.openConversation(f.uid, f.name, f.avatar);
+            contactList.appendChild(div);
+        });
+    }
+    async function loadContactsList() {
+        const userRef = doc(db, "users", currentUserUid);
+        const userSnap = await getDoc(userRef);
+        if (userSnap.exists()) {
+            const userData = userSnap.data();
+            const friends = userData.friends || [];
+            if(friends.length === 0) {
+                document.getElementById('contact-list').innerHTML = '<div style="padding:20px; text-align:center; color:#6b7280; font-weight:700;">Daftar kontak kosong. Tambah teman dulu!</div>';
+                return;
+            }
+            allFriendsData = [];
+            for(let fUid of friends) {
+                const fRef = doc(db, "users", fUid);
+                const fSnap = await getDoc(fRef);
+                if(fSnap.exists()) {
+                    const fData = fSnap.data();
+                    allFriendsData.push({
+                        uid: fUid,
+                        name: fData.name,
+                        avatar: fData.customAvatar || defaultAvatar
+                    });
+                }
+            }
+            renderContactsList(allFriendsData);
+        }
+    }
+    document.getElementById('search-contact-input').addEventListener('input', (e) => {
+        const keyword = e.target.value.toLowerCase();
+        const filtered = allFriendsData.filter(f => f.name.toLowerCase().includes(keyword));
+        renderContactsList(filtered);
+    });
+    onAuthStateChanged(auth, async (user) => {
+      if (user) {
+        currentUserUid = user.uid;
+        loadContactsList();
+        if (targetUid) {
+            const tRef = doc(db, "users", targetUid);
+            const tSnap = await getDoc(tRef);
+            if (tSnap.exists()) {
+                const tData = tSnap.data();
+                window.openConversation(targetUid, tData.name, tData.customAvatar);
+            }
+        } else {
+            updateParentTitle("Daftar Kontak");
+        }
+      } else {
+        document.getElementById('contact-list').innerHTML = '<div style="text-align:center; color:var(--danger-color); padding:20px; font-weight:900;">Sesi berakhir. Silakan login kembali.</div>';
+      }
+    });
+    function loadMessages() {
+      const messagesRef = collection(db, "chats", chatId, "messages");
+      const q = query(messagesRef, orderBy("timestamp", "asc"));
+      currentUnsubscribe = onSnapshot(q, (snapshot) => {
+        const container = document.getElementById('messages-container');
+        container.innerHTML = '';
+        if(snapshot.empty) {
+            container.innerHTML = '<div style="text-align:center; color:#6b7280; margin-top:20px; font-weight:700;">Belum ada obrolan. Jangan malu-malu!</div>';
+            return;
+        }
+        snapshot.forEach(docSnap => {
+           const msg = docSnap.data();
+           const isMe = msg.sender === currentUserUid;
+           const div = document.createElement('div');
+           div.className = 'chat-bubble ' + (isMe ? 'me' : 'them');
+           div.innerHTML = `${parseRichText(msg.text)}<div class="msg-time">${formatTimestamp(msg.timestamp)}</div>`;
+           container.appendChild(div);
+        });
+        container.scrollTop = container.scrollHeight;
+      });
+    }
+    function loadTypingStatus() {
+      if (typingUnsubscribe) typingUnsubscribe();
+      const typingRef = doc(db, "chats", chatId, "typing", targetUid);
+      typingUnsubscribe = onSnapshot(typingRef, (docSnap) => {
+        if (docSnap.exists() && docSnap.data().isTyping) {
+            updateTypingStatus(true);
+        } else {
+            updateTypingStatus(false);
+        }
+      });
+    }
+    function updateTypingStatus(isTyping) {
+        const el = document.getElementById('typing-status');
+        if (isTyping) {
+            el.style.display = 'block';
+        } else {
+            el.style.display = 'none';
+        }
+    }
+    async function setTypingState(isTyping) {
+        if (!chatId || !currentUserUid) return;
+        const typingRef = doc(db, "chats", chatId, "typing", currentUserUid);
+        if (isTyping) {
+            await setDoc(typingRef, { isTyping: true });
+        } else {
+            await deleteDoc(typingRef).catch(() => {});
+        }
+    }
+    async function sendMessage() {
+       const input = document.getElementById('msg-input');
+       const text = input.value.trim();
+       if(!text || !chatId) return;
+       input.value = '';
+       setTypingState(false);
+       const messagesRef = collection(db, "chats", chatId, "messages");
+       await addDoc(messagesRef, {
+          sender: currentUserUid,
+          text: text,
+          timestamp: serverTimestamp()
+       });
+    }
+    const msgInput = document.getElementById('msg-input');
+    msgInput.addEventListener('input', () => {
+        if (!chatId) return;
+        setTypingState(true);
+        clearTimeout(typingTimeout);
+        typingTimeout = setTimeout(() => {
+            setTypingState(false);
+        }, 2000);
+    });
+    document.getElementById('btn-send').addEventListener('click', sendMessage);
+    msgInput.addEventListener('keypress', function (e) {
+        if (e.key === 'Enter') sendMessage();
+    });
+  </script>
+</body>
+</html>
