@@ -7,7 +7,7 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
   <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
-<link rel="stylesheet" href="style-1.css">
+  <link rel="stylesheet" href="style-1.css">
 </head>
 <body>
   <div id="toast-container" class="toast-container"></div>
@@ -36,6 +36,7 @@
       </div>
     </div>
   </div>
+
   <div id="auth-modal" class="modal-overlay hidden">
     <div class="card modal-card">
       <div id="login-box">
@@ -62,6 +63,7 @@
       </div>
     </div>
   </div>
+
   <div id="profile-modal" class="modal-overlay hidden">
     <div class="card modal-card">
       <h2>Edit Profilmu</h2>
@@ -98,6 +100,7 @@
       <button onclick="document.getElementById('profile-modal').classList.add('hidden')" style="background: #e5e7eb; color: #374151;">Batal</button>
     </div>
   </div>
+
   <div id="public-profile-modal" class="modal-overlay hidden">
     <div class="card modal-card" style="text-align: center;">
       <img id="pub-avatar" src="" style="width: 100px; height: 100px; border-radius: 24px; border: var(--border-thick); margin-bottom: 10px; object-fit: cover;">
@@ -111,6 +114,7 @@
       <button onclick="document.getElementById('public-profile-modal').classList.add('hidden')" style="background: #e5e7eb; color: #374151;">Tutup</button>
     </div>
   </div>
+
   <div id="dm-modal" class="modal-overlay hidden">
     <div class="card modal-card" style="padding: 0; overflow: hidden; height: 80vh; display: flex; flex-direction: column;">
       <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:var(--border-thick); padding:12px 16px; background:var(--bg-main);">
@@ -138,16 +142,19 @@
     </div>
   </div>
   
+  <!-- FIX: CSS ditambahkan di setiap list warga agar bisa scroll dan tidak memanjang berlebihan -->
   <div id="friends-modal" class="modal-overlay hidden" style="padding:1%;">
     <div class="card modal-card modal-98">
       <button class="close-floating" onclick="document.getElementById('friends-modal').classList.add('hidden')">&times;</button>
       <div class="modal-content-scroll">
         <h2 style="color:var(--btn-primary);border-bottom:2px dashed #e5e7eb;padding-bottom:8px;">Semua Warga</h2>
-        <div id="all-residents-list" style="margin-bottom:20px;background:#f9fafb;border-radius:8px;border:2px solid #e5e7eb;padding:8px;"></div>
+        <div id="all-residents-list" style="margin-bottom:20px;background:#f9fafb;border-radius:8px;border:2px solid #e5e7eb;padding:8px; max-height:25vh; overflow-y:auto;"></div>
+        
         <h2 style="color:var(--btn-primary);border-bottom:2px dashed #e5e7eb;padding-bottom:8px;">Antrean Pertemanan</h2>
-        <div id="friend-requests-list" style="margin-bottom:20px;background:#f9fafb;border-radius:8px;border:2px solid #e5e7eb;padding:8px;"></div>
+        <div id="friend-requests-list" style="margin-bottom:20px;background:#f9fafb;border-radius:8px;border:2px solid #e5e7eb;padding:8px; max-height:20vh; overflow-y:auto;"></div>
+        
         <h2 style="color:var(--btn-primary);border-bottom:2px dashed #e5e7eb;padding-bottom:8px;">Warga Akrab (Teman)</h2>
-        <div id="friends-list" style="font-size:14px;background:#f9fafb;border-radius:8px;border:2px solid #e5e7eb;padding:12px;"></div>
+        <div id="friends-list" style="font-size:14px;background:#f9fafb;border-radius:8px;border:2px solid #e5e7eb;padding:12px; max-height:25vh; overflow-y:auto;"></div>
       </div>
     </div>
   </div>
@@ -156,6 +163,7 @@
     <img id="lightbox-img" src="" alt="Full size view" onclick="event.stopPropagation()">
     <span style="position: absolute; top: 20px; right: 20px; color: white; font-size: 30px; cursor: pointer; font-weight: bold;">&times;</span>
   </div>
+
   <div class="container">
     <div class="app-header-wrapper">
       <div class="app-header">
@@ -165,6 +173,7 @@
         </div>
       </div>
     </div>
+    
     <div class="card">
       <div class="input-group">
         <textarea id="post-input" placeholder="Lagi mikirin hal aneh apa hari ini?"></textarea>
@@ -184,6 +193,7 @@
       <p id="upload-status">Memproses gambar...</p>
       <button class="primary" id="btn-post"><svg class="svg-icon" viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg> Posting Sekarang</button>
     </div>
+    
     <div class="feed-controls">
       <span style="font-size: 13px; font-weight: 700; white-space: nowrap;"> Filter Feed:</span>
       <select id="feed-filter-select" class="custom-dropdown" onchange="window.handleFeedFilterChange()">
@@ -192,6 +202,7 @@
     </div>
     <div id="feed-container"></div>
   </div>
+
   <div class="bottom-nav">
     <div class="nav-item" onclick="window.openNotifModal()">
       <svg class="svg-icon svg-icon-lg" viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5v-3h3.56c.69 1.19 1.97 2 3.44 2s2.75-.81 3.44-2H19v3zm0-5h-4.99c-.13 1.19-1.13 2.09-2.35 2.09s-2.22-.89-2.35-2.09H5V5h14v9z"/></svg> Notif <span id="nav-badge-notif" class="nav-badge hidden">0</span>
