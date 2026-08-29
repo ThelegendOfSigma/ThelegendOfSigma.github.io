@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>Bikinapa? - Wheel Edition</title>
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+<style>
+/* Estetika Kartunis yang Playful */
+@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@700;900&display=swap');
+
+body { 
+    background: #74b9ff; 
+    background-image: radial-gradient(#0984e3 2px, transparent 2px);
+    background-size: 30px 30px;
+    font-family: 'Nunito', 'Comic Sans MS', cursive, sans-serif; 
+    min-height: 100vh; 
+    display: flex; 
+    justify-content: center; 
+    align-items: center; 
+    padding: 16px; 
+    margin: 0; 
+    overflow: hidden; 
+    color: #2d3436; 
+}
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+/* Window Container */
+.app-container { 
+    position: relative; 
+    width: 100%; 
+    max-width: 420px; 
+    background: #ffffff; 
+    border: 4px solid #2d3436; 
+    border-radius: 24px;
+    display: flex; 
+    flex-direction: column; 
+    z-index: 1; 
+    box-shadow: 8px 8px 0px rgba(45, 52, 54, 1); 
+    max-height: 95vh; 
+    overflow-y: auto; 
+}
+
+.title-bar { 
+    background: #ff7675; 
+    color: #fff; 
+    padding: 12px 20px; 
+    font-weight: 900; 
+    font-size: 1.3rem; 
+    display: flex; 
+    justify-content: space-between; 
+    align-items: center; 
+    letter-spacing: 1px; 
+    border-bottom: 4px solid #2d3436;
+    border-radius: 20px 20px 0 0;
+}
+
+.title-bar-controls { display: flex; gap: 8px; }
+.title-bar-btn { 
+    background: #ffeaa7; 
+    border: 3px solid #2d3436; 
+    border-radius: 50%;
+    width: 32px; 
+    height: 32px; 
+    font-weight: 900; 
+    font-size: 14px; 
+    display: flex; 
+    justify-content: center; 
+    align-items: center; 
+    cursor: pointer; 
+    color: #2d3436; 
+    transition: transform 0.1s;
+    box-shadow: 2px 2px 0px #2d3436;
+}
+.title-bar-btn:active { transform: translate(2px, 2px); box-shadow: 0px 0px 0px #2d3436; }
+
+/* Menu Bar */
+.menu-bar { 
+    display: flex; 
+    gap: 15px; 
+    padding: 10px 20px; 
+    border-bottom: 4px solid #2d3436; 
+    background: #81ecec; 
+    font-size: 1rem; 
+    font-weight: 900;
+    position: relative; 
+}
+.menu-item { cursor: pointer; padding: 4px 12px; position: relative; border-radius: 12px; transition: background 0.2s;}
+.menu-item:hover { background: #00cec9; color: #fff; }
+.dropdown-content { 
+    display: none; 
+    position: absolute; 
+    top: 100%; 
+    left: 0; 
+    background: #ffffff; 
+    border: 4px solid #2d3436; 
+    border-radius: 16px;
+    box-shadow: 6px 6px 0px #2d3436;
+    min-width: 180px; 
+    z-index: 20; 
+    color: #2d3436;
+    overflow: hidden;
+    margin-top: 8px;
+}
+.menu-item:hover .dropdown-content { display: block; }
+.dropdown-item { padding: 10px 16px; cursor: pointer; border-bottom: 2px solid #dfe6e9; }
+.dropdown-item:last-child { border-bottom: none; }
+.dropdown-item:hover { background: #ffeaa7; color: #2d3436; }
+
+/* Main Content */
+.content-area { padding: 25px 20px; display: flex; flex-direction: column; align-items: center; gap: 20px; }
+.phase-subtitle { 
+    color: #2d3436; 
+    background: #ffeaa7;
+    padding: 8px 24px;
+    border: 3px solid #2d3436;
+    border-radius: 20px;
+    font-size: 1.3rem; 
+    font-weight: 900; 
+    text-transform: uppercase; 
+    text-align: center; 
+    box-shadow: 4px 4px 0px #2d3436;
+}
+
+/* Wheel */
+.wheel-wrapper { position: relative; width: 280px; height: 280px; display: flex; justify-content: center; align-items: center; margin-top: 25px; }
+.wheel-pointer-label { 
+    position: absolute; 
+    top: -45px; 
+    left: 50%; 
+    transform: translateX(-50%); 
+    background: #fff; 
+    color: #2d3436; 
+    padding: 6px 16px; 
+    border: 3px solid #2d3436; 
+    border-radius: 16px;
+    font-size: 1.2rem; 
+    font-weight: 900; 
+    white-space: nowrap; 
+    z-index: 12; 
+    transition: all 0.2s ease; 
+    box-shadow: 4px 4px 0px #2d3436;
+}
+.wheel-pointer-label.selected { background: #fdcb6e; transform: translateX(-50%) scale(1.1); }
+.pointer-up { 
+    position: absolute; 
+    bottom: -15px; 
+    left: 50%; 
+    transform: translateX(-50%); 
+    width: 0; 
+    height: 0; 
+    border-left: 15px solid transparent; 
+    border-right: 15px solid transparent; 
+    border-bottom: 30px solid #d63031; 
+    z-index: 10;
+    filter: drop-shadow(0px -4px 0px #2d3436);
+}
+.wheel-center { 
+    position: absolute; 
+    width: 30px; 
+    height: 30px; 
+    background: #ff7675; 
+    border: 4px solid #2d3436; 
+    border-radius: 50%; 
+    z-index: 5; 
+}
+canvas#wheelCanvas { width: 280px; height: 280px; border-radius: 50%; border: 6px solid #2d3436; background: #fff; box-shadow: 0px 8px 0px rgba(0,0,0,0.1); }
+
+/* Buttons & Inputs */
+.btn-action { 
+    background: #55efc4; 
+    color: #2d3436; 
+    font-family: inherit; 
+    font-size: 1.2rem; 
+    font-weight: 900; 
+    border: 4px solid #2d3436; 
+    border-radius: 16px;
+    padding: 12px 24px; 
+    cursor: pointer; 
+    width: 100%; 
+    transition: all 0.1s ease; 
+    box-shadow: 4px 6px 0px #2d3436;
+    text-transform: uppercase;
+}
+.btn-action:active:not(:disabled) { 
+    transform: translateY(6px);
+    box-shadow: 0px 0px 0px #2d3436;
+}
+.btn-action:disabled { background: #dfe6e9; color: #b2bec3; cursor: not-allowed; box-shadow: 4px 6px 0px #b2bec3; border-color: #b2bec3;}
+
+/* Custom Form */
+.custom-form { display: none; width: 100%; background: #f1f2f6; border: 4px solid #2d3436; border-radius: 16px; padding: 15px; flex-direction: column; gap: 10px; box-shadow: inset 0px 4px 0px rgba(0,0,0,0.05); }
+.custom-form input { 
+    padding: 8px 12px; 
+    border: 3px solid #2d3436; 
+    border-radius: 12px;
+    background: #fff; 
+    color: #2d3436; 
+    font-family: inherit; 
+    font-weight: 700;
+}
+.custom-row { display: flex; gap: 8px; }
+.custom-row input[type="text"] { flex-grow: 1; }
+.custom-row input[type="number"] { width: 70px; text-align: center; }
+
+/* Modals */
+.modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(45,52,54,0.8); display: flex; justify-content: center; align-items: center; z-index: 100; opacity: 0; pointer-events: none; transition: opacity 0.2s; backdrop-filter: blur(3px); }
+.modal-overlay.active { opacity: 1; pointer-events: auto; }
+.modal-window { 
+    background: #fff; 
+    border: 4px solid #2d3436; 
+    border-radius: 24px;
+    width: 90%; 
+    max-width: 360px; 
+    display: flex; 
+    flex-direction: column; 
+    box-shadow: 8px 8px 0px #2d3436; 
+    overflow: hidden;
+    transform: scale(0.9);
+    transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+.modal-overlay.active .modal-window { transform: scale(1); }
+.modal-content { padding: 25px; text-align: center; display: flex; flex-direction: column; gap: 20px; }
+.result-box { 
+    background: #ffeaa7; 
+    border: 3px dashed #2d3436; 
+    border-radius: 16px;
+    padding: 20px; 
+    font-size: 1.4rem; 
+    font-weight: 900; 
+    color: #d63031; 
+}
+.history-list-container { 
+    background: #f1f2f6; 
+    border: 3px solid #2d3436; 
+    border-radius: 12px;
+    padding: 15px; 
+    max-height: 180px; 
+    overflow-y: auto; 
+    text-align: left; 
+    font-size: 1rem; 
+    font-weight: 700;
+}
+.history-list-container ul { list-style: none; padding-left: 0; margin: 0; display: flex; flex-direction: column; gap: 8px; }
+.history-list-container li { background: #fff; border: 2px solid #dfe6e9; border-radius: 8px; padding: 8px 12px; }
+</style>
+</head>
+<body>
+
+<div class="app-container">
+    <div class="title-bar">
+        <span>Bikinapa? Wheel</span>
+        <div class="title-bar-controls">
+            <div class="title-bar-btn">?</div>
+            <div class="title-bar-btn" id="btn-close-app">X</div>
+        </div>
+    </div>
+    <div class="menu-bar">
+        <div class="menu-item">Mode ▾
+            <div class="dropdown-content">
+                <div class="dropdown-item" id="btn-mode-ide">🎯 Sistem Ide (Utama)</div>
+                <div class="dropdown-item" id="btn-mode-custom">🎨 Mode Custom</div>
+            </div>
+        </div>
+        <div class="menu-item" id="btn-show-history">📜 Riwayat</div>
+    </div>
+
+    <div class="content-area">
+        <div class="phase-subtitle" id="phase-title">Sistem Ide</div>
+        
+        <div class="custom-form" id="custom-form">
+            <input type="text" id="custom-title" placeholder="Judul Roda">
+            <div id="custom-items-container"></div>
+            <button class="btn-action" id="btn-add-item" style="background:#74b9ff; font-size:1rem; padding:8px;">+ Tambah Item</button>
+            <button class="btn-action" id="btn-save-custom" style="font-size:1rem; padding:10px;">Simpan & Gunakan</button>
+        </div>
+
+        <div class="wheel-wrapper" id="wheel-container" style="display: none;">
+            <div class="wheel-pointer-label" id="pointer-label">-</div>
+            <canvas id="wheelCanvas" width="280" height="280"></canvas>
+            <div class="wheel-center"></div>
+            <div class="pointer-up"></div>
+        </div>
+
+        <button class="btn-action" id="btn-main">Mulai Acak!</button>
+    </div>
+</div>
+
+<div class="modal-overlay" id="modal-result">
+    <div class="modal-window">
+        <div class="title-bar" style="background: #a29bfe;">
+            <span>Yeay! Hasilnya:</span>
+            <div class="title-bar-btn" id="btn-close-result-x">X</div>
+        </div>
+        <div class="modal-content">
+            <h3 id="modal-title" style="margin:0; font-size:1.2rem;">Kombinasi Terpilih</h3>
+            <div class="result-box" id="result-text">-</div>
+            <button class="btn-action" id="btn-restart" style="background:#a29bfe; color:#fff;">Tutup & Ulang</button>
+        </div>
+    </div>
+</div>
+
+<div class="modal-overlay" id="modal-history">
+    <div class="modal-window">
+        <div class="title-bar" style="background: #00cec9;">
+            <span>Riwayat</span>
+            <div class="title-bar-btn" id="btn-close-history-x">X</div>
+        </div>
+        <div class="modal-content">
+            <div class="history-list-container"><ul id="history-list"></ul></div>
+            <button class="btn-action" id="btn-close-history" style="background:#00cec9; color:#fff;">Tutup</button>
+        </div>
+    </div>
+</div>
+
+<script>
+// Audio (Opsional, pastikan file ada di folder yang sama)
+const sfxType = new Audio('audio/type.mp3'); sfxType.loop = true;
+const sfxGet = new Audio('audio/get.mp3'); sfxGet.preload = 'auto';
+const sfxAkh = new Audio('audio/akh.mp3'); sfxAkh.preload = 'auto';
+const playSfxGet = () => { sfxGet.currentTime = 0; sfxGet.play().catch(e=>e); };
+const playSfxAkh = () => { sfxAkh.currentTime = 0; sfxAkh.play().catch(e=>e); };
+
+let roles = [{l:"Assassin",w:1},{l:"Mage",w:1},{l:"Fighter",w:1},{l:"Tank",w:1},{l:"Marksman",w:1}];
+let genders = [{l:"Male",w:1},{l:"Female",w:1}];
+let materials = [{l:"Mobil",w:1},{l:"Semangka",w:1},{l:"Pensil",w:1},{l:"Gitar Listrik",w:1}];
+let customWheelData = JSON.parse(localStorage.getItem('customWheel')) || {title:"Custom Roda", items:[{l:"Ayam Penyet",w:2},{l:"Nasi Goreng",w:1}]};
+let historyData = JSON.parse(localStorage.getItem('wheelHistory')) || [];
+// Sistem Eliminasi
+let usedCombinations = JSON.parse(localStorage.getItem('usedCombinations')) || []; 
+
+let isCustomMode = false, currentPhase = 1, selectedRole = "", selectedGender = "", selectedMaterial = "", currentItems = [], currentAngle = 0, isSpinning = false;
+const canvas = document.getElementById('wheelCanvas'), ctx = canvas.getContext('2d');
+const btnMain = document.getElementById('btn-main'), phaseTitle = document.getElementById('phase-title'), wheelContainer = document.getElementById('wheel-container');
+const modalResult = document.getElementById('modal-result'), modalHistory = document.getElementById('modal-history');
+const pointerLabel = document.getElementById('pointer-label'), historyList = document.getElementById('history-list');
+
+// Palet warna kartunis yang cerah
+const colors = ['#ffeaa7', '#55efc4', '#81ecec', '#a29bfe', '#fab1a0', '#ff7675', '#74b9ff', '#00cec9'];
+
+const renderHistory = () => { historyList.innerHTML = historyData.length ? historyData.map(i => `<li>${i}</li>`).join('') : "<li>Belum ada riwayat.</li>"; };
+const saveToHistory = (res, isCombo = false) => { 
+    historyData.unshift(res); 
+    if(historyData.length > 20) historyData.pop(); 
+    localStorage.setItem('wheelHistory', JSON.stringify(historyData)); 
+    if(isCombo) {
+        usedCombinations.push(res.replace('[Ide] ', ''));
+        localStorage.setItem('usedCombinations', JSON.stringify(usedCombinations));
+    }
+    renderHistory(); 
+};
+const updatePhaseTitle = (txt) => { phaseTitle.innerText = txt; };
+const getTotalWeight = (items) => items.reduce((s, x) => s + (Number(x.w) || 1), 0);
+const getPointedItem = (items, angle) => { 
+    const n = (angle % (2*Math.PI) + 2*Math.PI) % (2*Math.PI), p = (Math.PI/2 - n + 2*Math.PI) % (2*Math.PI), t = getTotalWeight(items); 
+    let c = 0; 
+    for(let i=0; i<items.length; i++){ 
+        const a = ((Number(items[i].w)||1)/t) * (2*Math.PI); 
+        if(p >= c && p < c+a) return items[i].l; 
+        c += a; 
+    } 
+};
+
+const drawWheel = (items, angleOffset) => { 
+    const t = getTotalWeight(items), cx = canvas.width/2, cy = canvas.height/2, r = canvas.width/2; 
+    ctx.clearRect(0,0,canvas.width,canvas.height); 
+    let a = angleOffset; 
+    for(let i=0; i<items.length; i++){ 
+        const s = ((Number(items[i].w)||1)/t) * (2*Math.PI); 
+        ctx.beginPath(); 
+        
+        // Logika pewarnaan khusus
+        let fillColor = colors[i % colors.length];
+        if (items[i].l.toLowerCase() === 'female') fillColor = '#ff9ff3'; // Pink cerah
+        if (items[i].l.toLowerCase() === 'male') fillColor = '#54a0ff';   // Biru cerah
+        
+        ctx.fillStyle = fillColor; 
+        ctx.moveTo(cx,cy); ctx.arc(cx,cy,r,a,a+s); ctx.lineTo(cx,cy); ctx.fill(); 
+        ctx.strokeStyle = '#2d3436'; ctx.lineWidth = 4; ctx.stroke(); 
+        ctx.save(); 
+        ctx.fillStyle = '#2d3436'; 
+        ctx.font = '900 16px "Nunito", sans-serif'; 
+        ctx.translate(cx,cy); ctx.rotate(a+s/2); ctx.textAlign = 'right'; 
+        ctx.fillText(items[i].l, r-20, 6); 
+        ctx.restore(); 
+        a += s; 
+    } 
+};
+
+const spinWheel = (items) => new Promise(res => { 
+    isSpinning = true; btnMain.disabled = true; pointerLabel.classList.remove('selected'); 
+    sfxType.currentTime = 0; sfxType.play().catch(e=>e); 
+    const tRot = Math.PI*2*(5+Math.random()*5), dur = 3000, startT = performance.now(), startA = currentAngle; 
+    const anim = (now) => { 
+        const prog = Math.min((now-startT)/dur, 1), ease = 1 - Math.pow(1-prog, 3); 
+        currentAngle = startA + tRot*ease; 
+        drawWheel(items, currentAngle); 
+        pointerLabel.innerText = getPointedItem(items, currentAngle); 
+        if(prog < 1) requestAnimationFrame(anim); 
+        else { 
+            sfxType.pause(); playSfxGet(); isSpinning = false; 
+            pointerLabel.classList.add('selected'); res(getPointedItem(items, currentAngle)); 
+        } 
+    }; 
+    requestAnimationFrame(anim); 
+});
+
+const initCustomForm = () => { 
+    document.getElementById('custom-title').value = customWheelData.title; 
+    document.getElementById('custom-items-container').innerHTML = customWheelData.items.map(i => `<div class="custom-row"><input type="text" class="c-lbl" value="${i.l}"><input type="number" class="c-wt" value="${i.w}" min="1"></div>`).join(''); 
+};
+document.getElementById('btn-add-item').addEventListener('click', () => { document.getElementById('custom-items-container').insertAdjacentHTML('beforeend', `<div class="custom-row"><input type="text" class="c-lbl" value="Baru"><input type="number" class="c-wt" value="1" min="1"></div>`); });
+document.getElementById('btn-save-custom').addEventListener('click', () => { 
+    const lbls = document.querySelectorAll('.c-lbl'), wts = document.querySelectorAll('.c-wt'); 
+    customWheelData.title = document.getElementById('custom-title').value; 
+    customWheelData.items = Array.from(lbls).map((l,i) => ({l:l.value, w:Number(wts[i].value)||1})); 
+    localStorage.setItem('customWheel', JSON.stringify(customWheelData)); 
+    alert("Yey! Roda Custom berhasil disimpan!"); 
+    document.getElementById('btn-mode-custom').click(); 
+});
+
+document.getElementById('btn-mode-ide').addEventListener('click', () => { isCustomMode = false; document.getElementById('custom-form').style.display = 'none'; resetApp(); updatePhaseTitle("Sistem Ide"); });
+document.getElementById('btn-mode-custom').addEventListener('click', () => { isCustomMode = true; document.getElementById('custom-form').style.display = 'flex'; resetApp(); updatePhaseTitle(customWheelData.title); currentItems = customWheelData.items; wheelContainer.style.display = "flex"; pointerLabel.classList.remove('selected'); pointerLabel.innerText = getPointedItem(currentItems,0); drawWheel(currentItems,0); btnMain.innerText = "Acak Custom!"; });
+document.getElementById('btn-show-history').addEventListener('click', () => { renderHistory(); modalHistory.classList.add('active'); });
+document.getElementById('btn-close-history').addEventListener('click', () => { modalHistory.classList.remove('active'); });
+document.getElementById('btn-close-history-x').addEventListener('click', () => { modalHistory.classList.remove('active'); });
+document.getElementById('btn-close-app').addEventListener('click', () => { alert("Ini tombol pura-pura ya! 😁"); });
+
+const resetApp = () => { currentPhase = 1; wheelContainer.style.display = isCustomMode ? "flex" : "none"; pointerLabel.classList.remove('selected'); btnMain.innerText = isCustomMode ? "Acak Custom!" : "Mulai Acak!"; btnMain.disabled = false; };
+
+btnMain.addEventListener('click', async () => { 
+    if(isSpinning) return; 
+    if(isCustomMode){ 
+        const res = await spinWheel(currentItems); playSfxAkh(); confetti({particleCount:150, spread:90, origin:{y:0.6}}); 
+        document.getElementById('modal-title').innerText = customWheelData.title; 
+        document.getElementById('result-text').innerText = res; 
+        saveToHistory(`[${customWheelData.title}] ${res}`); 
+        modalResult.classList.add('active'); 
+        return; 
+    } 
+    
+    if(currentPhase === 1){ 
+        currentPhase = 2; updatePhaseTitle("Pilih Role"); wheelContainer.style.display = "flex"; currentItems = roles; currentAngle = 0; 
+        pointerLabel.classList.remove('selected'); pointerLabel.innerText = getPointedItem(currentItems, currentAngle); drawWheel(currentItems, currentAngle); 
+        selectedRole = await spinWheel(currentItems); btnMain.disabled = false; btnMain.innerText = "Lanjut (Gender)"; 
+    } else if(currentPhase === 2){ 
+        currentPhase = 3; updatePhaseTitle("Pilih Gender"); currentItems = genders; currentAngle = 0; 
+        pointerLabel.classList.remove('selected'); pointerLabel.innerText = getPointedItem(currentItems, currentAngle); drawWheel(currentItems, currentAngle); 
+        selectedGender = await spinWheel(currentItems); btnMain.disabled = false; btnMain.innerText = "Lanjut (Material)"; 
+    } else if(currentPhase === 3){ 
+        // Sistem Eliminasi
+        currentItems = materials.filter(m => {
+            const potentialCombo = `${selectedRole} - ${selectedGender} - ${m.l}`;
+            return !usedCombinations.includes(potentialCombo);
+        });
+
+        if(currentItems.length === 0) {
+            alert("Oops! Semua kombinasi material untuk " + selectedRole + " & " + selectedGender + " sudah terpakai! Mengulang dari awal...");
+            resetApp();
+            updatePhaseTitle("Sistem Ide");
+            return;
+        }
+
+        currentPhase = 4; updatePhaseTitle("Pilih Material"); currentAngle = 0; 
+        pointerLabel.classList.remove('selected'); pointerLabel.innerText = getPointedItem(currentItems, currentAngle); drawWheel(currentItems, currentAngle); 
+        selectedMaterial = await spinWheel(currentItems); btnMain.disabled = false; btnMain.innerText = "Selesai!"; 
+    } else if(currentPhase === 4){ 
+        playSfxAkh(); confetti({particleCount:150, spread:90, origin:{y:0.6}}); 
+        const finalRes = `${selectedRole} - ${selectedGender} - ${selectedMaterial}`; 
+        document.getElementById('modal-title').innerText = "Kombinasi Terpilih"; 
+        document.getElementById('result-text').innerText = finalRes; 
+        saveToHistory(`[Ide] ${finalRes}`, true); 
+        modalResult.classList.add('active'); 
+    } 
+});
+
+const closeModalAndReset = () => { modalResult.classList.remove('active'); resetApp(); if(!isCustomMode) updatePhaseTitle("Sistem Ide"); };
+document.getElementById('btn-restart').addEventListener('click', closeModalAndReset);
+document.getElementById('btn-close-result-x').addEventListener('click', closeModalAndReset);
+
+window.onload = () => { 
+    renderHistory(); initCustomForm(); btnMain.disabled = true; btnMain.innerText = "Memuat..."; 
+    fetch('material.json').then(r=>r.json()).then(d=>{if(Array.isArray(d)&&d.length>0) materials=d.map(i=>typeof i==='string'?{l:i,w:1}:i);}).catch(e=>e).finally(()=>{btnMain.disabled=false;btnMain.innerText="Mulai Acak!";}); 
+};
+</script>
+</body>
+</html>
