@@ -124,6 +124,13 @@ body {
 
 /* Wheel */
 .wheel-wrapper { position: relative; width: 280px; height: 280px; display: flex; justify-content: center; align-items: center; margin-top: 25px; }
+
+/* Animasi Label Turun ke Bawah & Memudar */
+@keyframes labelFadeDown {
+    0% { transform: translateX(-50%) translateY(0); opacity: 1; }
+    100% { transform: translateX(-50%) translateY(30px); opacity: 0; pointer-events: none; }
+}
+
 .wheel-pointer-label { 
     position: absolute; 
     top: -45px; 
@@ -138,9 +145,18 @@ body {
     font-weight: 900; 
     white-space: nowrap; 
     z-index: 12; 
-    transition: all 0.2s ease; 
+    transition: background 0.2s ease, transform 0.2s ease; 
     box-shadow: 4px 4px 0px #2d3436;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 40px;
 }
+.wheel-pointer-label.fade-out {
+    animation: labelFadeDown 0.4s ease forwards;
+}
+
+.wheel-pointer-label img { height: 28px; width: auto; vertical-align: middle; }
 .wheel-pointer-label.selected { background: #fdcb6e; transform: translateX(-50%) scale(1.1); }
 .pointer-up { 
     position: absolute; 
@@ -153,6 +169,7 @@ body {
     border-right: 15px solid transparent; 
     border-bottom: 30px solid #d63031; 
     z-index: 10;
+    transition: opacity 0.2s ease;
     filter: drop-shadow(0px -4px 0px #2d3436);
 }
 .wheel-center { 
@@ -163,8 +180,74 @@ body {
     border: 4px solid #2d3436; 
     border-radius: 50%; 
     z-index: 5; 
+    transition: opacity 0.2s ease;
 }
 canvas#wheelCanvas { width: 280px; height: 280px; border-radius: 50%; border: 6px solid #2d3436; background: #fff; box-shadow: 0px 8px 0px rgba(0,0,0,0.1); }
+
+/* --- ANIMASI RODA MENJADI HASIL (LOGO/TEKS) --- */
+@keyframes wheelToContentAnim {
+    0% { transform: scale(0) rotate(180deg); opacity: 0; }
+    60% { transform: scale(1.15) rotate(-10deg); opacity: 1; }
+    100% { transform: scale(1) rotate(0deg); opacity: 1; }
+}
+
+.wheel-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 280px;
+    height: 280px;
+    background: #fff; 
+    border-radius: 50%;
+    border: 6px solid #2d3436;
+    z-index: 20;
+    display: none;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+    box-shadow: 0px 8px 0px rgba(0,0,0,0.1);
+    padding: 20px;
+    text-align: center;
+}
+
+.wheel-overlay.active {
+    display: flex;
+    animation: wheelToContentAnim 0.7s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+
+.wheel-overlay img {
+    width: 100px;
+    height: auto;
+    filter: drop-shadow(4px 4px 0px rgba(45, 52, 54, 0.2));
+}
+
+.wheel-overlay-title {
+    font-size: 1.3rem;
+    font-weight: 900;
+    color: #2d3436;
+    background: #ffeaa7;
+    padding: 4px 12px;
+    border: 2px solid #2d3436;
+    border-radius: 12px;
+    box-shadow: 2px 2px 0px #2d3436;
+}
+
+.wheel-overlay-text {
+    font-size: 1.6rem;
+    font-weight: 900;
+    color: #d63031;
+    word-break: break-word;
+}
+
+/* Sembunyikan pernak-pernik roda saat overlay aktif */
+.wheel-wrapper.show-overlay .wheel-pointer-label,
+.wheel-wrapper.show-overlay .pointer-up,
+.wheel-wrapper.show-overlay .wheel-center {
+    opacity: 0;
+    pointer-events: none;
+}
+/* ---------------------------------- */
 
 /* Buttons & Inputs */
 .btn-action { 
@@ -229,44 +312,110 @@ canvas#wheelCanvas { width: 280px; height: 280px; border-radius: 50%; border: 6p
     font-size: 1.4rem; 
     font-weight: 900; 
     color: #d63031; 
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    flex-wrap: wrap;
 }
+.result-box img { height: 36px; width: auto; vertical-align: middle; }
+
+/* --- CSS UNTUK LAYOUT HASIL POP-UP --- */
+@keyframes popUpEnlarge {
+    0% { transform: scale(0); opacity: 0; }
+    60% { transform: scale(1.2); opacity: 1; }
+    100% { transform: scale(1); opacity: 1; }
+}
+
+.result-box-custom {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 15px;
+    width: 100%;
+}
+
+.result-icons-container {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    animation: popUpEnlarge 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+
+.result-icons-container img {
+    height: 80px;
+    width: auto;
+    filter: drop-shadow(4px 4px 0px #2d3436);
+}
+
+.result-material-text {
+    font-size: 1.6rem;
+    font-weight: 900;
+    color: #d63031;
+    text-transform: uppercase;
+}
+/* ------------------------------------- */
+
 .history-list-container { 
     background: #f1f2f6; 
     border: 3px solid #2d3436; 
     border-radius: 12px;
     padding: 15px; 
-    max-height: 180px; 
+    max-height: 220px; 
     overflow-y: auto; 
     text-align: left; 
     font-size: 1rem; 
     font-weight: 700;
 }
 .history-list-container ul { list-style: none; padding-left: 0; margin: 0; display: flex; flex-direction: column; gap: 8px; }
-.history-list-container li { background: #fff; border: 2px solid #dfe6e9; border-radius: 8px; padding: 8px 12px; }
+.history-list-container li { 
+    background: #fff; 
+    border: 2px solid #dfe6e9; 
+    border-radius: 8px; 
+    padding: 8px 12px; 
+    display: flex; 
+    justify-content: space-between; 
+    align-items: center; 
+    gap: 10px;
+}
+.history-item-content { display: flex; align-items: center; gap: 6px; flex-grow: 1; word-break: break-word; }
+.history-item-content img { height: 20px; width: auto; vertical-align: middle; }
+.btn-del-history {
+    background: #ff7675;
+    color: #fff;
+    border: 2px solid #2d3436;
+    border-radius: 6px;
+    width: 24px;
+    height: 24px;
+    font-size: 12px;
+    font-weight: 900;
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-shrink: 0;
+}
+.btn-del-history:active { transform: scale(0.9); }
 </style>
 </head>
 <body>
 
 <div class="app-container">
     <div class="title-bar">
-        <span>Bikinapa? Wheel</span>
-        <div class="title-bar-controls">
-            <div class="title-bar-btn">?</div>
-            <div class="title-bar-btn" id="btn-close-app">X</div>
-        </div>
+        <span>Bikinapa?</span>
     </div>
-    <div class="menu-bar">
+    <div class="menu-bar" id="main-menu-bar">
         <div class="menu-item">Mode ▾
             <div class="dropdown-content">
-                <div class="dropdown-item" id="btn-mode-ide">🎯 Sistem Ide (Utama)</div>
-                <div class="dropdown-item" id="btn-mode-custom">🎨 Mode Custom</div>
+                <div class="dropdown-item" id="btn-mode-ide">💡 T.O.E.I.C (Utama)</div>
+                <div class="dropdown-item" id="btn-mode-custom">🎯 Mode Custom</div>
             </div>
         </div>
         <div class="menu-item" id="btn-show-history">📜 Riwayat</div>
     </div>
 
     <div class="content-area">
-        <div class="phase-subtitle" id="phase-title">Sistem Ide</div>
+        <div class="phase-subtitle" id="phase-title">T.O.E.I.C</div>
         
         <div class="custom-form" id="custom-form">
             <input type="text" id="custom-title" placeholder="Judul Roda">
@@ -276,6 +425,11 @@ canvas#wheelCanvas { width: 280px; height: 280px; border-radius: 50%; border: 6p
         </div>
 
         <div class="wheel-wrapper" id="wheel-container" style="display: none;">
+            <div class="wheel-overlay" id="wheel-overlay">
+                <div class="wheel-overlay-title" id="wheel-overlay-title"></div>
+                <img id="wheel-overlay-img" src="" alt="Selected Icon" style="display: none;">
+                <div class="wheel-overlay-text" id="wheel-overlay-text" style="display: none;"></div>
+            </div>
             <div class="wheel-pointer-label" id="pointer-label">-</div>
             <canvas id="wheelCanvas" width="280" height="280"></canvas>
             <div class="wheel-center"></div>
@@ -314,19 +468,41 @@ canvas#wheelCanvas { width: 280px; height: 280px; border-radius: 50%; border: 6p
 </div>
 
 <script>
-// Audio (Opsional, pastikan file ada di folder yang sama)
+// Audio (Opsional)
 const sfxType = new Audio('audio/type.mp3'); sfxType.loop = true;
 const sfxGet = new Audio('audio/get.mp3'); sfxGet.preload = 'auto';
 const sfxAkh = new Audio('audio/akh.mp3'); sfxAkh.preload = 'auto';
 const playSfxGet = () => { sfxGet.currentTime = 0; sfxGet.play().catch(e=>e); };
 const playSfxAkh = () => { sfxAkh.currentTime = 0; sfxAkh.play().catch(e=>e); };
 
+// Pemetaan gambar untuk Role dan Gender
+const imageMap = {
+    "Fighter": "role_fg.png",
+    "Marksman": "role_mm.png",
+    "Assassin": "role_as.png",
+    "Mage": "role_mg.png",
+    "Tank": "role_tn.png",
+    "Male": "gender_male.png",
+    "Female": "gender_female.png"
+};
+
+const imageCache = {};
+const loadImage = (src) => {
+    if (imageCache[src]) return imageCache[src];
+    const img = new Image();
+    img.src = src;
+    imageCache[src] = img;
+    return img;
+};
+
+// Pre-load gambar
+Object.values(imageMap).forEach(src => loadImage(src));
+
 let roles = [{l:"Assassin",w:1},{l:"Mage",w:1},{l:"Fighter",w:1},{l:"Tank",w:1},{l:"Marksman",w:1}];
 let genders = [{l:"Male",w:1},{l:"Female",w:1}];
 let materials = [{l:"Mobil",w:1},{l:"Semangka",w:1},{l:"Pensil",w:1},{l:"Gitar Listrik",w:1}];
 let customWheelData = JSON.parse(localStorage.getItem('customWheel')) || {title:"Custom Roda", items:[{l:"Ayam Penyet",w:2},{l:"Nasi Goreng",w:1}]};
 let historyData = JSON.parse(localStorage.getItem('wheelHistory')) || [];
-// Sistem Eliminasi
 let usedCombinations = JSON.parse(localStorage.getItem('usedCombinations')) || []; 
 
 let isCustomMode = false, currentPhase = 1, selectedRole = "", selectedGender = "", selectedMaterial = "", currentItems = [], currentAngle = 0, isSpinning = false;
@@ -335,10 +511,51 @@ const btnMain = document.getElementById('btn-main'), phaseTitle = document.getEl
 const modalResult = document.getElementById('modal-result'), modalHistory = document.getElementById('modal-history');
 const pointerLabel = document.getElementById('pointer-label'), historyList = document.getElementById('history-list');
 
-// Palet warna kartunis yang cerah
 const colors = ['#ffeaa7', '#55efc4', '#81ecec', '#a29bfe', '#fab1a0', '#ff7675', '#74b9ff', '#00cec9'];
 
-const renderHistory = () => { historyList.innerHTML = historyData.length ? historyData.map(i => `<li>${i}</li>`).join('') : "<li>Belum ada riwayat.</li>"; };
+const formatDisplayItem = (txt) => {
+    if (imageMap[txt]) {
+        return `<img src="${imageMap[txt]}" alt="${txt}" title="${txt}">`;
+    }
+    return txt;
+};
+
+const formatComboDisplay = (comboStr) => {
+    const parts = comboStr.split(' - ');
+    return parts.map(p => formatDisplayItem(p)).join(' - ');
+};
+
+const renderHistory = () => { 
+    if (!historyData.length) {
+        historyList.innerHTML = "<li>Belum ada riwayat.</li>";
+        return;
+    }
+    historyList.innerHTML = historyData.map((item, idx) => {
+        let displayContent = item;
+        if (item.startsWith('[Ide] ')) {
+            const rawContent = item.replace('[Ide] ', '');
+            displayContent = `[Ide] ${formatComboDisplay(rawContent)}`;
+        } else {
+            const titleMatch = item.match(/^\[(.*?)\] (.*)$/);
+            if (titleMatch) {
+                displayContent = `[${titleMatch[1]}] ${formatDisplayItem(titleMatch[2])}`;
+            }
+        }
+        return `
+            <li>
+                <span class="history-item-content">${displayContent}</span>
+                <button class="btn-del-history" onclick="deleteHistoryItem(${idx})">✕</button>
+            </li>
+        `;
+    }).join('');
+};
+
+window.deleteHistoryItem = (index) => {
+    historyData.splice(index, 1);
+    localStorage.setItem('wheelHistory', JSON.stringify(historyData));
+    renderHistory();
+};
+
 const saveToHistory = (res, isCombo = false) => { 
     historyData.unshift(res); 
     if(historyData.length > 20) historyData.pop(); 
@@ -349,6 +566,7 @@ const saveToHistory = (res, isCombo = false) => {
     }
     renderHistory(); 
 };
+
 const updatePhaseTitle = (txt) => { phaseTitle.innerText = txt; };
 const getTotalWeight = (items) => items.reduce((s, x) => s + (Number(x.w) || 1), 0);
 const getPointedItem = (items, angle) => { 
@@ -361,6 +579,11 @@ const getPointedItem = (items, angle) => {
     } 
 };
 
+const updatePointerLabel = (itemLabel) => {
+    pointerLabel.classList.remove('fade-out');
+    pointerLabel.innerHTML = formatDisplayItem(itemLabel);
+};
+
 const drawWheel = (items, angleOffset) => { 
     const t = getTotalWeight(items), cx = canvas.width/2, cy = canvas.height/2, r = canvas.width/2; 
     ctx.clearRect(0,0,canvas.width,canvas.height); 
@@ -369,25 +592,84 @@ const drawWheel = (items, angleOffset) => {
         const s = ((Number(items[i].w)||1)/t) * (2*Math.PI); 
         ctx.beginPath(); 
         
-        // Logika pewarnaan khusus
         let fillColor = colors[i % colors.length];
-        if (items[i].l.toLowerCase() === 'female') fillColor = '#ff9ff3'; // Pink cerah
-        if (items[i].l.toLowerCase() === 'male') fillColor = '#54a0ff';   // Biru cerah
+        if (items[i].l.toLowerCase() === 'female') fillColor = '#ff9ff3';
+        if (items[i].l.toLowerCase() === 'male') fillColor = '#54a0ff';
         
         ctx.fillStyle = fillColor; 
         ctx.moveTo(cx,cy); ctx.arc(cx,cy,r,a,a+s); ctx.lineTo(cx,cy); ctx.fill(); 
         ctx.strokeStyle = '#2d3436'; ctx.lineWidth = 4; ctx.stroke(); 
         ctx.save(); 
-        ctx.fillStyle = '#2d3436'; 
-        ctx.font = '900 16px "Nunito", sans-serif'; 
-        ctx.translate(cx,cy); ctx.rotate(a+s/2); ctx.textAlign = 'right'; 
-        ctx.fillText(items[i].l, r-20, 6); 
+        ctx.translate(cx,cy); ctx.rotate(a+s/2);
+        
+        const label = items[i].l;
+        if (imageMap[label]) {
+            const img = loadImage(imageMap[label]);
+            if (img.complete && img.naturalWidth !== 0) {
+                const imgSize = 36;
+                ctx.drawImage(img, r - 50, -imgSize/2, imgSize, imgSize);
+            } else {
+                ctx.fillStyle = '#2d3436'; 
+                ctx.font = '900 16px "Nunito", sans-serif'; 
+                ctx.textAlign = 'right'; 
+                ctx.fillText(label, r-20, 6);
+            }
+        } else {
+            ctx.fillStyle = '#2d3436'; 
+            ctx.font = '900 16px "Nunito", sans-serif'; 
+            ctx.textAlign = 'right'; 
+            ctx.fillText(label, r-20, 6); 
+        }
         ctx.restore(); 
         a += s; 
     } 
 };
 
+// Logika Tampil & Sembunyikan Overlay Roda
+const hideWheelOverlay = () => {
+    document.getElementById('wheel-overlay').classList.remove('active');
+    document.getElementById('wheel-container').classList.remove('show-overlay');
+};
+
+const showWheelOverlay = (itemName) => {
+    const overlay = document.getElementById('wheel-overlay');
+    const overlayTitle = document.getElementById('wheel-overlay-title');
+    const overlayImg = document.getElementById('wheel-overlay-img');
+    const overlayText = document.getElementById('wheel-overlay-text');
+
+    // Trigger animasi label default turun dan memudar ke bawah
+    pointerLabel.classList.add('fade-out');
+
+    if (imageMap[itemName]) {
+        // Jika ada gambar (Role/Gender), tampilkan judul nama di atas dan logo di dalam lingkaran
+        overlayTitle.innerText = itemName;
+        overlayTitle.style.display = 'block';
+        
+        overlayImg.src = imageMap[itemName];
+        overlayImg.style.display = 'block';
+        
+        overlayText.style.display = 'none';
+
+        let bgCol = '#ffeaa7';
+        if(itemName.toLowerCase() === 'female') bgCol = '#ff9ff3';
+        else if(itemName.toLowerCase() === 'male') bgCol = '#54a0ff';
+        overlay.style.background = bgCol;
+    } else {
+        // Jika material (berupa teks), tampilkan teks besar di dalam lingkaran
+        overlayTitle.style.display = 'none';
+        overlayImg.style.display = 'none';
+        
+        overlayText.innerText = itemName;
+        overlayText.style.display = 'block';
+        overlay.style.background = '#55efc4';
+    }
+
+    overlay.classList.add('active');
+    document.getElementById('wheel-container').classList.add('show-overlay');
+};
+
 const spinWheel = (items) => new Promise(res => { 
+    hideWheelOverlay(); 
     isSpinning = true; btnMain.disabled = true; pointerLabel.classList.remove('selected'); 
     sfxType.currentTime = 0; sfxType.play().catch(e=>e); 
     const tRot = Math.PI*2*(5+Math.random()*5), dur = 3000, startT = performance.now(), startA = currentAngle; 
@@ -395,11 +677,12 @@ const spinWheel = (items) => new Promise(res => {
         const prog = Math.min((now-startT)/dur, 1), ease = 1 - Math.pow(1-prog, 3); 
         currentAngle = startA + tRot*ease; 
         drawWheel(items, currentAngle); 
-        pointerLabel.innerText = getPointedItem(items, currentAngle); 
+        const pointed = getPointedItem(items, currentAngle);
+        updatePointerLabel(pointed); 
         if(prog < 1) requestAnimationFrame(anim); 
         else { 
             sfxType.pause(); playSfxGet(); isSpinning = false; 
-            pointerLabel.classList.add('selected'); res(getPointedItem(items, currentAngle)); 
+            pointerLabel.classList.add('selected'); res(pointed); 
         } 
     }; 
     requestAnimationFrame(anim); 
@@ -419,36 +702,47 @@ document.getElementById('btn-save-custom').addEventListener('click', () => {
     document.getElementById('btn-mode-custom').click(); 
 });
 
-document.getElementById('btn-mode-ide').addEventListener('click', () => { isCustomMode = false; document.getElementById('custom-form').style.display = 'none'; resetApp(); updatePhaseTitle("Sistem Ide"); });
-document.getElementById('btn-mode-custom').addEventListener('click', () => { isCustomMode = true; document.getElementById('custom-form').style.display = 'flex'; resetApp(); updatePhaseTitle(customWheelData.title); currentItems = customWheelData.items; wheelContainer.style.display = "flex"; pointerLabel.classList.remove('selected'); pointerLabel.innerText = getPointedItem(currentItems,0); drawWheel(currentItems,0); btnMain.innerText = "Acak Custom!"; });
+document.getElementById('btn-mode-ide').addEventListener('click', () => { isCustomMode = false; document.getElementById('custom-form').style.display = 'none'; resetApp(); updatePhaseTitle("T.O.E.I.C"); });
+document.getElementById('btn-mode-custom').addEventListener('click', () => { isCustomMode = true; document.getElementById('custom-form').style.display = 'flex'; resetApp(); updatePhaseTitle(customWheelData.title); currentItems = customWheelData.items; wheelContainer.style.display = "flex"; pointerLabel.classList.remove('selected'); updatePointerLabel(getPointedItem(currentItems,0)); drawWheel(currentItems,0); btnMain.innerText = "Acak Custom!"; });
 document.getElementById('btn-show-history').addEventListener('click', () => { renderHistory(); modalHistory.classList.add('active'); });
 document.getElementById('btn-close-history').addEventListener('click', () => { modalHistory.classList.remove('active'); });
 document.getElementById('btn-close-history-x').addEventListener('click', () => { modalHistory.classList.remove('active'); });
-document.getElementById('btn-close-app').addEventListener('click', () => { alert("Ini tombol pura-pura ya! 😁"); });
 
-const resetApp = () => { currentPhase = 1; wheelContainer.style.display = isCustomMode ? "flex" : "none"; pointerLabel.classList.remove('selected'); btnMain.innerText = isCustomMode ? "Acak Custom!" : "Mulai Acak!"; btnMain.disabled = false; };
+const resetApp = () => { 
+    currentPhase = 1; 
+    document.getElementById('main-menu-bar').style.display = 'flex'; 
+    hideWheelOverlay(); 
+    wheelContainer.style.display = isCustomMode ? "flex" : "none"; 
+    pointerLabel.classList.remove('selected'); 
+    btnMain.innerText = isCustomMode ? "Acak Custom!" : "Mulai Acak!"; 
+    btnMain.disabled = false; 
+};
 
 btnMain.addEventListener('click', async () => { 
     if(isSpinning) return; 
     if(isCustomMode){ 
         const res = await spinWheel(currentItems); playSfxAkh(); confetti({particleCount:150, spread:90, origin:{y:0.6}}); 
         document.getElementById('modal-title').innerText = customWheelData.title; 
-        document.getElementById('result-text').innerText = res; 
+        document.getElementById('result-text').innerHTML = formatDisplayItem(res); 
         saveToHistory(`[${customWheelData.title}] ${res}`); 
         modalResult.classList.add('active'); 
         return; 
     } 
     
     if(currentPhase === 1){ 
+        document.getElementById('main-menu-bar').style.display = 'none'; 
         currentPhase = 2; updatePhaseTitle("Pilih Role"); wheelContainer.style.display = "flex"; currentItems = roles; currentAngle = 0; 
-        pointerLabel.classList.remove('selected'); pointerLabel.innerText = getPointedItem(currentItems, currentAngle); drawWheel(currentItems, currentAngle); 
-        selectedRole = await spinWheel(currentItems); btnMain.disabled = false; btnMain.innerText = "Lanjut (Gender)"; 
+        pointerLabel.classList.remove('selected'); updatePointerLabel(getPointedItem(currentItems, currentAngle)); drawWheel(currentItems, currentAngle); 
+        selectedRole = await spinWheel(currentItems); 
+        showWheelOverlay(selectedRole); 
+        btnMain.disabled = false; btnMain.innerText = "Lanjut (Gender)"; 
     } else if(currentPhase === 2){ 
         currentPhase = 3; updatePhaseTitle("Pilih Gender"); currentItems = genders; currentAngle = 0; 
-        pointerLabel.classList.remove('selected'); pointerLabel.innerText = getPointedItem(currentItems, currentAngle); drawWheel(currentItems, currentAngle); 
-        selectedGender = await spinWheel(currentItems); btnMain.disabled = false; btnMain.innerText = "Lanjut (Material)"; 
+        pointerLabel.classList.remove('selected'); updatePointerLabel(getPointedItem(currentItems, currentAngle)); drawWheel(currentItems, currentAngle); 
+        selectedGender = await spinWheel(currentItems); 
+        showWheelOverlay(selectedGender); 
+        btnMain.disabled = false; btnMain.innerText = "Lanjut (Material)"; 
     } else if(currentPhase === 3){ 
-        // Sistem Eliminasi
         currentItems = materials.filter(m => {
             const potentialCombo = `${selectedRole} - ${selectedGender} - ${m.l}`;
             return !usedCombinations.includes(potentialCombo);
@@ -457,24 +751,39 @@ btnMain.addEventListener('click', async () => {
         if(currentItems.length === 0) {
             alert("Oops! Semua kombinasi material untuk " + selectedRole + " & " + selectedGender + " sudah terpakai! Mengulang dari awal...");
             resetApp();
-            updatePhaseTitle("Sistem Ide");
+            updatePhaseTitle("T.O.E.I.C");
             return;
         }
 
         currentPhase = 4; updatePhaseTitle("Pilih Material"); currentAngle = 0; 
-        pointerLabel.classList.remove('selected'); pointerLabel.innerText = getPointedItem(currentItems, currentAngle); drawWheel(currentItems, currentAngle); 
-        selectedMaterial = await spinWheel(currentItems); btnMain.disabled = false; btnMain.innerText = "Selesai!"; 
+        pointerLabel.classList.remove('selected'); updatePointerLabel(getPointedItem(currentItems, currentAngle)); drawWheel(currentItems, currentAngle); 
+        selectedMaterial = await spinWheel(currentItems); 
+        showWheelOverlay(selectedMaterial); // Tampilkan animasi lingkaran material terpilih
+        btnMain.disabled = false; btnMain.innerText = "Selesai!"; 
     } else if(currentPhase === 4){ 
         playSfxAkh(); confetti({particleCount:150, spread:90, origin:{y:0.6}}); 
         const finalRes = `${selectedRole} - ${selectedGender} - ${selectedMaterial}`; 
         document.getElementById('modal-title').innerText = "Kombinasi Terpilih"; 
-        document.getElementById('result-text').innerText = finalRes; 
+        
+        const roleImg = formatDisplayItem(selectedRole);
+        const genderImg = formatDisplayItem(selectedGender);
+        
+        document.getElementById('result-text').innerHTML = `
+            <div class="result-box-custom">
+                <div class="result-icons-container">
+                    ${roleImg}
+                    ${genderImg}
+                </div>
+                <div class="result-material-text">${selectedMaterial}</div>
+            </div>
+        `;
+        
         saveToHistory(`[Ide] ${finalRes}`, true); 
         modalResult.classList.add('active'); 
     } 
 });
 
-const closeModalAndReset = () => { modalResult.classList.remove('active'); resetApp(); if(!isCustomMode) updatePhaseTitle("Sistem Ide"); };
+const closeModalAndReset = () => { modalResult.classList.remove('active'); resetApp(); if(!isCustomMode) updatePhaseTitle("T.O.E.I.C"); };
 document.getElementById('btn-restart').addEventListener('click', closeModalAndReset);
 document.getElementById('btn-close-result-x').addEventListener('click', closeModalAndReset);
 
