@@ -3,794 +3,148 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<title>Bikinapa? - Wheel Edition</title>
+<title>Bikinapa?</title>
 <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 <style>
-/* Estetika Kartunis yang Playful */
-@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@700;900&display=swap');
-
-body { 
-    background: #74b9ff; 
-    background-image: radial-gradient(#0984e3 2px, transparent 2px);
-    background-size: 30px 30px;
-    font-family: 'Nunito', 'Comic Sans MS', cursive, sans-serif; 
-    min-height: 100vh; 
-    display: flex; 
-    justify-content: center; 
-    align-items: center; 
-    padding: 16px; 
-    margin: 0; 
-    overflow: hidden; 
-    color: #2d3436; 
-}
+@font-face { font-family: 'FontSatu'; src: url('font_1.otf') format('opentype'); font-weight: normal; font-style: normal; }
+@font-face { font-family: 'FontDua'; src: url('font_2.otf') format('opentype'); font-weight: normal; font-style: normal; }
+body { background: #74b9ff; background-image: radial-gradient(#0984e3 2px, transparent 2px); background-size: 30px 30px; font-family: 'FontDua', 'Nunito', 'Comic Sans MS', cursive, sans-serif; min-height: 100vh; display: flex; justify-content: center; align-items: center; padding: 16px; margin: 0; overflow: hidden; color: #2d3436; }
 * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-
-/* Window Container */
-.app-container { 
-    position: relative; 
-    width: 100%; 
-    max-width: 420px; 
-    background: #ffffff; 
-    border: 4px solid #2d3436; 
-    border-radius: 24px;
-    display: flex; 
-    flex-direction: column; 
-    z-index: 1; 
-    box-shadow: 8px 8px 0px rgba(45, 52, 54, 1); 
-    max-height: 95vh; 
-    overflow-y: auto; 
-}
-
-.title-bar { 
-    background: #ff7675; 
-    color: #fff; 
-    padding: 12px 20px; 
-    font-weight: 900; 
-    font-size: 1.3rem; 
-    display: flex; 
-    justify-content: space-between; 
-    align-items: center; 
-    letter-spacing: 1px; 
-    border-bottom: 4px solid #2d3436;
-    border-radius: 20px 20px 0 0;
-}
-
-.title-bar-controls { display: flex; gap: 8px; }
-.title-bar-btn { 
-    background: #ffeaa7; 
-    border: 3px solid #2d3436; 
-    border-radius: 50%;
-    width: 32px; 
-    height: 32px; 
-    font-weight: 900; 
-    font-size: 14px; 
-    display: flex; 
-    justify-content: center; 
-    align-items: center; 
-    cursor: pointer; 
-    color: #2d3436; 
-    transition: transform 0.1s;
-    box-shadow: 2px 2px 0px #2d3436;
-}
+.app-container { container-type: inline-size; position: relative; width: 100%; max-width: 480px; background: #ffffff; border: 4px solid #2d3436; border-radius: 24px; display: flex; flex-direction: column; z-index: 1; box-shadow: 8px 8px 0px rgba(45, 52, 54, 1); max-height: 95vh; overflow-y: auto; }
+.title-bar, .phase-subtitle, .slot-label, h3, .result-material-text { font-family: 'FontSatu', 'Nunito', sans-serif; }
+.title-bar { background: #ff7675; color: #fff; padding: 12px 20px; font-size: clamp(1.1rem, 5cqw, 1.5rem); display: flex; justify-content: space-between; align-items: center; letter-spacing: 1px; border-bottom: 4px solid #2d3436; border-radius: 20px 20px 0 0; }
+.title-bar-btn { background: #ffeaa7; border: 3px solid #2d3436; border-radius: 50%; width: 32px; height: 32px; font-size: clamp(0.8rem, 4cqw, 1.1rem); display: flex; justify-content: center; align-items: center; cursor: pointer; color: #2d3436; transition: transform 0.1s; box-shadow: 2px 2px 0px #2d3436; }
 .title-bar-btn:active { transform: translate(2px, 2px); box-shadow: 0px 0px 0px #2d3436; }
-
-/* Menu Bar */
-.menu-bar { 
-    display: flex; 
-    gap: 15px; 
-    padding: 10px 20px; 
-    border-bottom: 4px solid #2d3436; 
-    background: #81ecec; 
-    font-size: 1rem; 
-    font-weight: 900;
-    position: relative; 
-}
-.menu-item { cursor: pointer; padding: 4px 12px; position: relative; border-radius: 12px; transition: background 0.2s;}
-.menu-item:hover { background: #00cec9; color: #fff; }
-.dropdown-content { 
-    display: none; 
-    position: absolute; 
-    top: 100%; 
-    left: 0; 
-    background: #ffffff; 
-    border: 4px solid #2d3436; 
-    border-radius: 16px;
-    box-shadow: 6px 6px 0px #2d3436;
-    min-width: 180px; 
-    z-index: 20; 
-    color: #2d3436;
-    overflow: hidden;
-    margin-top: 8px;
-}
-.menu-item:hover .dropdown-content { display: block; }
-.dropdown-item { padding: 10px 16px; cursor: pointer; border-bottom: 2px solid #dfe6e9; }
-.dropdown-item:last-child { border-bottom: none; }
-.dropdown-item:hover { background: #ffeaa7; color: #2d3436; }
-
-/* Main Content */
-.content-area { padding: 25px 20px; display: flex; flex-direction: column; align-items: center; gap: 20px; }
-.phase-subtitle { 
-    color: #2d3436; 
-    background: #ffeaa7;
-    padding: 8px 24px;
-    border: 3px solid #2d3436;
-    border-radius: 20px;
-    font-size: 1.3rem; 
-    font-weight: 900; 
-    text-transform: uppercase; 
-    text-align: center; 
-    box-shadow: 4px 4px 0px #2d3436;
-}
-
-/* Wheel */
-.wheel-wrapper { position: relative; width: 280px; height: 280px; display: flex; justify-content: center; align-items: center; margin-top: 25px; }
-
-/* Animasi Label Turun ke Bawah & Memudar */
-@keyframes labelFadeDown {
-    0% { transform: translateX(-50%) translateY(0); opacity: 1; }
-    100% { transform: translateX(-50%) translateY(30px); opacity: 0; pointer-events: none; }
-}
-
-.wheel-pointer-label { 
-    position: absolute; 
-    top: -45px; 
-    left: 50%; 
-    transform: translateX(-50%); 
-    background: #fff; 
-    color: #2d3436; 
-    padding: 6px 16px; 
-    border: 3px solid #2d3436; 
-    border-radius: 16px;
-    font-size: 1.2rem; 
-    font-weight: 900; 
-    white-space: nowrap; 
-    z-index: 12; 
-    transition: background 0.2s ease, transform 0.2s ease; 
-    box-shadow: 4px 4px 0px #2d3436;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    min-height: 40px;
-}
-.wheel-pointer-label.fade-out {
-    animation: labelFadeDown 0.4s ease forwards;
-}
-
-.wheel-pointer-label img { height: 28px; width: auto; vertical-align: middle; }
-.wheel-pointer-label.selected { background: #fdcb6e; transform: translateX(-50%) scale(1.1); }
-.pointer-up { 
-    position: absolute; 
-    bottom: -15px; 
-    left: 50%; 
-    transform: translateX(-50%); 
-    width: 0; 
-    height: 0; 
-    border-left: 15px solid transparent; 
-    border-right: 15px solid transparent; 
-    border-bottom: 30px solid #d63031; 
-    z-index: 10;
-    transition: opacity 0.2s ease;
-    filter: drop-shadow(0px -4px 0px #2d3436);
-}
-.wheel-center { 
-    position: absolute; 
-    width: 30px; 
-    height: 30px; 
-    background: #ff7675; 
-    border: 4px solid #2d3436; 
-    border-radius: 50%; 
-    z-index: 5; 
-    transition: opacity 0.2s ease;
-}
-canvas#wheelCanvas { width: 280px; height: 280px; border-radius: 50%; border: 6px solid #2d3436; background: #fff; box-shadow: 0px 8px 0px rgba(0,0,0,0.1); }
-
-/* --- ANIMASI RODA MENJADI HASIL (LOGO/TEKS) --- */
-@keyframes wheelToContentAnim {
-    0% { transform: scale(0) rotate(180deg); opacity: 0; }
-    60% { transform: scale(1.15) rotate(-10deg); opacity: 1; }
-    100% { transform: scale(1) rotate(0deg); opacity: 1; }
-}
-
-.wheel-overlay {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 280px;
-    height: 280px;
-    background: #fff; 
-    border-radius: 50%;
-    border: 6px solid #2d3436;
-    z-index: 20;
-    display: none;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    gap: 8px;
-    box-shadow: 0px 8px 0px rgba(0,0,0,0.1);
-    padding: 20px;
-    text-align: center;
-}
-
-.wheel-overlay.active {
-    display: flex;
-    animation: wheelToContentAnim 0.7s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
-}
-
-.wheel-overlay img {
-    width: 100px;
-    height: auto;
-    filter: drop-shadow(4px 4px 0px rgba(45, 52, 54, 0.2));
-}
-
-.wheel-overlay-title {
-    font-size: 1.3rem;
-    font-weight: 900;
-    color: #2d3436;
-    background: #ffeaa7;
-    padding: 4px 12px;
-    border: 2px solid #2d3436;
-    border-radius: 12px;
-    box-shadow: 2px 2px 0px #2d3436;
-}
-
-.wheel-overlay-text {
-    font-size: 1.6rem;
-    font-weight: 900;
-    color: #d63031;
-    word-break: break-word;
-}
-
-/* Sembunyikan pernak-pernik roda saat overlay aktif */
-.wheel-wrapper.show-overlay .wheel-pointer-label,
-.wheel-wrapper.show-overlay .pointer-up,
-.wheel-wrapper.show-overlay .wheel-center {
-    opacity: 0;
-    pointer-events: none;
-}
-/* ---------------------------------- */
-
-/* Buttons & Inputs */
-.btn-action { 
-    background: #55efc4; 
-    color: #2d3436; 
-    font-family: inherit; 
-    font-size: 1.2rem; 
-    font-weight: 900; 
-    border: 4px solid #2d3436; 
-    border-radius: 16px;
-    padding: 12px 24px; 
-    cursor: pointer; 
-    width: 100%; 
-    transition: all 0.1s ease; 
-    box-shadow: 4px 6px 0px #2d3436;
-    text-transform: uppercase;
-}
-.btn-action:active:not(:disabled) { 
-    transform: translateY(6px);
-    box-shadow: 0px 0px 0px #2d3436;
-}
+.menu-bar { display: flex; justify-content: flex-end; padding: 10px 20px; border-bottom: 4px solid #2d3436; background: #81ecec; font-size: clamp(0.9rem, 3.5cqw, 1.1rem); }
+.menu-item { cursor: pointer; padding: 6px 16px; background: #fff; border: 3px solid #2d3436; border-radius: 12px; box-shadow: 3px 3px 0px #2d3436; transition: all 0.1s ease; }
+.menu-item:active { transform: translate(2px, 2px); box-shadow: 1px 1px 0px #2d3436; }
+.content-area { padding: 30px 20px; display: flex; flex-direction: column; align-items: center; gap: 30px; }
+.phase-subtitle { color: #2d3436; background: #ffeaa7; padding: 8px 30px; border: 3px solid #2d3436; border-radius: 20px; font-size: clamp(1.2rem, 5.5cqw, 1.6rem); text-transform: uppercase; text-align: center; box-shadow: 4px 4px 0px #2d3436; }
+.slot-machine-container { display: flex; gap: 12px; background: #f1f2f6; padding: 16px; border: 4px solid #2d3436; border-radius: 20px; box-shadow: inset 0px 6px 0px rgba(0,0,0,0.1), 4px 4px 0px #2d3436; width: 100%; justify-content: space-between; }
+.slot-column { flex: 1; display: flex; flex-direction: column; gap: 10px; align-items: center; container-type: inline-size; }
+.slot-label { border: 3px solid #2d3436; border-radius: 12px; font-size: clamp(0.8rem, 15cqw, 1.2rem); padding: 6px 10px; text-align: center; width: 100%; box-shadow: 2px 2px 0px #2d3436; letter-spacing: 0.5px; transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275), background-color 0.2s; }
+.slot-label.highlight-pop { transform: scale(1.15); background: #fdcb6e !important; color: #2d3436 !important; }
+.slot-label.highlight-gold { transform: scale(1); background: #fdcb6e !important; color: #2d3436 !important; }
+.slot-window { width: 100%; height: 120px; background: #fff; border: 4px solid #2d3436; border-radius: 12px; overflow: hidden; position: relative; box-shadow: inset 0px 4px 8px rgba(0,0,0,0.15); transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275), background-color 0.2s; }
+.slot-window.highlight-pop { transform: scale(1.05); background: #fdcb6e !important; }
+.slot-window.highlight-gold { transform: scale(1); background: #fdcb6e !important; }
+.slot-window::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 25px; background: linear-gradient(to bottom, rgba(0,0,0,0.2), transparent); z-index: 5; }
+.slot-window::after { content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 25px; background: linear-gradient(to top, rgba(0,0,0,0.2), transparent); z-index: 5; }
+.slot-strip { display: flex; flex-direction: column; width: 100%; }
+.slot-item { height: 120px; display: flex; justify-content: center; align-items: center; font-size: clamp(1.5rem, 25cqw, 2.5rem); color: #2d3436; text-align: center; padding: 0 4px; }
+.slot-item img { height: 65px; width: auto; filter: drop-shadow(3px 3px 0px rgba(45, 52, 54, 0.2)); }
+.material-text-fit { display: inline-block; white-space: normal; word-break: break-word; font-size: clamp(1rem, 24cqw, 2.2rem); line-height: 1.1; font-weight: 900; -webkit-text-stroke: 1px #2d3436; width: 100%; }
+.btn-action { background: #fdcb6e; color: #2d3436; font-family: 'FontDua', sans-serif; font-size: clamp(1.2rem, 6cqw, 1.6rem); border: 4px solid #2d3436; border-radius: 16px; padding: 16px 24px; cursor: pointer; width: 100%; transition: all 0.1s ease; box-shadow: 4px 6px 0px #2d3436; text-transform: uppercase; }
+.btn-action:active:not(:disabled) { transform: translateY(6px); box-shadow: 0px 0px 0px #2d3436; }
 .btn-action:disabled { background: #dfe6e9; color: #b2bec3; cursor: not-allowed; box-shadow: 4px 6px 0px #b2bec3; border-color: #b2bec3;}
-
-/* Custom Form */
-.custom-form { display: none; width: 100%; background: #f1f2f6; border: 4px solid #2d3436; border-radius: 16px; padding: 15px; flex-direction: column; gap: 10px; box-shadow: inset 0px 4px 0px rgba(0,0,0,0.05); }
-.custom-form input { 
-    padding: 8px 12px; 
-    border: 3px solid #2d3436; 
-    border-radius: 12px;
-    background: #fff; 
-    color: #2d3436; 
-    font-family: inherit; 
-    font-weight: 700;
-}
-.custom-row { display: flex; gap: 8px; }
-.custom-row input[type="text"] { flex-grow: 1; }
-.custom-row input[type="number"] { width: 70px; text-align: center; }
-
-/* Modals */
 .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(45,52,54,0.8); display: flex; justify-content: center; align-items: center; z-index: 100; opacity: 0; pointer-events: none; transition: opacity 0.2s; backdrop-filter: blur(3px); }
 .modal-overlay.active { opacity: 1; pointer-events: auto; }
-.modal-window { 
-    background: #fff; 
-    border: 4px solid #2d3436; 
-    border-radius: 24px;
-    width: 90%; 
-    max-width: 360px; 
-    display: flex; 
-    flex-direction: column; 
-    box-shadow: 8px 8px 0px #2d3436; 
-    overflow: hidden;
-    transform: scale(0.9);
-    transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-}
+.modal-window { container-type: inline-size; background: #fff; border: 4px solid #2d3436; border-radius: 24px; width: 90%; max-width: 380px; display: flex; flex-direction: column; box-shadow: 8px 8px 0px #2d3436; overflow: hidden; transform: scale(0.9); transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
 .modal-overlay.active .modal-window { transform: scale(1); }
 .modal-content { padding: 25px; text-align: center; display: flex; flex-direction: column; gap: 20px; }
-.result-box { 
-    background: #ffeaa7; 
-    border: 3px dashed #2d3436; 
-    border-radius: 16px;
-    padding: 20px; 
-    font-size: 1.4rem; 
-    font-weight: 900; 
-    color: #d63031; 
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    flex-wrap: wrap;
-}
-.result-box img { height: 36px; width: auto; vertical-align: middle; }
-
-/* --- CSS UNTUK LAYOUT HASIL POP-UP --- */
-@keyframes popUpEnlarge {
-    0% { transform: scale(0); opacity: 0; }
-    60% { transform: scale(1.2); opacity: 1; }
-    100% { transform: scale(1); opacity: 1; }
-}
-
-.result-box-custom {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 15px;
-    width: 100%;
-}
-
-.result-icons-container {
-    display: flex;
-    justify-content: center;
-    gap: 20px;
-    animation: popUpEnlarge 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
-}
-
-.result-icons-container img {
-    height: 80px;
-    width: auto;
-    filter: drop-shadow(4px 4px 0px #2d3436);
-}
-
-.result-material-text {
-    font-size: 1.6rem;
-    font-weight: 900;
-    color: #d63031;
-    text-transform: uppercase;
-}
-/* ------------------------------------- */
-
-.history-list-container { 
-    background: #f1f2f6; 
-    border: 3px solid #2d3436; 
-    border-radius: 12px;
-    padding: 15px; 
-    max-height: 220px; 
-    overflow-y: auto; 
-    text-align: left; 
-    font-size: 1rem; 
-    font-weight: 700;
-}
+h3 { margin: 0; font-size: clamp(1.1rem, 6cqw, 1.4rem); color: #2d3436; }
+.result-box-custom { container-type: inline-size; background: #ffeaa7; border: 3px dashed #2d3436; border-radius: 16px; padding: 20px 10px; display: flex; flex-direction: column; align-items: center; gap: 15px; width: 100%; overflow: hidden; }
+.result-icons-container { display: flex; justify-content: center; gap: 20px; }
+.result-icons-container img { height: 70px; width: auto; filter: drop-shadow(4px 4px 0px rgba(45, 52, 54, 0.3)); }
+.result-material-text { text-transform: uppercase; white-space: normal; word-break: break-word; font-size: clamp(1.5rem, 14cqw, 2.5rem); line-height: 1.2; width: 100%; text-align: center; font-weight: 900; -webkit-text-stroke: 1px #2d3436; }
+.history-list-container { background: #f1f2f6; border: 3px solid #2d3436; border-radius: 12px; padding: 15px; max-height: 250px; overflow-y: auto; text-align: left; font-size: clamp(0.9rem, 4cqw, 1.1rem); }
 .history-list-container ul { list-style: none; padding-left: 0; margin: 0; display: flex; flex-direction: column; gap: 8px; }
-.history-list-container li { 
-    background: #fff; 
-    border: 2px solid #dfe6e9; 
-    border-radius: 8px; 
-    padding: 8px 12px; 
-    display: flex; 
-    justify-content: space-between; 
-    align-items: center; 
-    gap: 10px;
-}
-.history-item-content { display: flex; align-items: center; gap: 6px; flex-grow: 1; word-break: break-word; }
-.history-item-content img { height: 20px; width: auto; vertical-align: middle; }
-.btn-del-history {
-    background: #ff7675;
-    color: #fff;
-    border: 2px solid #2d3436;
-    border-radius: 6px;
-    width: 24px;
-    height: 24px;
-    font-size: 12px;
-    font-weight: 900;
-    cursor: pointer;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    flex-shrink: 0;
-}
+.history-list-container li { background: #fff; border: 2px solid #dfe6e9; border-radius: 8px; padding: 8px 12px; display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+.history-item-content { display: flex; align-items: center; gap: 8px; flex-grow: 1; word-break: break-word; flex-wrap: wrap;}
+.history-item-content img { height: 24px; width: auto; vertical-align: middle; }
+.btn-del-history { background: #ff7675; color: #fff; border: 2px solid #2d3436; border-radius: 6px; width: 28px; height: 28px; font-size: clamp(0.8rem, 3cqw, 1rem); cursor: pointer; display: flex; justify-content: center; align-items: center; flex-shrink: 0; }
 .btn-del-history:active { transform: scale(0.9); }
 </style>
 </head>
 <body>
-
 <div class="app-container">
-    <div class="title-bar">
-        <span>Bikinapa?</span>
-    </div>
-    <div class="menu-bar" id="main-menu-bar">
-        <div class="menu-item">Mode ▾
-            <div class="dropdown-content">
-                <div class="dropdown-item" id="btn-mode-ide">💡 T.O.E.I.C (Utama)</div>
-                <div class="dropdown-item" id="btn-mode-custom">🎯 Mode Custom</div>
-            </div>
-        </div>
-        <div class="menu-item" id="btn-show-history">📜 Riwayat</div>
-    </div>
-
+    <div class="title-bar"><span>Bikinapa?</span></div>
+    <div class="menu-bar"><div class="menu-item" id="btn-show-history">📜 Riwayat</div></div>
     <div class="content-area">
-        <div class="phase-subtitle" id="phase-title">T.O.E.I.C</div>
-        
-        <div class="custom-form" id="custom-form">
-            <input type="text" id="custom-title" placeholder="Judul Roda">
-            <div id="custom-items-container"></div>
-            <button class="btn-action" id="btn-add-item" style="background:#74b9ff; font-size:1rem; padding:8px;">+ Tambah Item</button>
-            <button class="btn-action" id="btn-save-custom" style="font-size:1rem; padding:10px;">Simpan & Gunakan</button>
-        </div>
-
-        <div class="wheel-wrapper" id="wheel-container" style="display: none;">
-            <div class="wheel-overlay" id="wheel-overlay">
-                <div class="wheel-overlay-title" id="wheel-overlay-title"></div>
-                <img id="wheel-overlay-img" src="" alt="Selected Icon" style="display: none;">
-                <div class="wheel-overlay-text" id="wheel-overlay-text" style="display: none;"></div>
+        <div class="phase-subtitle">T.O.E.I.C</div>
+        <div class="slot-machine-container">
+            <div class="slot-column">
+                <div class="slot-label" id="label-role" style="background:#ff7675; color:#fff;">Role</div>
+                <div class="slot-window" id="window-role"><div class="slot-strip" id="strip-role"><div class="slot-item">???</div></div></div>
             </div>
-            <div class="wheel-pointer-label" id="pointer-label">-</div>
-            <canvas id="wheelCanvas" width="280" height="280"></canvas>
-            <div class="wheel-center"></div>
-            <div class="pointer-up"></div>
+            <div class="slot-column">
+                <div class="slot-label" id="label-gender" style="background:#74b9ff; color:#fff;">Gender</div>
+                <div class="slot-window" id="window-gender"><div class="slot-strip" id="strip-gender"><div class="slot-item">???</div></div></div>
+            </div>
+            <div class="slot-column">
+                <div class="slot-label" id="label-material" style="background:#55efc4; color:#2d3436;">Material</div>
+                <div class="slot-window" id="window-material"><div class="slot-strip" id="strip-material"><div class="slot-item">???</div></div></div>
+            </div>
         </div>
-
-        <button class="btn-action" id="btn-main">Mulai Acak!</button>
+        <button class="btn-action" id="btn-main">Mulai</button>
     </div>
 </div>
-
 <div class="modal-overlay" id="modal-result">
     <div class="modal-window">
-        <div class="title-bar" style="background: #a29bfe;">
-            <span>Yeay! Hasilnya:</span>
-            <div class="title-bar-btn" id="btn-close-result-x">X</div>
-        </div>
+        <div class="title-bar" style="background: #a29bfe;"><span>Ini hasilnya</span><div class="title-bar-btn" id="btn-close-result-x">X</div></div>
         <div class="modal-content">
-            <h3 id="modal-title" style="margin:0; font-size:1.2rem;">Kombinasi Terpilih</h3>
-            <div class="result-box" id="result-text">-</div>
-            <button class="btn-action" id="btn-restart" style="background:#a29bfe; color:#fff;">Tutup & Ulang</button>
+            <h3>Kombinasi Terpilih</h3>
+            <div class="result-box-custom" id="result-content"></div>
+            <button class="btn-action" id="btn-restart" style="background:#a29bfe; color:#fff;">Tutup</button>
         </div>
     </div>
 </div>
-
 <div class="modal-overlay" id="modal-history">
     <div class="modal-window">
-        <div class="title-bar" style="background: #00cec9;">
-            <span>Riwayat</span>
-            <div class="title-bar-btn" id="btn-close-history-x">X</div>
-        </div>
+        <div class="title-bar" style="background: #00cec9;"><span>Riwayat</span><div class="title-bar-btn" id="btn-close-history-x">X</div></div>
         <div class="modal-content">
             <div class="history-list-container"><ul id="history-list"></ul></div>
             <button class="btn-action" id="btn-close-history" style="background:#00cec9; color:#fff;">Tutup</button>
         </div>
     </div>
 </div>
-
 <script>
-// Audio (Opsional)
 const sfxType = new Audio('audio/type.mp3'); sfxType.loop = true;
 const sfxGet = new Audio('audio/get.mp3'); sfxGet.preload = 'auto';
 const sfxAkh = new Audio('audio/akh.mp3'); sfxAkh.preload = 'auto';
 const playSfxGet = () => { sfxGet.currentTime = 0; sfxGet.play().catch(e=>e); };
 const playSfxAkh = () => { sfxAkh.currentTime = 0; sfxAkh.play().catch(e=>e); };
-
-// Pemetaan gambar untuk Role dan Gender
-const imageMap = {
-    "Fighter": "role_fg.png",
-    "Marksman": "role_mm.png",
-    "Assassin": "role_as.png",
-    "Mage": "role_mg.png",
-    "Tank": "role_tn.png",
-    "Male": "gender_male.png",
-    "Female": "gender_female.png"
-};
-
-const imageCache = {};
-const loadImage = (src) => {
-    if (imageCache[src]) return imageCache[src];
-    const img = new Image();
-    img.src = src;
-    imageCache[src] = img;
-    return img;
-};
-
-// Pre-load gambar
-Object.values(imageMap).forEach(src => loadImage(src));
-
+const imageMap = {"Fighter": "role_fg.png", "Marksman": "role_mm.png", "Assassin": "role_as.png", "Mage": "role_mg.png", "Tank": "role_tn.png", "Male": "gender_male.png", "Female": "gender_female.png"};
 let roles = [{l:"Assassin",w:1},{l:"Mage",w:1},{l:"Fighter",w:1},{l:"Tank",w:1},{l:"Marksman",w:1}];
 let genders = [{l:"Male",w:1},{l:"Female",w:1}];
-let materials = [{l:"Mobil",w:1},{l:"Semangka",w:1},{l:"Pensil",w:1},{l:"Gitar Listrik",w:1}];
-let customWheelData = JSON.parse(localStorage.getItem('customWheel')) || {title:"Custom Roda", items:[{l:"Ayam Penyet",w:2},{l:"Nasi Goreng",w:1}]};
-let historyData = JSON.parse(localStorage.getItem('wheelHistory')) || [];
-let usedCombinations = JSON.parse(localStorage.getItem('usedCombinations')) || []; 
-
-let isCustomMode = false, currentPhase = 1, selectedRole = "", selectedGender = "", selectedMaterial = "", currentItems = [], currentAngle = 0, isSpinning = false;
-const canvas = document.getElementById('wheelCanvas'), ctx = canvas.getContext('2d');
-const btnMain = document.getElementById('btn-main'), phaseTitle = document.getElementById('phase-title'), wheelContainer = document.getElementById('wheel-container');
-const modalResult = document.getElementById('modal-result'), modalHistory = document.getElementById('modal-history');
-const pointerLabel = document.getElementById('pointer-label'), historyList = document.getElementById('history-list');
-
-const colors = ['#ffeaa7', '#55efc4', '#81ecec', '#a29bfe', '#fab1a0', '#ff7675', '#74b9ff', '#00cec9'];
-
-const formatDisplayItem = (txt) => {
-    if (imageMap[txt]) {
-        return `<img src="${imageMap[txt]}" alt="${txt}" title="${txt}">`;
-    }
-    return txt;
-};
-
-const formatComboDisplay = (comboStr) => {
-    const parts = comboStr.split(' - ');
-    return parts.map(p => formatDisplayItem(p)).join(' - ');
-};
-
-const renderHistory = () => { 
-    if (!historyData.length) {
-        historyList.innerHTML = "<li>Belum ada riwayat.</li>";
-        return;
-    }
-    historyList.innerHTML = historyData.map((item, idx) => {
-        let displayContent = item;
-        if (item.startsWith('[Ide] ')) {
-            const rawContent = item.replace('[Ide] ', '');
-            displayContent = `[Ide] ${formatComboDisplay(rawContent)}`;
-        } else {
-            const titleMatch = item.match(/^\[(.*?)\] (.*)$/);
-            if (titleMatch) {
-                displayContent = `[${titleMatch[1]}] ${formatDisplayItem(titleMatch[2])}`;
-            }
-        }
-        return `
-            <li>
-                <span class="history-item-content">${displayContent}</span>
-                <button class="btn-del-history" onclick="deleteHistoryItem(${idx})">✕</button>
-            </li>
-        `;
-    }).join('');
-};
-
-window.deleteHistoryItem = (index) => {
-    historyData.splice(index, 1);
-    localStorage.setItem('wheelHistory', JSON.stringify(historyData));
-    renderHistory();
-};
-
-const saveToHistory = (res, isCombo = false) => { 
-    historyData.unshift(res); 
-    if(historyData.length > 20) historyData.pop(); 
-    localStorage.setItem('wheelHistory', JSON.stringify(historyData)); 
-    if(isCombo) {
-        usedCombinations.push(res.replace('[Ide] ', ''));
-        localStorage.setItem('usedCombinations', JSON.stringify(usedCombinations));
-    }
-    renderHistory(); 
-};
-
-const updatePhaseTitle = (txt) => { phaseTitle.innerText = txt; };
-const getTotalWeight = (items) => items.reduce((s, x) => s + (Number(x.w) || 1), 0);
-const getPointedItem = (items, angle) => { 
-    const n = (angle % (2*Math.PI) + 2*Math.PI) % (2*Math.PI), p = (Math.PI/2 - n + 2*Math.PI) % (2*Math.PI), t = getTotalWeight(items); 
-    let c = 0; 
-    for(let i=0; i<items.length; i++){ 
-        const a = ((Number(items[i].w)||1)/t) * (2*Math.PI); 
-        if(p >= c && p < c+a) return items[i].l; 
-        c += a; 
-    } 
-};
-
-const updatePointerLabel = (itemLabel) => {
-    pointerLabel.classList.remove('fade-out');
-    pointerLabel.innerHTML = formatDisplayItem(itemLabel);
-};
-
-const drawWheel = (items, angleOffset) => { 
-    const t = getTotalWeight(items), cx = canvas.width/2, cy = canvas.height/2, r = canvas.width/2; 
-    ctx.clearRect(0,0,canvas.width,canvas.height); 
-    let a = angleOffset; 
-    for(let i=0; i<items.length; i++){ 
-        const s = ((Number(items[i].w)||1)/t) * (2*Math.PI); 
-        ctx.beginPath(); 
-        
-        let fillColor = colors[i % colors.length];
-        if (items[i].l.toLowerCase() === 'female') fillColor = '#ff9ff3';
-        if (items[i].l.toLowerCase() === 'male') fillColor = '#54a0ff';
-        
-        ctx.fillStyle = fillColor; 
-        ctx.moveTo(cx,cy); ctx.arc(cx,cy,r,a,a+s); ctx.lineTo(cx,cy); ctx.fill(); 
-        ctx.strokeStyle = '#2d3436'; ctx.lineWidth = 4; ctx.stroke(); 
-        ctx.save(); 
-        ctx.translate(cx,cy); ctx.rotate(a+s/2);
-        
-        const label = items[i].l;
-        if (imageMap[label]) {
-            const img = loadImage(imageMap[label]);
-            if (img.complete && img.naturalWidth !== 0) {
-                const imgSize = 36;
-                ctx.drawImage(img, r - 50, -imgSize/2, imgSize, imgSize);
-            } else {
-                ctx.fillStyle = '#2d3436'; 
-                ctx.font = '900 16px "Nunito", sans-serif'; 
-                ctx.textAlign = 'right'; 
-                ctx.fillText(label, r-20, 6);
-            }
-        } else {
-            ctx.fillStyle = '#2d3436'; 
-            ctx.font = '900 16px "Nunito", sans-serif'; 
-            ctx.textAlign = 'right'; 
-            ctx.fillText(label, r-20, 6); 
-        }
-        ctx.restore(); 
-        a += s; 
-    } 
-};
-
-// Logika Tampil & Sembunyikan Overlay Roda
-const hideWheelOverlay = () => {
-    document.getElementById('wheel-overlay').classList.remove('active');
-    document.getElementById('wheel-container').classList.remove('show-overlay');
-};
-
-const showWheelOverlay = (itemName) => {
-    const overlay = document.getElementById('wheel-overlay');
-    const overlayTitle = document.getElementById('wheel-overlay-title');
-    const overlayImg = document.getElementById('wheel-overlay-img');
-    const overlayText = document.getElementById('wheel-overlay-text');
-
-    // Trigger animasi label default turun dan memudar ke bawah
-    pointerLabel.classList.add('fade-out');
-
-    if (imageMap[itemName]) {
-        // Jika ada gambar (Role/Gender), tampilkan judul nama di atas dan logo di dalam lingkaran
-        overlayTitle.innerText = itemName;
-        overlayTitle.style.display = 'block';
-        
-        overlayImg.src = imageMap[itemName];
-        overlayImg.style.display = 'block';
-        
-        overlayText.style.display = 'none';
-
-        let bgCol = '#ffeaa7';
-        if(itemName.toLowerCase() === 'female') bgCol = '#ff9ff3';
-        else if(itemName.toLowerCase() === 'male') bgCol = '#54a0ff';
-        overlay.style.background = bgCol;
-    } else {
-        // Jika material (berupa teks), tampilkan teks besar di dalam lingkaran
-        overlayTitle.style.display = 'none';
-        overlayImg.style.display = 'none';
-        
-        overlayText.innerText = itemName;
-        overlayText.style.display = 'block';
-        overlay.style.background = '#55efc4';
-    }
-
-    overlay.classList.add('active');
-    document.getElementById('wheel-container').classList.add('show-overlay');
-};
-
-const spinWheel = (items) => new Promise(res => { 
-    hideWheelOverlay(); 
-    isSpinning = true; btnMain.disabled = true; pointerLabel.classList.remove('selected'); 
-    sfxType.currentTime = 0; sfxType.play().catch(e=>e); 
-    const tRot = Math.PI*2*(5+Math.random()*5), dur = 3000, startT = performance.now(), startA = currentAngle; 
-    const anim = (now) => { 
-        const prog = Math.min((now-startT)/dur, 1), ease = 1 - Math.pow(1-prog, 3); 
-        currentAngle = startA + tRot*ease; 
-        drawWheel(items, currentAngle); 
-        const pointed = getPointedItem(items, currentAngle);
-        updatePointerLabel(pointed); 
-        if(prog < 1) requestAnimationFrame(anim); 
-        else { 
-            sfxType.pause(); playSfxGet(); isSpinning = false; 
-            pointerLabel.classList.add('selected'); res(pointed); 
-        } 
-    }; 
-    requestAnimationFrame(anim); 
-});
-
-const initCustomForm = () => { 
-    document.getElementById('custom-title').value = customWheelData.title; 
-    document.getElementById('custom-items-container').innerHTML = customWheelData.items.map(i => `<div class="custom-row"><input type="text" class="c-lbl" value="${i.l}"><input type="number" class="c-wt" value="${i.w}" min="1"></div>`).join(''); 
-};
-document.getElementById('btn-add-item').addEventListener('click', () => { document.getElementById('custom-items-container').insertAdjacentHTML('beforeend', `<div class="custom-row"><input type="text" class="c-lbl" value="Baru"><input type="number" class="c-wt" value="1" min="1"></div>`); });
-document.getElementById('btn-save-custom').addEventListener('click', () => { 
-    const lbls = document.querySelectorAll('.c-lbl'), wts = document.querySelectorAll('.c-wt'); 
-    customWheelData.title = document.getElementById('custom-title').value; 
-    customWheelData.items = Array.from(lbls).map((l,i) => ({l:l.value, w:Number(wts[i].value)||1})); 
-    localStorage.setItem('customWheel', JSON.stringify(customWheelData)); 
-    alert("Yey! Roda Custom berhasil disimpan!"); 
-    document.getElementById('btn-mode-custom').click(); 
-});
-
-document.getElementById('btn-mode-ide').addEventListener('click', () => { isCustomMode = false; document.getElementById('custom-form').style.display = 'none'; resetApp(); updatePhaseTitle("T.O.E.I.C"); });
-document.getElementById('btn-mode-custom').addEventListener('click', () => { isCustomMode = true; document.getElementById('custom-form').style.display = 'flex'; resetApp(); updatePhaseTitle(customWheelData.title); currentItems = customWheelData.items; wheelContainer.style.display = "flex"; pointerLabel.classList.remove('selected'); updatePointerLabel(getPointedItem(currentItems,0)); drawWheel(currentItems,0); btnMain.innerText = "Acak Custom!"; });
-document.getElementById('btn-show-history').addEventListener('click', () => { renderHistory(); modalHistory.classList.add('active'); });
-document.getElementById('btn-close-history').addEventListener('click', () => { modalHistory.classList.remove('active'); });
-document.getElementById('btn-close-history-x').addEventListener('click', () => { modalHistory.classList.remove('active'); });
-
-const resetApp = () => { 
-    currentPhase = 1; 
-    document.getElementById('main-menu-bar').style.display = 'flex'; 
-    hideWheelOverlay(); 
-    wheelContainer.style.display = isCustomMode ? "flex" : "none"; 
-    pointerLabel.classList.remove('selected'); 
-    btnMain.innerText = isCustomMode ? "Acak Custom!" : "Mulai Acak!"; 
-    btnMain.disabled = false; 
-};
-
-btnMain.addEventListener('click', async () => { 
+let materials = [{l:"Mobil",w:1},{l:"Semangka",w:1},{l:"Pensil",w:1},{l:"Gitar Listrik",w:1}].map(m => ({...m, color: `hsl(${Math.floor(Math.random()*360)}, 100%, 70%)`}));
+let historyData = JSON.parse(localStorage.getItem('slotHistory')) || [];
+let usedCombinations = JSON.parse(localStorage.getItem('usedSlotCombos')) || []; 
+let isSpinning = false;
+const btnMain = document.getElementById('btn-main'), modalResult = document.getElementById('modal-result'), modalHistory = document.getElementById('modal-history'), historyList = document.getElementById('history-list');
+const getMatColor = (t) => { const f = materials.find(m => m.l === t); return f && f.color ? f.color : `hsl(${Math.floor(Math.random()*360)}, 100%, 70%)`; };
+const formatDisplayItem = (txt) => imageMap[txt] ? `<img src="${imageMap[txt]}" alt="${txt}" title="${txt}" onerror="this.outerHTML='${txt}'">` : `<span class="material-text-fit" style="color:${getMatColor(txt)};">${txt}</span>`;
+const renderHistory = () => { historyList.innerHTML = !historyData.length ? "<li>Belum ada riwayat.</li>" : historyData.map((item, idx) => `<li><span class="history-item-content">${item.split(' - ').map(p => formatDisplayItem(p)).join(' <span style="color:#b2bec3;">+</span> ')}</span><button class="btn-del-history" onclick="deleteHistoryItem(${idx})">✕</button></li>`).join(''); };
+window.deleteHistoryItem = (index) => { historyData.splice(index, 1); localStorage.setItem('slotHistory', JSON.stringify(historyData)); renderHistory(); };
+const saveToHistory = (comboStr) => { historyData.unshift(comboStr); if(historyData.length > 20) historyData.pop(); localStorage.setItem('slotHistory', JSON.stringify(historyData)); usedCombinations.push(comboStr); localStorage.setItem('usedSlotCombos', JSON.stringify(usedCombinations)); renderHistory(); };
+const getRandomItem = (arr) => { let r = Math.random() * arr.reduce((s, i) => s + (Number(i.w) || 1), 0); for(let i=0; i<arr.length; i++) { r -= (Number(arr[i].w) || 1); if(r <= 0) return arr[i].l; } return arr[arr.length - 1].l; };
+const buildSlotStrip = (id, arr, target) => { const s = document.getElementById(id); s.style.transition = 'none'; s.style.transform = 'translateY(0)'; s.innerHTML = ''; const items = Array.from({length:30}, () => arr[Math.floor(Math.random() * arr.length)].l).concat(target); items.forEach(i => { const d = document.createElement('div'); d.className = 'slot-item'; d.innerHTML = formatDisplayItem(i); s.appendChild(d); }); void s.offsetWidth; return items.length; };
+const triggerHighlight = (lbl, win) => { playSfxGet(); lbl.classList.add('highlight-pop'); win.classList.add('highlight-pop'); setTimeout(() => { lbl.classList.remove('highlight-pop'); win.classList.remove('highlight-pop'); lbl.classList.add('highlight-gold'); win.classList.add('highlight-gold'); }, 700); };
+btnMain.addEventListener('click', () => { 
     if(isSpinning) return; 
-    if(isCustomMode){ 
-        const res = await spinWheel(currentItems); playSfxAkh(); confetti({particleCount:150, spread:90, origin:{y:0.6}}); 
-        document.getElementById('modal-title').innerText = customWheelData.title; 
-        document.getElementById('result-text').innerHTML = formatDisplayItem(res); 
-        saveToHistory(`[${customWheelData.title}] ${res}`); 
-        modalResult.classList.add('active'); 
-        return; 
-    } 
-    
-    if(currentPhase === 1){ 
-        document.getElementById('main-menu-bar').style.display = 'none'; 
-        currentPhase = 2; updatePhaseTitle("Pilih Role"); wheelContainer.style.display = "flex"; currentItems = roles; currentAngle = 0; 
-        pointerLabel.classList.remove('selected'); updatePointerLabel(getPointedItem(currentItems, currentAngle)); drawWheel(currentItems, currentAngle); 
-        selectedRole = await spinWheel(currentItems); 
-        showWheelOverlay(selectedRole); 
-        btnMain.disabled = false; btnMain.innerText = "Lanjut (Gender)"; 
-    } else if(currentPhase === 2){ 
-        currentPhase = 3; updatePhaseTitle("Pilih Gender"); currentItems = genders; currentAngle = 0; 
-        pointerLabel.classList.remove('selected'); updatePointerLabel(getPointedItem(currentItems, currentAngle)); drawWheel(currentItems, currentAngle); 
-        selectedGender = await spinWheel(currentItems); 
-        showWheelOverlay(selectedGender); 
-        btnMain.disabled = false; btnMain.innerText = "Lanjut (Material)"; 
-    } else if(currentPhase === 3){ 
-        currentItems = materials.filter(m => {
-            const potentialCombo = `${selectedRole} - ${selectedGender} - ${m.l}`;
-            return !usedCombinations.includes(potentialCombo);
-        });
-
-        if(currentItems.length === 0) {
-            alert("Oops! Semua kombinasi material untuk " + selectedRole + " & " + selectedGender + " sudah terpakai! Mengulang dari awal...");
-            resetApp();
-            updatePhaseTitle("T.O.E.I.C");
-            return;
-        }
-
-        currentPhase = 4; updatePhaseTitle("Pilih Material"); currentAngle = 0; 
-        pointerLabel.classList.remove('selected'); updatePointerLabel(getPointedItem(currentItems, currentAngle)); drawWheel(currentItems, currentAngle); 
-        selectedMaterial = await spinWheel(currentItems); 
-        showWheelOverlay(selectedMaterial); // Tampilkan animasi lingkaran material terpilih
-        btnMain.disabled = false; btnMain.innerText = "Selesai!"; 
-    } else if(currentPhase === 4){ 
-        playSfxAkh(); confetti({particleCount:150, spread:90, origin:{y:0.6}}); 
-        const finalRes = `${selectedRole} - ${selectedGender} - ${selectedMaterial}`; 
-        document.getElementById('modal-title').innerText = "Kombinasi Terpilih"; 
-        
-        const roleImg = formatDisplayItem(selectedRole);
-        const genderImg = formatDisplayItem(selectedGender);
-        
-        document.getElementById('result-text').innerHTML = `
-            <div class="result-box-custom">
-                <div class="result-icons-container">
-                    ${roleImg}
-                    ${genderImg}
-                </div>
-                <div class="result-material-text">${selectedMaterial}</div>
-            </div>
-        `;
-        
-        saveToHistory(`[Ide] ${finalRes}`, true); 
-        modalResult.classList.add('active'); 
-    } 
+    const tR = getRandomItem(roles), tG = getRandomItem(genders), aM = materials.filter(m => !usedCombinations.includes(`${tR} - ${tG} - ${m.l}`));
+    if(!aM.length) return alert(`Oops! Semua kombinasi material untuk ${tR} & ${tG} sudah habis. Silakan hapus riwayat untuk mengulang.`);
+    const tM = getRandomItem(aM);
+    isSpinning = true; btnMain.disabled = true; btnMain.innerText = "Memproses...";
+    sfxType.currentTime = 0; sfxType.play().catch(e=>e);
+    const lR = buildSlotStrip('strip-role', roles, tR), lG = buildSlotStrip('strip-gender', genders, tG), lM = buildSlotStrip('strip-material', materials, tM), iH = 120; 
+    const sR = document.getElementById('strip-role'), sG = document.getElementById('strip-gender'), sMat = document.getElementById('strip-material');
+    sR.style.transition = 'transform 3s cubic-bezier(0.15, 0.8, 0.15, 1)'; sG.style.transition = 'transform 3.5s cubic-bezier(0.15, 0.8, 0.15, 1)'; sMat.style.transition = 'transform 4s cubic-bezier(0.15, 0.8, 0.15, 1)';
+    sR.style.transform = `translateY(-${(lR - 1) * iH}px)`; sG.style.transform = `translateY(-${(lG - 1) * iH}px)`; sMat.style.transform = `translateY(-${(lM - 1) * iH}px)`;
+    const lblR = document.getElementById('label-role'), lblG = document.getElementById('label-gender'), lblM = document.getElementById('label-material');
+    const winR = document.getElementById('window-role'), winG = document.getElementById('window-gender'), winM = document.getElementById('window-material');
+    lblR.classList.remove('highlight-pop', 'highlight-gold'); winR.classList.remove('highlight-pop', 'highlight-gold');
+    lblG.classList.remove('highlight-pop', 'highlight-gold'); winG.classList.remove('highlight-pop', 'highlight-gold');
+    lblM.classList.remove('highlight-pop', 'highlight-gold'); winM.classList.remove('highlight-pop', 'highlight-gold');
+    setTimeout(() => triggerHighlight(lblR, winR), 3000); setTimeout(() => triggerHighlight(lblG, winG), 3500); setTimeout(() => triggerHighlight(lblM, winM), 4000);
+    setTimeout(() => { sfxType.pause(); playSfxAkh(); confetti({particleCount: 200, spread: 100, origin: {y: 0.6}}); document.getElementById('result-content').innerHTML = `<div class="result-icons-container">${formatDisplayItem(tR)}${formatDisplayItem(tG)}</div><div class="result-material-text" style="color:${getMatColor(tM)};">${tM}</div>`; saveToHistory(`${tR} - ${tG} - ${tM}`); modalResult.classList.add('active'); isSpinning = false; btnMain.disabled = false; btnMain.innerText = "Mulai"; }, 5500); 
 });
-
-const closeModalAndReset = () => { modalResult.classList.remove('active'); resetApp(); if(!isCustomMode) updatePhaseTitle("T.O.E.I.C"); };
-document.getElementById('btn-restart').addEventListener('click', closeModalAndReset);
-document.getElementById('btn-close-result-x').addEventListener('click', closeModalAndReset);
-
-window.onload = () => { 
-    renderHistory(); initCustomForm(); btnMain.disabled = true; btnMain.innerText = "Memuat..."; 
-    fetch('material.json').then(r=>r.json()).then(d=>{if(Array.isArray(d)&&d.length>0) materials=d.map(i=>typeof i==='string'?{l:i,w:1}:i);}).catch(e=>e).finally(()=>{btnMain.disabled=false;btnMain.innerText="Mulai Acak!";}); 
-};
+document.getElementById('btn-show-history').addEventListener('click', () => { renderHistory(); modalHistory.classList.add('active'); });
+document.getElementById('btn-close-history').addEventListener('click', () => modalHistory.classList.remove('active'));
+document.getElementById('btn-close-history-x').addEventListener('click', () => modalHistory.classList.remove('active'));
+document.getElementById('btn-restart').addEventListener('click', () => modalResult.classList.remove('active'));
+document.getElementById('btn-close-result-x').addEventListener('click', () => modalResult.classList.remove('active'));
+window.onload = () => { renderHistory(); btnMain.disabled = true; btnMain.innerText = "Memuat..."; fetch('material.json').then(r => r.json()).then(d => { if(Array.isArray(d) && d.length > 0) materials = d.map(i => { let m = typeof i === 'string' ? {l:i, w:1} : i; m.color = m.color || `hsl(${Math.floor(Math.random()*360)}, 100%, 70%)`; return m; }); }).catch(() => {}).finally(() => { btnMain.disabled = false; btnMain.innerText = "Mulai"; }); };
 </script>
 </body>
 </html>
